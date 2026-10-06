@@ -14,12 +14,14 @@ object AgentCommandSchema {
             put("contextSize",buildJsonObject{put("type","integer");put("minimum",256);put("maximum",8192)})
             put("runtimeBackend",choice(listOf("RUNANYWHERE","NATIVE_LOCAL")));put("keyCacheType",choice(listOf("f16","q8_0","q4_0")))
             put("downloadBackend",choice(listOf("RUNANYWHERE","VERIFIED_HTTP")))
+            put("checkpointId",buildJsonObject{put("type","string");put("pattern","^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$")})
+            put("browserMaxSteps",buildJsonObject{put("type","integer");put("minimum",1);put("maximum",20)});put("cloudProfileId",text(80));put("cloudAction",text(40));put("cloudPage",buildJsonObject{put("type","integer");put("minimum",1);put("maximum",100)})
             put("modelId",text(160));put("url",text(4096));put("name",text(256));put("importUri",text(4096));put("prompt",text(32000))
             put("maxTokens",buildJsonObject{put("type","integer");put("minimum",1);put("maximum",2048)})
             put("temperature",buildJsonObject{put("type","number");put("minimum",0);put("maximum",2)})
             put("startupEnabled",bool());put("fileName",text(120));put("fileText",text(32000));put("expectedSha256",text(64))
             put("appearance",buildJsonObject{put("type","object");put("additionalProperties",false);put("properties",buildJsonObject{
-                put("themeMode",text(40));put("accentHue",text(40));put("dynamicColors",bool());put("animationsEnabled",bool())
+                put("uiFont",choice(listOf("FIGTREE","SYSTEM","SERIF","MONO")));put("surfaceStyle",choice(listOf("SOLID","GLASS")));put("themeMode",text(40));put("accentHue",text(40));put("dynamicColors",bool());put("animationsEnabled",bool())
                 put("fontScale",buildJsonObject{put("type","number");put("minimum",0.85);put("maximum",1.5)})
             })})
             put("task",buildJsonObject{put("type","object");put("additionalProperties",false);put("properties",buildJsonObject{

@@ -12,8 +12,10 @@ import java.util.concurrent.TimeUnit
 @Serializable enum class OnlineProtocol { OPENAI, OPENAI_COMPATIBLE, ANTHROPIC, GEMINI }
 @Serializable data class OnlineProfile(val id:String,val name:String,val endpoint:String,val model:String="",
     val protocol:OnlineProtocol=OnlineProtocol.OPENAI_COMPATIBLE,val enabled:Boolean=false,val agentAllowed:Boolean=false,
-    val sendTemperature:Boolean=false,val inputPricePerMillion:Double?=null,val outputPricePerMillion:Double?=null,val currency:String="USD",val pricingSource:String?=null,val priceCheckedAtMs:Long?=null,val requiresApiKey:Boolean=true) {
+    val sendTemperature:Boolean=false,val inputPricePerMillion:Double?=null,val outputPricePerMillion:Double?=null,val currency:String="USD",val pricingSource:String?=null,val priceCheckedAtMs:Long?=null,val requiresApiKey:Boolean=true,val credentialEnvironmentId:String?=null,val credentialVariable:String="API_KEY") {
     fun validate() {
+        require(credentialEnvironmentId==null || credentialEnvironmentId.matches(Regex("[A-Za-z0-9_-]{1,80}")))
+        require(credentialVariable.matches(Regex("[A-Z_][A-Z0-9_]{0,79}")))
         require(id.matches(Regex("[a-zA-Z0-9-]{1,80}")) && name.length in 1..100)
         val url=endpoint.toHttpUrl()
         require(url.isHttps && url.username.isEmpty() && url.password.isEmpty() && url.query==null && url.fragment==null) { "Use an HTTPS API base URL without credentials or query parameters" }

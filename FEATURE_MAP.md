@@ -22,7 +22,7 @@ flowchart TD
     App --> IDE[Offline code workspace]
     App --> Settings[Searchable settings]
     App --> Tools[Existing optional tools]
-    App --> Help[Existing legacy Help]
+    App --> Help[Offline illustrated guide and tutorial]
     Models --> Sources[SAF multi-import and HTTPS downloads]
     Devices --> Pair[Native worker QR or manual pairing]
     Devices --> Web[TLS web/API enrollment and local groups]
@@ -31,7 +31,7 @@ flowchart TD
     Settings --> Advanced[OpenClaw, runtime, crawler, Termux, hooks]
     Tasks --> Board[Manual tasks, subtasks and bulk status]
     Tasks --> Jobs[Real human and agent operation jobs]
-    Help -. Later .-> Tutorial[Skip, resume and replay tutorial]
+    Help --> Tutorial[Eight persisted reading lessons]
 ```
 
 Drawer and Settings expose Tasks and the workspace. Devices separates native layer
@@ -232,14 +232,14 @@ No Kubernetes/Docker feature is implied by visual similarity or local metadata.
 | Network tools | diagnostics and retained VPN/PCAP/PCAPdroid/Termux | authoritative capture state and HTTP observer UI fixes |
 | Linux sandbox | bounded commands, optional rootless QEMU/SSH adapters | physical runtime/VM process lifecycle and resource proof |
 | Root/desktop | human-only root boundary, optional VM/desktop configuration | actual installed root/VNC toolchain acceptance |
-| Browser agent | approved DOM proposals from local model | Android browser parity/permission/device testing |
+| Browser agent | bounded visible WebView sessions plus reviewed steps from local inference | physical-phone and real-model real-site task proof |
 | Crawler | optional Crawl4AI companion and scoped MCP bridge | live browser smoke/setup; blocked sites remain blocked |
 | OpenClaw | encrypted gateway profile, signed Android node adapter, text phone provider | real gateway pairing/commands; full operator/function-calling parity |
 | Android autonomy | saved delegation, allowlist, emergency stop, AccessibilityService actions | normal APK/physical-device protected/password and revocation checks |
 | Multi-OS | portable contracts and host companion boundary | Linux/Windows/macOS/HarmonyOS applications/adapters |
 | Vendor acceleration | optional source build switches and reserved backend interfaces | installed/probed CUDA/HIP/SYCL/Metal/Vulkan/OpenCL/MUSA/CANN validation |
 | Chinese devices | HarmonyOS/Huawei/Hygon and optional MUSA/CANN planning | real hardware integration, non-GMS scanner fallback UX |
-| Guide/tutorial | old manual/tour retained; later milestone documented | rewrite for new screens, Skip/Resume/Replay, labeled simulation |
+| Guide/tutorial | 19 offline illustrated chapters and eight reading lessons | interactive execution walkthroughs and physical-device UX |
 | Tracking/agent guide | AGENTS/CLAUDE/AGENT_BUILD, build/plan/progress, old-project audit | update evidence after every changed acceptance case |
 
 ## 9. Source map and validation
@@ -262,13 +262,13 @@ selection, per-artifact quantization variants, GGUF metadata, optional native lo
 context/KV settings, observed device planning and a Hugging Face Hub/hosted panel.
 Read `docs/device-aware-model-runtime.md` and `docs/hugging-face-integration.md`.
 The operation inventory now includes `MODEL_OPTIONS_SET` and `DEVICE_RUNTIME_STATUS`
-(28 operations total). SDK-managed context is explicitly unknown; it is not reported
+(38 operations total). SDK-managed context is explicitly unknown; it is not reported
 as an applied native capacity. Public/live data, estimates and pending device
 validation remain separate. Shared KV/task replication remains planned.
 
 ## Online, power, hardware and deployment additions (2026-10-06)
 
-The structured inventory now has 50 feature areas and 28 durable command operations.
+The structured inventory now has 55 feature areas and 38 durable command operations.
 Additional MCP environment/SSH tools are separate from that operation count.
 
 | Settings route | Actual source behavior | Evidence / limits |
@@ -317,3 +317,42 @@ Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
 contracts. Android synthetic gradients are removed; phone autograd reports
 unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
 remain acceptance gates. Keep phone inference layer sharding/recovery primary.
+
+## Native checkpoints and accounting continuation
+
+Settings → Checkpoints and recovery saves/restores actual native CPU prompt-cache
+slots, encrypted by Keystore AES-GCM with SHA/model/executable/context/precision
+checks and bounded retention. Read `docs/native-checkpoints.md`. This is a local
+recovery primitive; distributed task/session replication and portable/RPC KV
+restoration remain unimplemented. Streamed text deltas no longer establish token
+counts. Runtime usage may be unknown; the UI and wire payload preserve that state.
+
+## Cloud and credentials
+
+Dedicated Cloud/settings entry: source-backed AWS/Azure/DigitalOcean/GCP/OpenRouter
+identity/resource/billing reads and custom read-only HTTPS functions; dashboard
+values retain response/source/time. Encrypted environment vault, API/online,
+pinned SSH and human-approved browser login consumers; independent human/agent
+permissions, expiry, request quotas and cooldowns. CLOUD_PROFILES,
+ENVIRONMENT_PROFILES and CLOUD_EXECUTE bring the inventory to 38 operations.
+Authenticated vendor accounts, OAuth, deployment and broader service coverage
+remain explicit acceptance/implementation gates. See `docs/cloud-and-credential-management.md`.
+
+## Browser, guide, appearance and archives continuation
+
+`BROWSER_STATUS`, `BROWSER_AUTONOMOUS_RUN` and `BROWSER_STOP` use the visible
+Android WebView through `BrowserSessionBroker`. Sessions have an approved HTTPS
+origin, separate saved human/agent/site permissions, 1–20 actions, a 120-second
+deadline, revocation checks and Stop. Global/enrolled-device BROWSER permission
+is separate from each site policy. Autonomous links use same-origin navigation;
+arbitrary action buttons, login and submissions require human review. Installed
+Chrome/Samsung Internet can use the existing explicitly delegated Accessibility
+tools, with a detected-browser scope selector. This is separate from the DOM
+loop and needs physical validation. Real model/site task acceptance remains a gate.
+
+Appearance persists Figtree/system/serif/mono fonts and solid/tinted-glass
+surfaces; constrained devices/high contrast fall back to solid. Guide/tutorial
+has 19 offline chapters, three conceptual SVG diagrams and eight reading lessons.
+Files keeps granted-storage browsing, adds bounded AI text inspection and streaming
+ZIP/unzip with limits, cancellation, CRC checks, unsafe-path/collision rejection
+and cleanup. Large provider-backed storage acceptance remains separate.

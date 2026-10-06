@@ -50,7 +50,7 @@ class ModelRoutes(context:Context,private val library:ModelLibrary,private val i
                     val p=online.profiles.value.firstOrNull{it.id==step.modelId.removePrefix("cloud:")}
                         ?: error("Missing online profile ${step.modelId}")
                     require(p.enabled && (!agent || p.agentAllowed)){"Online profile is disabled or not delegated"}
-                    require(!p.requiresApiKey || online.token(p.id).isNotBlank()){"Online profile requires a saved API key"}
+                    require(!p.requiresApiKey || online.resolveToken(p,agent).isNotBlank()){"Online profile requires a saved API key"}
                 } else {
                     require(library.models.value.any{it.id==step.modelId && it.installed}){"Install local model ${step.modelId} first"}
                     require(library.devicePlan().allowHeavyWork){"Current device policy blocks local work"}

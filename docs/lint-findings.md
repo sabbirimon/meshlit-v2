@@ -1,6 +1,18 @@
+# Latest lint evidence (2026-10-06)
+
+Final cloud/browser/files/fonts/help continuation passes full lint in both flavors:
+**0 errors, 337 warnings, 17 hints per flavor**. `abortOnError=true` remains enabled.
+See `../meshlit-validation/final-bounded-browser-validation.log` and the generated
+app reports. Earlier counts below are historical; physical UX/release gates remain.
+
 # Lint findings and follow-up
 
-Initial full lint completed on 2026-10-06 with 59 errors, 322 warnings and 16 hints per flavor. The Gradle configuration has `abortOnError=false`; task success does not mean a clean report. Follow-up reports contain 51 errors, 322 warnings and 16 hints per flavor. Final environment/media lint completed with **51 errors, 330 warnings and 17 hints per flavor**. Its task succeeded in 17m 47s because abortOnError is false. The subsequent bounded buffered-GGUF parser follow-up passed its tests/build but was not followed by another full lint run. See `../../meshlit-validation/lint-summary-2026-10-06.json`.
+Current sequential native/checkpoint source passed fatal-gate lint with **0 errors,
+334 warnings and 17 hints per flavor**. `abortOnError=true` now blocks errors.
+Final Cloud/vault source requires a new run, recorded when complete in PROGRESS.md.
+The tables below are historical findings; they are not current remaining errors.
+
+Historical full lint completed on 2026-10-06 with 59 errors, 322 warnings and 16 hints per flavor. The Gradle configuration has `abortOnError=false`; task success does not mean a clean report. Follow-up reports contain 51 errors, 322 warnings and 16 hints per flavor. Final environment/media lint completed with **51 errors, 330 warnings and 17 hints per flavor**. Its task succeeded in 17m 47s because abortOnError is false. The subsequent bounded buffered-GGUF parser follow-up passed its tests/build but was not followed by another full lint run. See `../../meshlit-validation/lint-summary-2026-10-06.json`.
 
 ## Corrections made after the first report
 

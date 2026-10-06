@@ -13,21 +13,24 @@ import java.util.concurrent.ConcurrentHashMap
 @Serializable enum class AgentOperation {
     SETTINGS_READ, SETTINGS_PATCH, MODELS_LIST, MODEL_DOWNLOAD, MODEL_ADD_URL, MODEL_IMPORT,
     MODEL_IMPORT_SOURCES, MODEL_OPTIONS_SET, DEVICE_RUNTIME_STATUS, MODEL_LOAD, MODEL_GENERATE, MODEL_UNLOAD, MODEL_DELETE, CLUSTER_STATUS, CLUSTER_PLAN,
-    CLUSTER_START, CLUSTER_WORKER_START, CLUSTER_STOP, RECOVERY_STATUS, MODEL_STARTUP_SET,
-    TASK_LIST, TASK_CREATE, TASK_UPDATE, TASK_BATCH_UPDATE, TASK_DELETE, WORKSPACE_LIST, WORKSPACE_READ, WORKSPACE_WRITE
+    CLUSTER_START, CLUSTER_WORKER_START, CLUSTER_STOP, RECOVERY_STATUS, CHECKPOINT_LIST, CHECKPOINT_SAVE, CHECKPOINT_RESTORE, CHECKPOINT_DELETE, MODEL_STARTUP_SET,
+    TASK_LIST, TASK_CREATE, TASK_UPDATE, TASK_BATCH_UPDATE, TASK_DELETE, WORKSPACE_LIST, WORKSPACE_READ, WORKSPACE_WRITE, CLOUD_PROFILES, ENVIRONMENT_PROFILES, CLOUD_EXECUTE, BROWSER_STATUS, BROWSER_AUTONOMOUS_RUN, BROWSER_STOP
 }
 @Serializable data class AppearancePatch(val themeMode:String?=null,val accentHue:String?=null,
-    val dynamicColors:Boolean?=null,val animationsEnabled:Boolean?=null,val fontScale:Float?=null)
+    val dynamicColors:Boolean?=null,val animationsEnabled:Boolean?=null,val fontScale:Float?=null,val uiFont:String?=null,val surfaceStyle:String?=null)
 @Serializable data class AgentCommand(val requestId:String,val operation:AgentOperation,val modelId:String?=null,
     val url:String?=null,val name:String?=null,val importUri:String?=null,val appearance:AppearancePatch?=null,
     val prompt:String?=null,val maxTokens:Int=256,val temperature:Float=0.7f,
-    val startupEnabled:Boolean?=null,val task:TaskMutation?=null,val fileName:String?=null,val fileText:String?=null,val expectedSha256:String?=null,val downloadBackend:String="VERIFIED_HTTP",val contextSize:Int=2048,val runtimeBackend:String="RUNANYWHERE",val keyCacheType:String="f16") {
+    val startupEnabled:Boolean?=null,val task:TaskMutation?=null,val fileName:String?=null,val fileText:String?=null,val expectedSha256:String?=null,val downloadBackend:String="VERIFIED_HTTP",val contextSize:Int=2048,val runtimeBackend:String="RUNANYWHERE",val keyCacheType:String="f16",val checkpointId:String?=null,val cloudProfileId:String?=null,val cloudAction:String?=null,val cloudPage:Int=1,val browserMaxSteps:Int=10) {
     fun validate(){
         require(requestId.matches(Regex("[A-Za-z0-9_-]{1,80}"))){"requestId must be a stable 1–80 character identifier"}
         require(downloadBackend in setOf("RUNANYWHERE","VERIFIED_HTTP")) {"Unknown model download backend"}
         require(contextSize in 256..8192 && runtimeBackend in setOf("RUNANYWHERE","NATIVE_LOCAL") && keyCacheType in setOf("f16","q8_0","q4_0"))
         require(name==null || name.length<=256)
         when(operation){
+            AgentOperation.BROWSER_AUTONOMOUS_RUN->require(!prompt.isNullOrBlank() && prompt.length<=4000 && browserMaxSteps in 1..20){"Browser task and 1–20 steps required"}
+            AgentOperation.CLOUD_EXECUTE->require(cloudProfileId?.matches(Regex("[A-Za-z0-9_-]{1,80}"))==true && cloudAction?.matches(Regex("[a-z][a-z0-9_-]{0,39}"))==true && cloudPage in 1..100){"cloudProfileId, cloudAction and bounded cloudPage required"}
+            AgentOperation.CHECKPOINT_RESTORE,AgentOperation.CHECKPOINT_DELETE->require(checkpointId?.matches(Regex("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}"))==true){"checkpointId required"}
             AgentOperation.MODEL_OPTIONS_SET,AgentOperation.MODEL_DOWNLOAD,AgentOperation.MODEL_LOAD,AgentOperation.MODEL_DELETE,AgentOperation.CLUSTER_PLAN,AgentOperation.CLUSTER_START ->require(!modelId.isNullOrBlank() && modelId.length<=160){"modelId required"}
             AgentOperation.MODEL_GENERATE ->{require(!modelId.isNullOrBlank() && !prompt.isNullOrBlank() && prompt.length<=32000);require(maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f)}
             AgentOperation.MODEL_ADD_URL ->require(!url.isNullOrBlank() && url.length<=4096){"url required"}

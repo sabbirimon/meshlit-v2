@@ -61,7 +61,8 @@ class OpenAiPhoneServer(
                 put("id",id);put("object","chat.completion");put("created",created);put("model","meshlit-local")
                 put("choices",buildJsonArray{add(buildJsonObject{put("index",0);put("finish_reason",finish)
                     put("message",buildJsonObject{put("role","assistant");put("content",result.finalText)})})})
-                put("usage",buildJsonObject{put("prompt_tokens",result.promptTokens);put("completion_tokens",result.generatedTokens)
+                if(result.promptTokens!=null && result.generatedTokens!=null) put("usage",buildJsonObject{
+                    put("prompt_tokens",result.promptTokens);put("completion_tokens",result.generatedTokens)
                     put("total_tokens",result.promptTokens+result.generatedTokens)})
             })
         } catch(_:TimeoutCancellationException){return error(Response.Status.SERVICE_UNAVAILABLE,"Phone generation timed out")}

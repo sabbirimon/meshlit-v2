@@ -2,6 +2,9 @@ package com.meshlit.ui.modern
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -49,6 +52,8 @@ fun ModernMeshlitApp() {
     if(tab=="media"){MediaGenerationScreen{tab="chat"};return}
     if(tab=="tasks"){TaskManagerScreen{tab="chat"};return}
     if(tab=="ide"){com.meshlit.ide.CodeWorkspaceScreen{tab="chat"};return}
+    if(tab=="help"){HelpTutorialScreen{tab="chat"};return}
+    if(tab=="cloud"){CloudManagementScreen{tab="chat"};return}
     if(tab=="devices"){ModernNetworkScreen{tab="chat"};return}
     if(legacy) {
         BackHandler { legacy=false }
@@ -58,7 +63,9 @@ fun ModernMeshlitApp() {
         }
         return
     }
-    ModalNavigationDrawer(drawerState=drawer,drawerContent={
+    val glass=com.meshlit.ui.theme.LocalMeshlitThemeConfig.current.surfaceStyle==com.meshlit.ui.theme.SurfaceStyle.GLASS
+    val colors=MaterialTheme.colorScheme
+    ModalNavigationDrawer(modifier=Modifier.background(Brush.linearGradient(if(glass) listOf(colors.primaryContainer,colors.background,colors.secondaryContainer) else listOf(colors.background,colors.background))),drawerState=drawer,drawerContent={
         ModalDrawerSheet(Modifier.width(T.sidebar)) {
             Column(Modifier.padding(T.large)) {
                 Text("Meshlit",style=MaterialTheme.typography.headlineSmall)
@@ -81,11 +88,13 @@ fun ModernMeshlitApp() {
             NavigationDrawerItem(label={Text("Devices and clusters")},selected=tab=="devices",onClick={tab="devices";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Devices,null)})
             NavigationDrawerItem(label={Text("Task manager")},selected=tab=="tasks",onClick={tab="tasks";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Checklist,null)})
             NavigationDrawerItem(label={Text("Code workspace")},selected=tab=="ide",onClick={tab="ide";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Code,null)})
+            NavigationDrawerItem(label={Text("Cloud and credentials")},selected=tab=="cloud",onClick={tab="cloud";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Cloud,null)})
+            NavigationDrawerItem(label={Text("Guide and tutorial")},selected=tab=="help",onClick={tab="help";scope.launch{drawer.close()}},icon={Icon(Icons.Default.HelpOutline,null)})
             NavigationDrawerItem(label={Text("Settings")},selected=tab=="settings",onClick={tab="settings";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Settings,null)})
             NavigationDrawerItem(label={Text(stringResource(R.string.modern_tools))},selected=false,onClick={legacy=true;scope.launch{drawer.close()}},icon={Icon(Icons.Default.Build,null)})
         }
     }) {
-        Scaffold(topBar={TopAppBar(title={Column {
+        Scaffold(containerColor=if(glass) Color.Transparent else colors.background,topBar={TopAppBar(title={Column {
             Text(if(tab=="chat") state.current?.title ?: stringResource(R.string.modern_new_chat) else
                 if(tab=="settings") "Settings" else stringResource(if(tab=="models") R.string.modern_models else R.string.modern_monitor),maxLines=1,style=MaterialTheme.typography.titleMedium)
             if(tab=="chat") TextButton(onClick={tab="models"},contentPadding=PaddingValues(T.tiny)) {

@@ -61,7 +61,7 @@ fun MeshlitTheme(
             delay(10000)
         }
     }
-    val effectiveConfig = config.copy(animationsEnabled=config.animationsEnabled && !constrained,basePalette = if(dark) {
+    val effectiveConfig = config.copy(surfaceStyle=if(constrained || config.highContrast) SurfaceStyle.SOLID else config.surfaceStyle,animationsEnabled=config.animationsEnabled && !constrained,basePalette = if(dark) {
         if(config.basePalette == BasePalette.PAPER) BasePalette.MIDNIGHT else config.basePalette
     } else BasePalette.PAPER)
     // Phase 12.2 — when the user picked an AnimatedGradient custom
@@ -91,10 +91,12 @@ fun MeshlitTheme(
     } else {
         buildColorScheme(effectiveConfig, animatedBrush)
     }
+    val styledColors=if(effectiveConfig.surfaceStyle==SurfaceStyle.GLASS) colorScheme.copy(surfaceContainerLow=colorScheme.surfaceContainerLow.copy(alpha=0.88f),surfaceContainer=colorScheme.surfaceContainer.copy(alpha=0.92f),surfaceContainerHigh=colorScheme.surfaceContainerHigh.copy(alpha=0.96f)) else colorScheme
+    val typography=remember(config.uiFont){typographyFor(config.uiFont)}
     CompositionLocalProvider(LocalMeshlitThemeConfig provides effectiveConfig, androidx.compose.ui.platform.LocalDensity provides scaledDensity) {
         MaterialTheme(
-            colorScheme = colorScheme,
-            typography = MeshlitTypography,
+            colorScheme = styledColors,
+            typography = typography,
             content = content,
         )
     }

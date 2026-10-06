@@ -5,13 +5,15 @@ data class SettingsDestination(val id:String,val title:String,val description:St
     val keywords:String="")
 object SettingsDestinations {
     val all=listOf(
-        SettingsDestination("appearance","Appearance","Dynamic colors, accents, light and dark mode",keywords="theme display wallpaper font motion palette"),
+        SettingsDestination("appearance","Appearance","Dynamic colors, accents, light and dark mode",keywords="theme display wallpaper font motion palette glass typography readability contrast"),
         SettingsDestination("models","Models and downloads","Import files, manage downloads and load local models",keywords="hugging face token storage GGUF RAM"),
         SettingsDestination("media","Camera, vision and audio","Real image input, microphone and existing SDK media paths",keywords="CCTV webcam phone camera microphone WAV speech VLM STT TTS"),
         SettingsDestination("configuration","Configuration profiles","Export, review and apply portable device settings",keywords="import backup default custom declarative ansible terraform pulumi IaC"),
         SettingsDestination("behavior","Custom local model behavior","Custom weights and your own local instructions",keywords="uncensored jailbreak system prompt offline"),
+        SettingsDestination("recovery","Checkpoints and recovery","Encrypted native CPU KV snapshots and honest cluster recovery status",keywords="cache restart restore memory bank failover session tasks"),
         SettingsDestination("training","Fine-tuning","Real Soup LoRA/QLoRA jobs on a paired training host",keywords="train adapter dataset quantization stream layers compact GPU"),
         SettingsDestination("router","Model router","Scenario rules, model chains and answer comparisons",keywords="multi model tasks coding reasoning routing pipeline ensemble"),
+        SettingsDestination("cloud","Cloud and credentials","Vendor resources, costs, environments and separate human/agent controls",keywords="AWS Azure DigitalOcean OpenRouter GCP custom API login SSH vault tokens auth functions cloud dashboard"),
         SettingsDestination("providers","Online providers","OpenAI, Claude, DeepSeek, Qwen, Gemini and compatible APIs",keywords="online cloud key token price cost Hugging Face"),
         SettingsDestination("power","Power and costs","Battery readings, download policies and electricity estimates",keywords="meter current energy charging expense thermal"),
         SettingsDestination("external","External devices and OTG","USB discovery, permissions and removable storage",keywords="gpu USB hardware peripherals drives NAS keyboard camera"),
@@ -23,7 +25,7 @@ object SettingsDestinations {
         SettingsDestination("tasks","Task manager","Plan tasks, track real jobs, bulk finish and stop operations",keywords="todo priorities tags due subtasks queue retry cancel agent"),
         SettingsDestination("ide","Code workspace","Offline source editor, files, syntax highlighting and search",keywords="IDE VS Code programming Kotlin Python JavaScript JSON develop"),
         SettingsDestination("permissions","App permissions","Optional setup, runtime grants and Android accessibility",keywords="first launch camera microphone location nearby Bluetooth security"),
-        SettingsDestination("files","Files and storage","Browse app files and user-granted storage volumes",keywords="SAF copy move share export folders"),
+        SettingsDestination("files","Files and storage","Browse, preview AI assets and stream ZIP creation/extraction",keywords="SAF copy move share export folders zip unzip archive GGUF safetensors ONNX JSONL datasets tokenizer"),
         SettingsDestination("termux","Termux integration","Probe an installed shell, manage delegation and view its audit",true,"terminal commands Linux tools networking"),
         SettingsDestination("notifications","Notifications","System notification permission and channels",keywords="alert sound silent"),
         SettingsDestination("monitor","Monitoring and layer pipeline","Memory, thermal status and approved model workers",keywords="shard cluster battery CPU"),
@@ -35,6 +37,7 @@ object SettingsDestinations {
         SettingsDestination("openclaw","OpenClaw and autonomy","Gateway agent, phone model sharing and Android delegation",keywords="agent autonomous OS accessibility local provider pairing"),
         SettingsDestination("automation","Android automation","Accessibility automation and app allowlists",true,"permissions security agents"),
         SettingsDestination("hooks","Agent hooks","Enable and edit user-authored lifecycle scripts",true,"scripts tools"),
+        SettingsDestination("help","Guide and tutorial","Offline walkthrough, configuration recipes and illustrated feature guide",keywords="help setup learn tutorial docs manual guide troubleshooting"),
         SettingsDestination("about","About and availability","Build information and feature implementation status",keywords="licenses version help")
     )
     fun search(query:String,advanced:Boolean)=all.filter{ (advanced || !it.advanced) &&

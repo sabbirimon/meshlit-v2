@@ -59,6 +59,8 @@ open class SettingsRepository(private val context: Context) {
             themeMode = ThemeMode.entries.firstOrNull { it.name == prefs[Keys.themeMode] }
                 ?: MeshlitThemeConfig.Default.themeMode,
             dynamicColors = prefs[Keys.dynamicColors] ?: true,
+            uiFont = com.meshlit.ui.theme.UiFont.entries.firstOrNull{it.name==prefs[Keys.uiFont]} ?: com.meshlit.ui.theme.UiFont.FIGTREE,
+            surfaceStyle = com.meshlit.ui.theme.SurfaceStyle.entries.firstOrNull{it.name==prefs[Keys.surfaceStyle]} ?: com.meshlit.ui.theme.SurfaceStyle.SOLID,
             fontScale = prefs[Keys.fontScale] ?: MeshlitThemeConfig.Default.fontScale,
             densityScale = prefs[Keys.densityScale] ?: MeshlitThemeConfig.Default.densityScale,
             animationsEnabled = prefs[Keys.animationsEnabled] ?: MeshlitThemeConfig.Default.animationsEnabled,
@@ -855,6 +857,9 @@ open class SettingsRepository(private val context: Context) {
         store.edit { it[Keys.themeMode] = mode.name }
     }
 
+    suspend fun setUiFont(font:com.meshlit.ui.theme.UiFont){store.edit{it[Keys.uiFont]=font.name}}
+    suspend fun setSurfaceStyle(style:com.meshlit.ui.theme.SurfaceStyle){store.edit{it[Keys.surfaceStyle]=style.name}}
+
     suspend fun setFontScale(scale: Float) {
         store.edit { it[Keys.fontScale] = scale.coerceIn(0.85f, 1.5f) }
     }
@@ -943,6 +948,8 @@ open class SettingsRepository(private val context: Context) {
         val basePalette = stringPreferencesKey("theme.base_palette")
         val themeMode = stringPreferencesKey("theme.theme_mode")
         val dynamicColors = booleanPreferencesKey("theme.dynamic_colors")
+        val uiFont=stringPreferencesKey("theme.ui_font")
+        val surfaceStyle=stringPreferencesKey("theme.surface_style")
         val fontScale = floatPreferencesKey("theme.font_scale")
         val densityScale = floatPreferencesKey("theme.density_scale")
         val animationsEnabled = booleanPreferencesKey("theme.animations_enabled")

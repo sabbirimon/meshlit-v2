@@ -4,7 +4,7 @@ import java.security.MessageDigest
 import kotlinx.serialization.Serializable
 
 @Serializable enum class DeviceKind { ANDROID, COMPUTER, SERVER, NAS, ROUTER, SWITCH, FIREWALL, BROWSER, RASPBERRY_PI, MICROCONTROLLER, SENSOR, RADIO, OTHER }
-@Serializable enum class DeviceAccess { OBSERVE, SETTINGS, MODELS, CLUSTER, RECOVERY, TASKS, WORKSPACE }
+@Serializable enum class DeviceAccess { OBSERVE, SETTINGS, MODELS, CLUSTER, RECOVERY, TASKS, WORKSPACE, CLOUD, BROWSER }
 @Serializable enum class EnrollmentState { PENDING, APPROVED, REVOKED }
 @Serializable data class EnrolledDevice(val id:String,val name:String,val kind:DeviceKind,val credentialHash:String,
     val state:EnrollmentState=EnrollmentState.PENDING,val access:Set<DeviceAccess> = emptySet(),

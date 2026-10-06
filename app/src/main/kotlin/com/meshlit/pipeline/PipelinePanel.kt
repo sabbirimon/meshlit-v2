@@ -31,6 +31,7 @@ import kotlinx.coroutines.*
     Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(T.large),verticalArrangement=Arrangement.spacedBy(T.small)) {
         Text("Layer pipeline",style=MaterialTheme.typography.titleMedium)
         Text("Experimental native layer execution on approved workers. Off by default. Use trusted devices on your private network.")
+        Text("Worker connections need an allowed TCP 50551 rule in Settings → Network rules. After the TLS identity upgrade, verify the new fingerprint and pair existing workers again.",style=MaterialTheme.typography.bodySmall)
         Text("The coordinator keeps the complete GGUF on disk and uploads tensors to workers. This is layer offload; large-model and physical-phone verification are still required.",style=MaterialTheme.typography.bodySmall)
         if(!host.available()) Text("Native pipeline runtime is not packaged for this device ABI.")
         Text("Worker: ${if(status.worker) "Listening with TLS on ${host.publicPort}" else "Off"} · Coordinator: ${if(status.coordinator) "Active" else "Off"}")
@@ -45,6 +46,7 @@ import kotlinx.coroutines.*
         Row {Text("Allow agents to control the paired cluster",Modifier.weight(1f));Switch(delegated,{delegated=it;host.setAgentControlAllowed(it)})}
         Text("${peers.size} approved workers")
         if(status.memoryBudgetBytes>0) Text("Negotiated memory estimate: ${com.meshlit.ui.modern.formatBytes(status.memoryBudgetBytes)}")
+        if(status.estimatedKvBytes>0) Text("Estimated KV: ${com.meshlit.ui.modern.formatBytes(status.estimatedKvBytes)} · allocation remains subject to native placement")
         peers.forEachIndexed { index,peer -> Row {
             Text("${peer.host}:${peer.port}",Modifier.weight(1f))
             TextButton(enabled=!status.coordinator && !status.starting,onClick={action{val updated=peers.filterIndexed{i,_->i!=index};withContext(Dispatchers.IO){host.savePeers(updated)};peers=updated}}){Text("Remove")}

@@ -89,3 +89,11 @@ Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
 contracts. Android synthetic gradients are removed; phone autograd reports
 unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
 remain acceptance gates. Keep phone inference layer sharding/recovery primary.
+
+## Guide, file archives and autonomous browser continuation
+
+Implemented source: offline illustrated guide/eight reading lessons, persisted UI
+fonts/surfaces, bounded streaming ZIP/unzip and visible approved-origin local-model
+browser sessions. Execution walkthroughs, physical large-storage tests, browser
+real-site model evaluations and external Chrome/Samsung Internet automation remain
+acceptance work. Read PROGRESS and docs/runanywhere-browser-and-llama.md.

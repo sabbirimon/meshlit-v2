@@ -18,7 +18,7 @@ module Gradle files; do not downgrade tooling to match another app.
 - `core-federation`, `core-trust`, `core-discovery`: peer transport and trust.
 - `core-terminal`, `core-ssh`, `core-net`, `core-firewall`: local operations.
 - `core-sandbox`: bounded execution plans, optional QEMU lifecycle and verified artifacts.
-- `app/browser`: human-approved DOM actions proposed by on-device inference.
+- `app/browser`: reviewed steps or bounded, approved-origin autonomous sessions using on-device inference.
 - `app`: DI, persistence wiring and both UI flavors.
 - `companions/crawler`: optional host-side Crawl4AI service. Python/Chromium are
   not bundled in the APK. `crawl_url` is the built-in bridge tool.
@@ -125,3 +125,38 @@ Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
 contracts. Android synthetic gradients are removed; phone autograd reports
 unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
 remain acceptance gates. Keep phone inference layer sharding/recovery primary.
+
+## Sequential implementation (2026-10-06)
+
+Read `BUILD_MILESTONES.md` and `docs/native-checkpoints.md`. Current native CPU
+checkpoint management is separate from replicated cluster recovery. Preserve
+null/unknown runtime token usage; never count text events or characters as tokens.
+New worker TLS identity needs explicit pin reapproval. Do not reverse inference/
+host lock ordering, retain plaintext cache staging, autoexecute recovered tools,
+or claim physical proof from emulator tests. Lint errors must block the build.
+
+## Cloud and credential continuation (2026-10-06)
+
+Read `docs/cloud-and-credential-management.md`. Cloud inventory/billing commands
+are read adapters; keep vendor service coverage explicit. Human/provider action
+permissions, agent/provider actions, credential-environment agent use, global
+CLOUD delegation and enrolled-device CLOUD approval are separate gates. Never
+return secret values or credentials in tool arguments/results, logs or exports.
+API/SSH/browser consumers must verify purpose, exact service binding and expiry.
+Credential/policy edits remain human-only. Preserve committed request budgets,
+source/fetch timestamps, unknown costs, partial inventories and read-only custom
+functions. A public model catalog is not authenticated account proof.
+
+## Browser, files and guide continuation (2026-10-06)
+
+Read `docs/runanywhere-browser-and-llama.md` and `docs/USER_GUIDE.md`. Browser
+sessions require the visible activity, exact approved origin, independent site/
+agent navigation/input grants, global/device BROWSER scopes, per-step revocation,
+bounded steps/deadline and Stop. Never treat invalid model JSON as a usable action
+or infer real-site task success from DOM fixtures. Preserve human handling for
+credentials/login, CAPTCHA/MFA, forms, payments and destructive operations.
+Archive operations are streaming and user-granted, bounded and cancellable; reject
+unsafe paths/collisions, clean incomplete outputs and retain provider failures.
+Fonts/glass persist; constrained/high-contrast fallback must remain readable.
+Tutorial read progress is not execution evidence. Keep the offline asset guide
+and repository guide synchronized. Do not claim replicated recovery/IaC from UI.

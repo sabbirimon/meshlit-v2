@@ -29,6 +29,8 @@ import java.util.UUID
     var error by remember{mutableStateOf<String?>(null)};var sending by remember{mutableStateOf(false)};var task by remember{mutableStateOf<Job?>(null)}
     val session=remember{UUID.randomUUID().toString()}
     var delegated by remember{mutableStateOf(control.enabled())};var allApps by remember{mutableStateOf(control.allApps())}
+    var installedBrowsers by remember{mutableStateOf<List<Pair<String,String>>>(emptyList())}
+    LaunchedEffect(context){installedBrowsers=withContext(Dispatchers.IO){context.packageManager.queryIntentActivities(Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://example.com")),android.content.pm.PackageManager.MATCH_DEFAULT_ONLY).map{it.activityInfo.packageName to it.loadLabel(context.packageManager).toString()}.distinctBy{it.first}.sortedBy{it.second}}}
     var packages by remember{mutableStateOf(control.packages().sorted().joinToString("\n"))}
     fun run(action:suspend()->Unit){scope.launch{try{action()}catch(e:CancellationException){throw e}catch(e:Exception){error=e.message}}}
     Scaffold(topBar={TopAppBar(title={Text("OpenClaw and autonomy")},navigationIcon={IconButton(onClick=onBack){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")}})}){padding ->
@@ -63,6 +65,12 @@ import java.util.UUID
                     if(on) context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                 }})}
                 Row{Text("All supported apps",Modifier.weight(1f));Switch(allApps,{control.setAllApps(it);allApps=it},enabled=delegated)}}
+            item{Text("Phone web browsers",style=MaterialTheme.typography.titleMedium)
+                Text("Agents can operate an installed browser through android_control open/snapshot/click/type/back after saved app scope and Android Accessibility permission. This uses the external browser's UI, not Meshlit's DOM session. Login/verification needs human input; phone compatibility is not yet tested.")
+                if(installedBrowsers.isEmpty())Text("No visible HTTPS browser found")
+                installedBrowsers.forEach{(packageId,label)->OutlinedButton(enabled=!allApps,onClick={packages=(packages.lines().filter{it.isNotBlank()}+packageId).distinct().joinToString("\n")}){Text("Add $label to app scope")}}
+                Text("Review package names and save the scope below. Selecting a browser does not grant Accessibility or autonomy.",style=MaterialTheme.typography.bodySmall)
+            }
             item{OutlinedTextField(packages,{packages=it},Modifier.fillMaxWidth(),label={Text("Delegated package names, one per line")},minLines=3,enabled=!allApps)
                 Button(onClick={run{control.savePackages(packages.lines().map{it.trim()}.filter{it.isNotBlank()}.toSet())}}){Text("Save app scope")}
                 Button(onClick={control.setEnabled(false);delegated=false;node.disconnect();host.stopSharing();task?.cancel();run{settings.setAndroidAutomationEnabled(false)}}){Text("Emergency stop")}

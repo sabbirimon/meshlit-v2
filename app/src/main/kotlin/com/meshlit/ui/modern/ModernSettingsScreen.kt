@@ -34,6 +34,9 @@ import kotlinx.coroutines.*
     val back={destination=null}
     BackHandler(destination!=null){destination=null}
     if(destination=="behavior"){LocalBehaviorScreen(back,{destination="models"});return}
+    if(destination=="help"){HelpTutorialScreen(back);return}
+    if(destination=="cloud"){CloudManagementScreen(back);return}
+    if(destination=="recovery"){RecoveryScreen(back);return}
     if(destination=="training"){FineTuningScreen(back);return}
     if(destination=="router"){ModelRouterScreen(back);return}
     if(destination=="media"){MediaOptionsScreen(back);return}
@@ -46,7 +49,7 @@ import kotlinx.coroutines.*
     if(destination=="ssh"){SshConnectionsScreen(back);return}
     if(destination=="firewall"){FirewallSettingsScreen(back);return}
     if(destination=="tasks"){TaskManagerScreen(back);return}
-    if(destination=="files"){Column(Modifier.fillMaxSize()){TextButton(onClick=back){Text("Back to settings")};Box(Modifier.weight(1f)){com.meshlit.ui.screens.FilesScreen(onOpenDrawer=back)}};return}
+    if(destination=="files"){FileManagerScreen(back);return}
     if(destination=="termux"){ExistingTermuxSettings(back);return}
     if(destination=="ide"){com.meshlit.ide.CodeWorkspaceScreen(back);return}
     if(destination=="permissions"){com.meshlit.permissions.PermissionSetupScreen(back);return}
@@ -136,6 +139,13 @@ import kotlinx.coroutines.*
         item {Row(verticalAlignment=Alignment.CenterVertically){Text("Color animations",Modifier.weight(1f));Switch(config.animationsEnabled,{write{settings.setAnimationsEnabled(it)}})}}
         item {OutlinedButton(onClick={write{settings.setDynamicColors(false);settings.setCustomPalette(CustomPalette.AnimatedGradient(
             stops=listOf(0xFF6366F1,0xFF14B8A6,0xFFF43F5E),cycleSeconds=18))}}){Text("Use a slowly shifting accent")}}
+        item{Text("UI font",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
+            UiFont.entries.forEach{font->FilterChip(config.uiFont==font,{write{settings.setUiFont(font)}},label={Text(font.label)})}
+        };Text("The quick brown fox — Meshlit 0123456789",style=MaterialTheme.typography.bodyLarge)}
+        item{Text("Surface style",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
+            SurfaceStyle.entries.forEach{style->FilterChip(config.surfaceStyle==style,{write{settings.setSurfaceStyle(style)}},label={Text(style.label)})}
+        };Text("Tinted glass uses translucent surfaces without live blur. Low-memory, power-saving, severe-thermal and high-contrast modes use solid surfaces.",style=MaterialTheme.typography.bodySmall)}
+        item{Row{Text("High contrast / solid surfaces",Modifier.weight(1f));Switch(config.highContrast,{write{settings.setHighContrast(it)}})}}
         item {Text("Font size: ${"%.0f".format(config.fontScale*100)}%")
             Slider(config.fontScale,{value -> write{settings.setFontScale(value)}},valueRange=0.85f..1.5f)}
         error?.let{item{ErrorCard(it){error=null}}}

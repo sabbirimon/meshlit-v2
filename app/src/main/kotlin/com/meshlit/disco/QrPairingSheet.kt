@@ -75,6 +75,7 @@ fun QrPairingSheet(
 ) {
     val sheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
     val payloadJson = remember { ownPayload.encode() }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var pasteField by remember { mutableStateOf("") }
@@ -93,22 +94,22 @@ fun QrPairingSheet(
                     if (parsed != null) {
                         onAddFromString(parsed)
                     } else {
-                        scanError = context.getString(R.string.devices_qr_scan_invalid)
+                        scanError = contextResources.getString(R.string.devices_qr_scan_invalid)
                     }
                 }
                 is QrScanner.ScanResult.Cancelled -> {
                     // user backed out — silent
                 }
                 is QrScanner.ScanResult.PlayServicesMissing -> {
-                    scanError = context.getString(R.string.devices_qr_scan_play_services)
+                    scanError = contextResources.getString(R.string.devices_qr_scan_play_services)
                 }
                 is QrScanner.ScanResult.MissingActivity -> {
-                    scanError = context.getString(R.string.devices_qr_scan_failed)
+                    scanError = contextResources.getString(R.string.devices_qr_scan_failed)
                 }
                 is QrScanner.ScanResult.Failed -> {
-                    scanError = context.getString(
+                    scanError = contextResources.getString(
                         R.string.devices_qr_scan_failed_code,
-                        r.code,
+                        r.code.toString(),
                     )
                 }
             }

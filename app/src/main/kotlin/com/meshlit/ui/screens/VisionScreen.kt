@@ -81,6 +81,7 @@ fun VisionScreen(
     omitHeader: Boolean = false,
 ) {
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
     val app = koinInject<MeshlitApplication>()
     val engine = app.visionEngine
     val scope = rememberCoroutineScope()
@@ -171,7 +172,7 @@ fun VisionScreen(
                         totalMs = event.totalDurationMs
                     }
                     is RunAnywhereVisionEngine.VisionStreamView.Failed ->
-                        statusMessage = context.getString(R.string.vision_failed) +
+                        statusMessage = contextResources.getString(R.string.vision_failed) +
                             ": " + event.message
                     is RunAnywhereVisionEngine.VisionStreamView.BackendMissing -> {
                         backendMissing = true

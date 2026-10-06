@@ -29,6 +29,9 @@ import kotlinx.serialization.Serializable
  *  - **Animated gradient** — same stops, but the brush drifts over
  *    `cycleSeconds` (default 12s — slow, per the user's spec).
  */
+enum class UiFont(val label:String) { FIGTREE("Figtree"), SYSTEM("System sans"), SERIF("Serif"), MONO("Maple Mono") }
+enum class SurfaceStyle(val label:String) { SOLID("Solid"), GLASS("Tinted glass") }
+
 @Immutable
 data class MeshlitThemeConfig(
     val accentHue: AccentHue = AccentHue.MESHLIT,
@@ -36,6 +39,8 @@ data class MeshlitThemeConfig(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColors: Boolean = true,
     val fontScale: Float = 1.0f,
+    val uiFont: UiFont = UiFont.FIGTREE,
+    val surfaceStyle: SurfaceStyle = SurfaceStyle.SOLID,
     val densityScale: Float = 1.0f,
     val animationsEnabled: Boolean = true,
     val highContrast: Boolean = false,

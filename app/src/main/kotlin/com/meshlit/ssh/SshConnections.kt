@@ -6,7 +6,7 @@ import com.meshlit.observability.AppLoggerFactory.appLogger as logger
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-class SshConnections(context:Context) {
+class SshConnections(context:Context,private val vault:com.meshlit.cloud.CloudManagement) {
     private val store=EncryptedCredentialStore(context,"ssh-connections")
     private val json=Json{ignoreUnknownKeys=true};private val _connections=MutableStateFlow(runCatching{store.get("connections")?.let{json.decodeFromString<List<SshConnection>>(it)}}.getOrNull().orEmpty())
     val connections=_connections.asStateFlow()
@@ -16,7 +16,8 @@ class SshConnections(context:Context) {
         val config=_connections.value.firstOrNull{it.id==id} ?: error("SSH connection not found")
         require(!agent || config.agentAllowed){"Agent SSH access is not enabled for this host"}
         val log=logger("SshConnections");log.info("ssh.command.started","Owner-approved SSH command started",mapOf("connectionId" to id))
-        try {val result=SshClient().execute(config,store.get("password-$id"),store.get("key-$id"),command);log.info("ssh.command.finished","SSH command completed",mapOf("connectionId" to id,"exitCode" to result.exitCode.toString()));return result}
+        val env=config.credentialEnvironmentId?.let{vault.serviceCredentials(it,com.meshlit.core.cloudmcp.management.EnvironmentPurpose.SSH,config.host,if(agent) com.meshlit.core.cloudmcp.management.CloudActor.AGENT else com.meshlit.core.cloudmcp.management.CloudActor.HUMAN)}
+        try {val result=SshClient().execute(config,if(env==null) store.get("password-$id") else env["SSH_PASSWORD"],if(env==null) store.get("key-$id") else env["SSH_PRIVATE_KEY"],command);log.info("ssh.command.finished","SSH command completed",mapOf("connectionId" to id,"exitCode" to result.exitCode.toString()));return result}
         catch(e:kotlinx.coroutines.CancellationException){log.info("ssh.command.cancelled","SSH session cancelled",mapOf("connectionId" to id));throw e}
         catch(e:Exception){log.warn("ssh.command.failed","SSH request failed",mapOf("connectionId" to id,"type" to e.javaClass.simpleName));throw e}
     }

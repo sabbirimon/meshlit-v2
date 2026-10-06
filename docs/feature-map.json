@@ -21,6 +21,10 @@
     "CLUSTER_WORKER_START",
     "CLUSTER_STOP",
     "RECOVERY_STATUS",
+    "CHECKPOINT_LIST",
+    "CHECKPOINT_SAVE",
+    "CHECKPOINT_RESTORE",
+    "CHECKPOINT_DELETE",
     "MODEL_STARTUP_SET",
     "TASK_LIST",
     "TASK_CREATE",
@@ -29,7 +33,13 @@
     "TASK_DELETE",
     "WORKSPACE_LIST",
     "WORKSPACE_READ",
-    "WORKSPACE_WRITE"
+    "WORKSPACE_WRITE",
+    "CLOUD_PROFILES",
+    "ENVIRONMENT_PROFILES",
+    "CLOUD_EXECUTE",
+    "BROWSER_STATUS",
+    "BROWSER_AUTONOMOUS_RUN",
+    "BROWSER_STOP"
   ],
   "features": [
     {
@@ -321,13 +331,17 @@
     },
     {
       "id": "browser-agent",
-      "title": "Owner-approved DOM actions from local inference",
-      "status": "implemented",
+      "title": "Visible on-device browser: reviewed steps or bounded autonomous sessions",
+      "status": "implemented-real-model-task-unverified",
       "sources": [
-        "app/src/main/kotlin/com/meshlit/browser/BrowserActivity.kt"
+        "app/src/main/kotlin/com/meshlit/browser/BrowserActivity.kt",
+        "app/src/main/kotlin/com/meshlit/browser/BrowserSessionBroker.kt"
       ],
       "authority": [
-        "owner-action-confirmation"
+        "origin-policy",
+        "BROWSER",
+        "foreground-session",
+        "human-sensitive-actions"
       ]
     },
     {
@@ -380,11 +394,12 @@
     },
     {
       "id": "tutorial",
-      "title": "Optional Skip/Resume/Replay guide and demo",
-      "status": "planned-later",
+      "title": "Offline illustrated guide and eight persisted reading lessons",
+      "status": "implemented",
       "sources": [
-        "PLAN.md",
-        "app/src/main/kotlin/com/meshlit/ui/screens/help/UiTourScreen.kt"
+        "app/src/main/kotlin/com/meshlit/ui/modern/HelpTutorialScreen.kt",
+        "app/src/main/assets/help/index.html",
+        "docs/USER_GUIDE.md"
       ],
       "authority": []
     },
@@ -629,6 +644,45 @@
       ],
       "authority": [],
       "title": "Optional real Soup host fine-tuning"
+    },
+    {
+      "id": "native-local-checkpoints",
+      "title": "Encrypted native CPU KV checkpoints",
+      "status": "implemented",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/recovery/NativeCheckpointStore.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/RecoveryScreen.kt"
+      ],
+      "authority": []
+    },
+    {
+      "id": "cloud-credential-management",
+      "title": "Cloud resource/cost reads and encrypted credential/environment management",
+      "status": "source-built-live-account-acceptance-pending",
+      "sources": [
+        "core-cloud-mcp/src/main/kotlin/com/meshlit/core/cloudmcp/management/CloudProfiles.kt",
+        "core-cloud-mcp/src/main/kotlin/com/meshlit/core/cloudmcp/management/CloudApiClient.kt",
+        "app/src/main/kotlin/com/meshlit/cloud/CloudManagement.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/CloudManagementScreen.kt"
+      ],
+      "authority": [
+        "CLOUD",
+        "per-provider-human-agent",
+        "per-environment",
+        "per-device"
+      ]
+    },
+    {
+      "id": "ai-file-archives",
+      "title": "AI asset inspection and bounded streaming ZIP/unzip",
+      "status": "implemented-device-storage-unverified",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/ui/modern/FileManagerScreen.kt",
+        "app/src/main/kotlin/com/meshlit/files/StreamingZip.kt"
+      ],
+      "authority": [
+        "human-SAF-grants"
+      ]
     }
   ],
   "modules": [

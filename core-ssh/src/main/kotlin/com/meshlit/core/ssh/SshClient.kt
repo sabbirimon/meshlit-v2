@@ -7,8 +7,8 @@ import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.Base64
 
-@Serializable data class SshConnection(val id:String,val name:String,val host:String,val port:Int=22,val username:String,val hostKeySha256:String,val agentAllowed:Boolean=false) {
-    fun validate(){require(id.matches(Regex("[a-zA-Z0-9-]{1,80}")) && name.length in 1..100);require(host.length in 1..253 && host.none{it.isWhitespace() || it in "/@?#"});require(port in 1..65535);require(username.matches(Regex("[a-zA-Z0-9_.-]{1,64}")));require(hostKeySha256.matches(Regex("SHA256:[A-Za-z0-9+/]{43}"))) { "Enter the independently verified SHA256 SSH host-key fingerprint" }}
+@Serializable data class SshConnection(val id:String,val name:String,val host:String,val port:Int=22,val username:String,val hostKeySha256:String,val agentAllowed:Boolean=false,val credentialEnvironmentId:String?=null) {
+    fun validate(){require(credentialEnvironmentId==null || credentialEnvironmentId.matches(Regex("[A-Za-z0-9_-]{1,80}")));require(id.matches(Regex("[a-zA-Z0-9-]{1,80}")) && name.length in 1..100);require(host.length in 1..253 && host.none{it.isWhitespace() || it in "/@?#"});require(port in 1..65535);require(username.matches(Regex("[a-zA-Z0-9_.-]{1,64}")));require(hostKeySha256.matches(Regex("SHA256:[A-Za-z0-9+/]{43}"))) { "Enter the independently verified SHA256 SSH host-key fingerprint" }}
 }
 @Serializable data class SshCommandResult(val exitCode:Int,val stdout:String,val stderr:String,val truncated:Boolean)
 /** Host-key pinning is mandatory. No accept-new, shell agent forwarding or public SSH listener. */

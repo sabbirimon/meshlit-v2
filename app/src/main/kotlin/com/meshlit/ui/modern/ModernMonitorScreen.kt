@@ -66,7 +66,7 @@ fun ModernMonitorScreen() {
         item { MonitorCard("Inference") {
             Text("${coordinator.runtimeDisplayName} · ${runtime.javaClass.simpleName}")
             coordinator.loadedModel()?.let { Text(it.modelName);Text("Model file: ${formatBytes(it.sizeBytes)}");Text("Context: ${if(it.contextSize>0) "${it.contextSize} tokens" else "Not exposed by backend"}") }
-            lastResult?.let { Text("Last response: ${it.generatedTokens} tokens · ${it.totalDurationMs} ms · ${it.tokensPerSecond} tokens/s") }
+            lastResult?.let { Text("Last response: ${it.generatedTokens ?: "Unknown"} tokens · ${it.totalDurationMs} ms · ${it.tokensPerSecond ?: "Unknown"} tokens/s") }
         } }
         item { MonitorCard("Memory and storage") {
             Text("Available RAM: ${formatBytes(memory)} / ${formatBytes(total)}")

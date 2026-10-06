@@ -46,11 +46,11 @@ class RpcPipelineEngine(private val port:Int,private val credential:String,priva
     override suspend fun unloadModel(){info=null;onStop()}
     override suspend fun infer(request:InferenceRequest):MeshlitResult<InferenceResult> = withContext(Dispatchers.IO) {
         if(info==null) return@withContext MeshlitResult.Failure(MeshlitError.Invalid("pipeline.not_loaded"))
-        val started=System.nanoTime();val output=StringBuilder();var tokens=0;var promptTokens=0
+        val started=System.nanoTime();val output=StringBuilder();var tokens:Int?=null;var promptTokens:Int?=null;var rate:Float?=null;var reason=FinishReason.NATURAL_STOP;var cached:Int?=null
         val payload=buildJsonObject {
             put("prompt",request.prompt);put("n_predict",request.maxTokens);put("temperature",request.temperature)
             put("top_p",request.topP);put("top_k",request.topK);put("repeat_penalty",request.repeatPenalty)
-            put("seed",request.seed);put("stream",true);put("cache_prompt",false)
+            put("seed",request.seed);put("stream",true);put("cache_prompt",request.reuseContext)
             put("stop",buildJsonArray{request.stopSequences.forEach {add(it)}})
         }
         val call=client.newCall(Request.Builder().url("http://127.0.0.1:$port/completion")
@@ -72,10 +72,18 @@ class RpcPipelineEngine(private val port:Int,private val credential:String,priva
                             val chunk=Json.parseToJsonElement(data).jsonObject
                             require("error" !in chunk){"Native pipeline reported an error"}
                             val content=chunk["content"]?.jsonPrimitive?.content.orEmpty()
-                            if(content.isNotEmpty()){output.append(content);tokens++;request.onToken(content)}
+                            if(content.isNotEmpty()){output.append(content);request.onToken(content)}
                             if(chunk["stop"]?.jsonPrimitive?.booleanOrNull==true){
-                                tokens=chunk["tokens_predicted"]?.jsonPrimitive?.intOrNull ?: tokens
-                                promptTokens=chunk["tokens_evaluated"]?.jsonPrimitive?.intOrNull ?: 0
+                                // tokens_cached is final slot occupancy; timings.cache_n is reused prompt prefix.
+                                cached=chunk["timings"]?.jsonObject?.get("cache_n")?.jsonPrimitive?.intOrNull?.takeIf{it>=0}
+                                tokens=chunk["tokens_predicted"]?.jsonPrimitive?.intOrNull?.takeIf{it>=0}
+                                promptTokens=chunk["tokens_evaluated"]?.jsonPrimitive?.intOrNull?.takeIf{it>=0}
+                                rate=chunk["timings"]?.jsonObject?.get("predicted_per_second")?.jsonPrimitive?.floatOrNull?.takeIf{it.isFinite() && it>=0}
+                                reason=when {
+                                    chunk["stop_type"]?.jsonPrimitive?.contentOrNull=="limit" || chunk["stopped_limit"]?.jsonPrimitive?.booleanOrNull==true->FinishReason.MAX_TOKENS
+                                    chunk["stop_type"]?.jsonPrimitive?.contentOrNull=="word" || chunk["stopped_word"]?.jsonPrimitive?.booleanOrNull==true->FinishReason.STOP_SEQUENCE
+                                    else->FinishReason.NATURAL_STOP
+                                }
                                 finished=true;break
                             }
                         }
@@ -84,10 +92,10 @@ class RpcPipelineEngine(private val port:Int,private val credential:String,priva
                 } finally {watcher.cancel()}
             }
             val duration=(System.nanoTime()-started)/1_000_000
-            val result=InferenceResult(promptTokens,tokens,duration,if(duration>0) tokens*1000f/duration else 0f,
-                if(tokens>=request.maxTokens) FinishReason.MAX_TOKENS else FinishReason.NATURAL_STOP,output.toString())
+            val result=InferenceResult(promptTokens,tokens,duration,rate,
+                reason,output.toString(),cached)
             request.onComplete(result);MeshlitResult.Success(result)
         } catch(e:CancellationException){throw e}
-        catch(e:Exception){info=null;MeshlitResult.Failure(MeshlitError.Network("pipeline.infer:${e.message}",e))}
+        catch(e:Exception){MeshlitResult.Failure(MeshlitError.Network("pipeline.infer:${e.message}",e))}
     }
 }

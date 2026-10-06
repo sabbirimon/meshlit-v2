@@ -18,6 +18,22 @@ class ClusterNegotiationTest {
             node("denied").copy(workerAllowed=false),node("old").copy(runtimeRevision="old"))
         assertTrue(runCatching{ClusterNegotiation.plan(listOf(master,node("ok"))+bad,hash,100000000,1000)}.isFailure)
     }
+    @Test fun contextKvAndLayerGranularityCanRejectOtherwiseFittingWeights(){
+        val master=node("m").copy(coordinatorAllowed=true,coordinatorModelSha256=hash)
+        val offers=listOf(master,node("a"),node("b"))
+        val accepted=ClusterNegotiation.plan(offers,hash,100000000,1000,kvBytes=10000000,blocks=32)
+        assertEquals(10000000L,accepted.estimatedKvBytes)
+        assertTrue(accepted.estimatedWorkerBytes.zip(accepted.workers).all{(bytes,worker)->bytes<=ClusterNegotiation.budget(worker)})
+        assertThrows(IllegalArgumentException::class.java){ClusterNegotiation.plan(offers,hash,100000000,1000,kvBytes=8L*1024*1024*1024,blocks=32)}
+    }
+    @Test fun coordinatorCannotBeElectedWithoutSchedulingMemory(){
+        val master=node("m",400L*1024*1024).copy(workerAllowed=false,coordinatorAllowed=true,coordinatorModelSha256=hash)
+        assertThrows(IllegalArgumentException::class.java){ClusterNegotiation.plan(listOf(master,node("a"),node("b")),hash,100000000,1000,blocks=32)}
+    }
+    @Test fun untrustedOffersCannotOverflowMemoryArithmetic(){
+        val master=node("m").copy(coordinatorAllowed=true,coordinatorModelSha256=hash)
+        assertThrows(IllegalArgumentException::class.java){ClusterNegotiation.plan(listOf(master,node("a",Long.MAX_VALUE),node("b")),hash,100000000,1000)}
+    }
     @Test fun insufficientMemoryIsRejected(){
         val master=node("m").copy(coordinatorAllowed=true,coordinatorModelSha256=hash)
         assertTrue(runCatching{ClusterNegotiation.plan(listOf(master,node("a"),node("b")),hash,20L*1024*1024*1024,1000)}.isFailure)

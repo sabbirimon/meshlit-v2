@@ -107,11 +107,11 @@ APK. Never claim physical-phone execution from an NDK build alone.
 
 ## Model requirements: finish and prove
 
-The alleged bundled starter asset is absent. Do not show it as installed. Offer
-an explicit verified download. The starter is pinned in `ModelLibrary`:
-SmolLM2-360M-Instruct Q8_0, revision
-`593b5a2e04c8f3e4ee880263f93e0bd2901ad47f`, SHA-256
-`48ab3034d0dd401fbc721eb1df3217902fee7dab9078992d66431f09b7750201`.
+The APK contains the real SmolLM2 135M Instruct Q4_K_M starter (105,454,432
+bytes). `app/src/main/assets/models/bundled-model.json` pins revision and hash:
+`2e8040ceae7815abe0dcb3540b9995eaa1fa0d2ca9e797d0a635ae4433c68c2d`.
+Run `scripts/prepare-bundled-model.py` before building. ModelLibrary also retains
+an optional explicit 360M HTTPS catalog download; it is not the bundled starter.
 
 Exercise fresh download, resume, ignored ranges, 416, changed validator, malformed
 range, redirects, expiring CDN URLs, unknown length, HTML, truncated body, wrong
@@ -275,7 +275,7 @@ until the phone ledger/fencing/native checkpoint work is real and demonstrated.
 
 See `docs/old-android-reuse-review.md`. The old checkout was read-only.
 Files/SAF and audited Termux integration now have modern settings routes.
-Existing help/manual/tour are retained as foundations for the later tutorial.
+The new offline guide and eight reading lessons are wired alongside retained legacy help. Interactive execution walkthroughs remain a follow-up.
 Do not copy stale compatibility or generic OpenClaw scaffolding claims.
 
 ## Structured maps and task/device commands
@@ -332,3 +332,50 @@ remain acceptance gates. Keep phone inference layer sharding/recovery primary.
 For the owner-connected Samsung, follow `docs/physical-device-test-guide.md`;
 Mac USB is detected but actual ADB transport is pending. Never treat emulator
 results or skipped physical checks as phone evidence.
+
+## Sequential milestones continuation
+
+Read `BUILD_MILESTONES.md` and `docs/native-checkpoints.md`. The current schema has
+32 typed operations, including CHECKPOINT_LIST/SAVE/RESTORE/DELETE. Agents require
+saved RECOVERY delegation and remote devices require approved RECOVERY access.
+Native CPU KV snapshots are encrypted and checked against exact model/binary/
+context/precision identity; portable/RPC KV and cluster replication remain pending.
+The corrected TLS v2 identity requires verifying and reapproving old pins. Keep
+inference → host mutex ordering. Lint errors are now fatal; fix actual findings
+instead of adding a baseline/suppression to make a report appear clean.
+
+## Cloud and credentials build handoff
+
+Use `docs/cloud-and-credential-management.md` for source contracts and pending
+vendor acceptance. Dedicated Cloud includes AWS/Azure/DigitalOcean/GCP/OpenRouter
+and configured read-only HTTPS adapters, actual response-derived dashboard values,
+encrypted environments, separate human/agent permissions and bounded request
+admission. Vault references are consumed by online models/media, pinned SSH and
+human-approved origin-checked browser login filling. No full-vendor/OAuth/deployment
+or unattended password-entry claim is permitted. Test real accounts only with
+operator-provided credentials entered locally; keep fixtures out of production.
+
+## Browser, files and guide continuation (2026-10-06)
+
+Read `docs/runanywhere-browser-and-llama.md` and `docs/USER_GUIDE.md`. Browser
+sessions require the visible activity, exact approved origin, independent site/
+agent navigation/input grants, global/device BROWSER scopes, per-step revocation,
+bounded steps/deadline and Stop. Never treat invalid model JSON as a usable action
+or infer real-site task success from DOM fixtures. Preserve human handling for
+credentials/login, CAPTCHA/MFA, forms, payments and destructive operations.
+Archive operations are streaming and user-granted, bounded and cancellable; reject
+unsafe paths/collisions, clean incomplete outputs and retain provider failures.
+Fonts/glass persist; constrained/high-contrast fallback must remain readable.
+Tutorial read progress is not execution evidence. Keep the offline asset guide
+and repository guide synchronized. Do not claim replicated recovery/IaC from UI.
+
+## Latest handoff validation
+
+Both flavors build; full lint 0 errors/337 warnings/17 hints each. Core inference
+260, MCP 107, cloud 65, app 128 per flavor pass; live SSH skipped. Seven actual
+API35 x86_64 emulator checks pass (82.671s), including native encrypted KV
+save/restart/restore, real models/router, vault reopen, public catalog and WebView
+DOM fixtures. Actual native prefix reuse 2, stored/restored occupancy 18. SDK
+usage remains null. Browser fixtures are not real-model/site task success.
+Read PROGRESS.md and ../meshlit-validation/final-emulator-proof.json before
+porting; do not replace physical/credentialed/consensus gates with these checks.

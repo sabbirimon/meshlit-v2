@@ -108,6 +108,7 @@ fun DeviceInfoScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
 
     val title = (uiState as? DeviceInfoUiState.Ready)?.let {
         "${it.role.role.name} · ${it.capabilityTier.name}"
@@ -147,7 +148,7 @@ fun DeviceInfoScreen(
                         if (nodeId.isBlank()) {
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.info_copy_failed),
+                                contextResources.getString(R.string.info_copy_failed),
                                 Toast.LENGTH_SHORT,
                             ).show()
                         } else {
@@ -159,7 +160,7 @@ fun DeviceInfoScreen(
                             )
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.info_node_id_copied),
+                                contextResources.getString(R.string.info_node_id_copied),
                                 Toast.LENGTH_SHORT,
                             ).show()
                         }
@@ -168,7 +169,7 @@ fun DeviceInfoScreen(
                         viewModel.onSaveDisplayName(value)
                         Toast.makeText(
                             context,
-                            context.getString(R.string.info_display_name_saved),
+                            contextResources.getString(R.string.info_display_name_saved),
                             Toast.LENGTH_SHORT,
                         ).show()
                     },

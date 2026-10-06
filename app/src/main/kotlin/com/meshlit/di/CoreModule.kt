@@ -545,16 +545,18 @@ val coreModule = module {
     single { com.meshlit.core.mcp.control.TaskBoard(object:com.meshlit.core.mcp.control.TaskBoardStore {
         private val store=com.meshlit.core.trust.EncryptedCredentialStore(androidContext(),"task-board")
         override suspend fun load():List<com.meshlit.core.mcp.control.ManagedTask> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){store.get("tasks")?.let{kotlinx.serialization.json.Json.decodeFromString(it)} ?: emptyList()}
-        override suspend fun save(tasks:List<com.meshlit.core.mcp.control.ManagedTask>)=kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){store.put("tasks",kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.meshlit.core.mcp.control.ManagedTask.serializer()),tasks));Unit}
+        override suspend fun save(tasks:List<com.meshlit.core.mcp.control.ManagedTask>)=kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){store.putCommitted("tasks",kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.meshlit.core.mcp.control.ManagedTask.serializer()),tasks));Unit}
     },get()) }
-    single { com.meshlit.control.AgentBackend(androidContext(),get(),get(),get(),get(),get(),get(),get(),get()) }
+    single { com.meshlit.browser.BrowserSessionBroker(androidContext()) }
+    single { com.meshlit.control.AgentBackend(androidContext(),get(),get(),get(),get(),get(),get(),get(),get(),get(),get()) }
     single { com.meshlit.openclaw.OpenClawHost(androidContext(),get()) }
     single { com.meshlit.openclaw.OpenClawNode(androidContext(),get(),get(),get()) }
     single { com.meshlit.openclaw.AndroidControl(androidContext(),get()) }
     single { com.meshlit.pipeline.PipelineHost(androidContext(), get(), get()) }
-    single { com.meshlit.ssh.SshConnections(androidContext()) }
+    single { com.meshlit.ssh.SshConnections(androidContext(),get()) }
     single { com.meshlit.training.TrainingHost(androidContext(),get()) }
-    single { com.meshlit.providers.OnlineProviders(androidContext()) }
+    single { com.meshlit.providers.OnlineProviders(androidContext(),get()) }
+    single { com.meshlit.cloud.CloudManagement(androidContext(),get()) }
     single { com.meshlit.configuration.ConfigurationTransfer(androidContext(),get(),get(),get()) }
     single { com.meshlit.media.MediaGeneration(androidContext(),get()) }
     single { com.meshlit.routing.ModelRoutes(androidContext(),get(),get(),get()) }

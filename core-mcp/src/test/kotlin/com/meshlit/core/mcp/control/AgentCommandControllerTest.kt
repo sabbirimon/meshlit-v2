@@ -10,6 +10,14 @@ class AgentCommandControllerTest {
         override suspend fun load()=rows
         override suspend fun save(jobs:List<AgentJob>){rows=jobs.toList()}
     }
+    @Test fun cloudCommandsAreBoundedReferencesAndCannotCarrySecrets(){
+        AgentCommand("cloud",AgentOperation.CLOUD_EXECUTE,cloudProfileId="prod",cloudAction="instances",cloudPage=1).validate()
+        assertThrows(IllegalArgumentException::class.java){AgentCommand("bad",AgentOperation.CLOUD_EXECUTE,cloudProfileId="prod",cloudAction="instances",cloudPage=101).validate()}
+        assertThrows(IllegalArgumentException::class.java){AgentCommand("bad",AgentOperation.CLOUD_EXECUTE,cloudProfileId="prod",cloudAction="https://other.example").validate()}
+        assertTrue(runCatching{Json.decodeFromString<AgentCommand>("""{"requestId":"leak","operation":"CLOUD_EXECUTE","cloudProfileId":"prod","cloudAction":"instances","token":"secret"}""")}.isFailure)
+        val schema=AgentCommandSchema.describe()["properties"]!!.jsonObject
+        assertTrue("cloudAction" in schema && "cloudProfileId" in schema);assertFalse("token" in schema)
+    }
     @Test fun durableAdmissionAndDuplicateIdExecuteOnce()=runTest{
         val store=Memory();var calls=0
         val controller=AgentCommandController(store,backgroundScope){calls++;buildJsonObject{put("ok",true)}}

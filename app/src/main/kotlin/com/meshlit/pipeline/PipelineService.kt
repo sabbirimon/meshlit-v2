@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 import org.koin.core.context.GlobalContext
 class PipelineService:Service() {
     private val scope=CoroutineScope(SupervisorJob()+Dispatchers.Main)
+    private var intentionalStop=false
     private val host get()=GlobalContext.get().get<PipelineHost>()
     override fun onCreate(){super.onCreate()
         if(Build.VERSION.SDK_INT>=26) getSystemService(NotificationManager::class.java).createNotificationChannel(NotificationChannel("meshlit-pipeline","Layer pipeline",NotificationManager.IMPORTANCE_LOW))
@@ -20,9 +21,14 @@ class PipelineService:Service() {
         if(Build.VERSION.SDK_INT>=34) startForeground(708,notice,ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE) else startForeground(708,notice)
     }
     override fun onStartCommand(intent:Intent?,flags:Int,startId:Int):Int {
-        if(intent?.action=="stop") scope.launch{host.stopAll();stopSelf()}
+        if(intent?.action=="stop-if-idle" && !host.active()) intentionalStop=stopSelfResult(startId)
+        if(intent?.action=="stop") scope.launch{host.stopAll();if(!host.active()) intentionalStop=stopSelfResult(startId)}
         return START_NOT_STICKY
     }
-    override fun onDestroy(){scope.cancel();if(host.active()) CoroutineScope(SupervisorJob()+Dispatchers.IO).launch{host.stopAll()};super.onDestroy()}
+    override fun onDestroy(){
+        scope.cancel()
+        if(!intentionalStop){host.serviceDestroyed();if(host.active()) CoroutineScope(SupervisorJob()+Dispatchers.IO).launch{host.stopAll()}}
+        super.onDestroy()
+    }
     override fun onBind(intent:Intent?):IBinder?=null
 }

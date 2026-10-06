@@ -19,8 +19,8 @@ import kotlinx.serialization.json.*
  * Credentials and admitted parameters live in encrypted storage, never log export. */
 class AgentBackend(private val context:Context,private val settings:SettingsRepository,private val library:ModelLibrary,
     private val inference:InferenceCoordinator,private val cluster:PipelineHost,private val scope:CoroutineScope,
-    val taskBoard:TaskBoard,private val workspace:CodeWorkspace,private val online:com.meshlit.providers.OnlineProviders) {
-    enum class Scope { SETTINGS, MODELS, CLUSTER, RECOVERY, TASKS, WORKSPACE, SSH }
+    val taskBoard:TaskBoard,private val workspace:CodeWorkspace,private val online:com.meshlit.providers.OnlineProviders,private val cloud:com.meshlit.cloud.CloudManagement,private val browser:com.meshlit.browser.BrowserSessionBroker) {
+    enum class Scope { SETTINGS, MODELS, CLUSTER, RECOVERY, TASKS, WORKSPACE, SSH, CLOUD, BROWSER }
     private val policy=context.getSharedPreferences("typed-agent-scopes",0)
     private val json=Json{ignoreUnknownKeys=false}
     private val credentials by lazy{EncryptedCredentialStore(context,"agent-job-journal")}
@@ -28,19 +28,22 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         override suspend fun load():List<AgentJob> = withContext(Dispatchers.IO){
             credentials.get("jobs")?.let{json.decodeFromString<List<AgentJob>>(it)} ?: emptyList()
         }
-        override suspend fun save(jobs:List<AgentJob>)=withContext(Dispatchers.IO){credentials.put("jobs",json.encodeToString(jobs));Unit}
+        override suspend fun save(jobs:List<AgentJob>)=withContext(Dispatchers.IO){credentials.putCommitted("jobs",json.encodeToString(jobs));Unit}
     },scope,::executeAgent)
     val humanController=AgentCommandController(object:AgentJobStore{
         override suspend fun load():List<AgentJob> = withContext(Dispatchers.IO){credentials.get("human-jobs")?.let{json.decodeFromString<List<AgentJob>>(it)} ?: emptyList()}
-        override suspend fun save(jobs:List<AgentJob>)=withContext(Dispatchers.IO){credentials.put("human-jobs",json.encodeToString(jobs));Unit}
+        override suspend fun save(jobs:List<AgentJob>)=withContext(Dispatchers.IO){credentials.putCommitted("human-jobs",json.encodeToString(jobs));Unit}
     },scope,::executeHuman)
     fun delegated(scope:Scope)=policy.getBoolean(scope.name,false)
     /** Human-only UI entry. No command may enlarge its own delegation. */
     fun setDelegated(permission:Scope,enabled:Boolean){
-        policy.edit().putBoolean(permission.name,enabled).commit()
+        check(policy.edit().putBoolean(permission.name,enabled).commit()){ "Delegation could not be saved" }
         if(!enabled) scope.launch{controller.ready.await();controller.jobs.value.filter{!it.terminal && required(it.command)==permission}.forEach{controller.cancel(it.command.requestId)}}
     }
     private fun required(command:AgentCommand):Scope?=when(command.operation){
+        AgentOperation.BROWSER_STATUS,AgentOperation.BROWSER_AUTONOMOUS_RUN,AgentOperation.BROWSER_STOP->Scope.BROWSER
+        AgentOperation.CLOUD_PROFILES,AgentOperation.ENVIRONMENT_PROFILES,AgentOperation.CLOUD_EXECUTE->Scope.CLOUD
+        AgentOperation.CHECKPOINT_LIST,AgentOperation.CHECKPOINT_SAVE,AgentOperation.CHECKPOINT_RESTORE,AgentOperation.CHECKPOINT_DELETE->Scope.RECOVERY
         AgentOperation.SETTINGS_PATCH->Scope.SETTINGS
         AgentOperation.MODEL_OPTIONS_SET,AgentOperation.MODEL_IMPORT_SOURCES,AgentOperation.MODEL_STARTUP_SET,AgentOperation.MODEL_DOWNLOAD,AgentOperation.MODEL_ADD_URL,AgentOperation.MODEL_IMPORT,AgentOperation.MODEL_LOAD,AgentOperation.MODEL_GENERATE,AgentOperation.MODEL_UNLOAD,AgentOperation.MODEL_DELETE->Scope.MODELS
         AgentOperation.CLUSTER_PLAN,AgentOperation.CLUSTER_START,AgentOperation.CLUSTER_WORKER_START,AgentOperation.CLUSTER_STOP->Scope.CLUSTER
@@ -55,14 +58,22 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         if(command.operation==AgentOperation.MODEL_GENERATE && command.modelId?.startsWith("cloud:")==true) {
             require(online.profiles.value.firstOrNull{it.id==command.modelId!!.removePrefix("cloud:")}?.agentAllowed==true){"Selected online profile does not allow agents"}
         }
-        return executeHuman(command)
+        if(command.operation in setOf(AgentOperation.CLOUD_PROFILES,AgentOperation.ENVIRONMENT_PROFILES,AgentOperation.CLOUD_EXECUTE)) return executeCloud(command,com.meshlit.core.cloudmcp.management.CloudActor.AGENT)
+        return executeCommand(command,true)
     }
-    suspend fun executeHuman(command:AgentCommand):JsonElement {
+    suspend fun executeHuman(command:AgentCommand):JsonElement=executeCommand(command,false)
+    private suspend fun executeCommand(command:AgentCommand,agent:Boolean):JsonElement {
         command.validate();library.ready.await()
         return when(command.operation){
+            AgentOperation.BROWSER_STATUS->browser.status()
+            AgentOperation.BROWSER_STOP->{withContext(Dispatchers.Main.immediate){browser.stop()};buildJsonObject{put("stopRequested",true)}}
+            AgentOperation.BROWSER_AUTONOMOUS_RUN->browser.run(command.prompt!!,command.browserMaxSteps,agent){
+                if(agent){remoteAuthorizer?.invoke(command);if(!delegated(Scope.BROWSER)) throw AgentCommandFailure("permission_denied","Browser delegation revoked")}
+            }
+            AgentOperation.CLOUD_PROFILES,AgentOperation.ENVIRONMENT_PROFILES,AgentOperation.CLOUD_EXECUTE->executeCloud(command,com.meshlit.core.cloudmcp.management.CloudActor.HUMAN)
             AgentOperation.SETTINGS_READ -> settings.flow.first().let{config ->buildJsonObject{
                 put("themeMode",config.themeMode.name);put("accentHue",config.accentHue.name);put("dynamicColors",config.dynamicColors)
-                put("animationsEnabled",config.animationsEnabled);put("fontScale",config.fontScale);put("startupModelEnabled",library.startupEnabled.value);put("startupModelId",library.startupId.value);put("startupModelStatus",library.startupStatus.value)
+                put("uiFont",config.uiFont.name);put("surfaceStyle",config.surfaceStyle.name);put("animationsEnabled",config.animationsEnabled);put("fontScale",config.fontScale);put("startupModelEnabled",library.startupEnabled.value);put("startupModelId",library.startupId.value);put("startupModelStatus",library.startupStatus.value)
                 put("delegation",buildJsonObject{Scope.entries.forEach{put(it.name,delegated(it))}})
             }}
             AgentOperation.SETTINGS_PATCH -> {
@@ -70,8 +81,10 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
                 // Validate all fields before the first write.
                 val mode=patch.themeMode?.let{value ->ThemeMode.entries.firstOrNull{it.name==value} ?: throw AgentCommandFailure("invalid_args","Unknown themeMode")}
                 val accent=patch.accentHue?.let{value ->AccentHue.entries.firstOrNull{it.name==value} ?: throw AgentCommandFailure("invalid_args","Unknown accentHue")}
+                val font=patch.uiFont?.let{value->UiFont.entries.firstOrNull{it.name==value} ?: throw AgentCommandFailure("invalid_args","Unknown UI font")}
+                val surface=patch.surfaceStyle?.let{value->SurfaceStyle.entries.firstOrNull{it.name==value} ?: throw AgentCommandFailure("invalid_args","Unknown surface style")}
                 patch.fontScale?.let{if(!it.isFinite() || it !in 0.85f..1.5f) throw AgentCommandFailure("invalid_args","fontScale outside 0.85–1.5")}
-                mode?.let{settings.setThemeMode(it)};accent?.let{settings.setAccentHue(it)}
+                font?.let{settings.setUiFont(it)};surface?.let{settings.setSurfaceStyle(it)};mode?.let{settings.setThemeMode(it)};accent?.let{settings.setAccentHue(it)}
                 patch.dynamicColors?.let{settings.setDynamicColors(it)};patch.animationsEnabled?.let{settings.setAnimationsEnabled(it)};patch.fontScale?.let{settings.setFontScale(it)}
                 executeHuman(command.copy(operation=AgentOperation.SETTINGS_READ))
             }
@@ -101,7 +114,7 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
             AgentOperation.MODEL_LOAD -> {library.load(command.modelId!!);buildJsonObject{put("loaded",inference.loadedModel()!=null);put("modelId",command.modelId)}}
             AgentOperation.MODEL_GENERATE -> {
                 if(command.modelId!!.startsWith("cloud:")) {
-                    val (profile,reply)=online.generate(command.modelId!!.removePrefix("cloud:"),listOf(com.meshlit.core.inference.models.OnlineMessage("user",command.prompt!!)),maxTokens=command.maxTokens,temperature=command.temperature)
+                    val (profile,reply)=online.generate(command.modelId!!.removePrefix("cloud:"),listOf(com.meshlit.core.inference.models.OnlineMessage("user",command.prompt!!)),maxTokens=command.maxTokens,temperature=command.temperature,agent=agent)
                     buildJsonObject{put("text",reply.text);put("online",true);reply.inputTokens?.let{put("promptTokens",it)};reply.outputTokens?.let{put("generatedTokens",it)};reply.estimatedCost(profile)?.let{put("estimatedCost",it);put("currency",profile.currency)}}
                 } else {
                 val path=modelPath(command.modelId!!)
@@ -120,10 +133,12 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
                 cluster.status.value.coordinatorId?.let{put("coordinatorId",it)}
             }
             AgentOperation.CLUSTER_PLAN -> {
-                val peers=cluster.negotiate(modelPath(command.modelId!!))
+                val options=library.models.value.first{it.id==command.modelId}.runtimeOptions
+                val peers=cluster.negotiate(modelPath(command.modelId!!),options.contextSize,options.keyCacheType)
                 buildJsonObject{put("workers",buildJsonArray{peers.forEachIndexed{index,peer ->add(buildJsonObject{put("index",index);put("weight",peer.weight)})}})
                     put("coordinatorId",cluster.status.value.coordinatorId.orEmpty());put("memoryBudgetBytes",cluster.status.value.memoryBudgetBytes)
-                    put("placement","layer");put("remoteCoordinatorActivation",false)}
+                    put("estimatedKvBytes",cluster.status.value.estimatedKvBytes);put("estimatedWorkerBytes",Json.encodeToJsonElement(cluster.status.value.estimatedWorkerBytes))
+                    put("placement","layer");put("memoryReserved",false);put("remoteCoordinatorActivation",false)}
             }
             AgentOperation.CLUSTER_START -> {cluster.startPipeline(modelPath(command.modelId!!),library.models.value.first{it.id==command.modelId}.runtimeOptions.contextSize,library.models.value.first{it.id==command.modelId}.runtimeOptions.keyCacheType);executeHuman(command.copy(operation=AgentOperation.CLUSTER_STATUS))}
             AgentOperation.CLUSTER_WORKER_START -> {cluster.startWorker();executeHuman(command.copy(operation=AgentOperation.CLUSTER_STATUS))}
@@ -137,10 +152,23 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
             AgentOperation.WORKSPACE_LIST -> withContext(Dispatchers.IO){json.encodeToJsonElement(workspace.list())}
             AgentOperation.WORKSPACE_READ -> withContext(Dispatchers.IO){json.encodeToJsonElement(workspace.read(command.fileName!!))}
             AgentOperation.WORKSPACE_WRITE -> withContext(Dispatchers.IO){json.encodeToJsonElement(workspace.write(command.fileName!!,command.fileText!!,command.expectedSha256))}
+            AgentOperation.CHECKPOINT_LIST->json.encodeToJsonElement(cluster.checkpointList())
+            AgentOperation.CHECKPOINT_SAVE->json.encodeToJsonElement(cluster.saveCheckpoint())
+            AgentOperation.CHECKPOINT_RESTORE->json.encodeToJsonElement(cluster.restoreCheckpoint(command.checkpointId!!))
+            AgentOperation.CHECKPOINT_DELETE->{cluster.deleteCheckpoint(command.checkpointId!!);buildJsonObject{put("deleted",true)}}
             AgentOperation.RECOVERY_STATUS -> buildJsonObject{
                 put("localJobJournal",true);put("replayPolicy","explicit-new-id-after-live-state-check")
-                put("replicatedTaskJournal",false);put("automaticCoordinatorFailover",false);put("portableKvRecovery",false)
+                put("replicatedTaskJournal",false);put("automaticCoordinatorFailover",false);put("nativeLocalKvCheckpoints",true);put("checkpointManagement","CHECKPOINT_LIST/SAVE/RESTORE/DELETE; saved recovery delegation required");put("portableKvRecovery",false)
             }
+        }
+    }
+    private suspend fun executeCloud(command:AgentCommand,actor:com.meshlit.core.cloudmcp.management.CloudActor):JsonElement {
+        command.validate()
+        return when(command.operation){
+            AgentOperation.CLOUD_PROFILES->json.encodeToJsonElement(cloud.descriptions(actor).profiles)
+            AgentOperation.ENVIRONMENT_PROFILES->json.encodeToJsonElement(cloud.descriptions(actor).environments)
+            AgentOperation.CLOUD_EXECUTE->json.encodeToJsonElement(cloud.execute(command.cloudProfileId!!,command.cloudAction!!,actor,command.cloudPage))
+            else->error("Unknown cloud command")
         }
     }
     private fun modelPath(id:String)=library.models.value.firstOrNull{it.id==id && it.installed}?.path
@@ -154,7 +182,7 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         },
         McpToolSpec("agent_job_status","List observable command jobs or inspect one requestId. Parameters/URLs/credentials are omitted.",objectSchema(mapOf("requestId" to stringProp()))){args ->
             controller.ready.await();val id=(args as? JsonObject)?.get("requestId")?.jsonPrimitive?.contentOrNull
-            McpToolResult.Json(buildJsonObject{put("jobs",buildJsonArray{controller.jobs.value.filter{id==null || it.command.requestId==id}.forEach{add(publicJob(it))}})})
+            McpToolResult.Json(buildJsonObject{put("jobs",buildJsonArray{controller.jobs.value.filter{(id==null || it.command.requestId==id) && (required(it.command)?.let{permission->delegated(permission)}!=false)}.forEach{add(publicJob(it))}})})
         },
         McpToolSpec("agent_job_cancel","Cancel a queued/running command. Completed OS actions are not rolled back.",objectSchema(mapOf("requestId" to stringProp()),listOf("requestId"))){args ->
             val id=(args as JsonObject)["requestId"]!!.jsonPrimitive.content
@@ -171,7 +199,7 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         McpToolSpec("agent_command_schema","Discover typed command operations and scope requirements without navigating the UI."){
             McpToolResult.Json(buildJsonObject{put("version",1);put("schema",AgentCommandSchema.describe());put("operations",buildJsonArray{AgentOperation.entries.forEach{op ->add(buildJsonObject{put("operation",op.name)
                 put("delegation",required(AgentCommand("schema",op))?.name ?: "READ_ONLY")})}})
-                put("commandFields",buildJsonArray{listOf("requestId","operation","modelId","url","name","importUri","appearance","prompt","maxTokens","temperature","startupEnabled","task","fileName","fileText","expectedSha256").forEach{add(it)}})})
+                put("commandFields",buildJsonArray{listOf("requestId","operation","modelId","url","name","importUri","appearance","prompt","maxTokens","temperature","startupEnabled","task","fileName","fileText","expectedSha256","checkpointId","cloudProfileId","cloudAction","cloudPage","browserMaxSteps").forEach{add(it)}})})
         }
     )
     fun publicJob(job:AgentJob)=buildJsonObject{

@@ -3,31 +3,23 @@
 Updated 2026-10-06. Real bundled generation now passes on the API35 x86_64
 emulator; this document records unresolved correctness work, not fake failures.
 
-## Stream events are incorrectly counted as tokenizer tokens
+## Stream accounting corrected; SDK native usage still unavailable
 
-`RunAnywhereInferenceEngine.infer` increments `tokensEmitted` for nonempty text
-events and uses that count for generatedTokens, tokensPerSecond and an extra
-max-token stop condition. It also sets promptTokens to zero without a measured
-prompt count. SDK text event boundaries are not reliable tokenizer boundaries.
+The app no longer counts text deltas as tokens or truncates generation after a
+number of callbacks. Native max_tokens/stop options bound generation. Missing
+terminal completion fails, and unavailable usage is null in result/UI/wire types.
 
-Observed reproduction: the real SmolLM2 bundled test produced
-`Hello, hello, hello.`. The native backend reported **6 tokens**; the wrapper
-reported **3**. Evidence: `../../meshlit-validation/bundled-model-native-evidence.log`.
-This is a metrics bug, not proof that generation is fabricated. Rates and prompt
-counts from this wrapper must not be used for billing, placement benchmarks or
-an accurate token meter until corrected.
+Pinned RunAnywhere 0.20.12 final metadata still reports 3 completion tokens for
+`Hello, hello, hello.`, previously measured as 6 tokens by its native backend.
+Its public stream result does not establish whether counts are measured or
+estimated. Those SDK usage figures are suppressed; do not use them for billing
+or native throughput. A future SDK change must expose measured counters with
+provenance and agree with actual backend evidence before this gate is removed.
 
-Fix guide: inspect the **pinned 0.20.12** stream/result schema and completion
-metadata, use native/SDK tokenizer usage when actually available, and represent
-unavailable usage explicitly in shared result/UI contracts. Keep text callback
-counts separate. Let the native max_tokens option bound generation rather than
-treating text chunks as token units. Preserve cancellation, stop-sequence handling
-and backend failures. Check all stop sequences, not just the first. Do not derive
-token counts from characters or words or silently substitute zeros.
-
-Acceptance: real native output and public result agree when usage is supplied;
-multiple tokens in one chunk and split text events do not change reported usage;
-unavailable usage remains visibly unknown; max-token/stop/cancellation cases work.
+The standalone native adapter reads tokens_predicted, tokens_evaluated,
+tokens_cached and decode throughput from the native completion response.
+Context/path checks and real native checkpoint reuse now have emulator evidence.
+Read `native-checkpoints.md` and the latest PROGRESS entry.
 
 ## Physical-device and resource gates
 

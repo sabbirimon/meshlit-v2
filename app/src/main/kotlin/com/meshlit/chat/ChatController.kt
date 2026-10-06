@@ -103,12 +103,13 @@ class ChatController(private val context:Context,private val coordinator:Inferen
                     append("user: ").append(user.text)
                 }
                 val buffer=StringBuilder()
-                val result=coordinator.infer(InferenceRequest(prompt=prompt,maxTokens=options.maxTokens,temperature=options.temperature,onToken={ token ->
+                val result=coordinator.infer(InferenceRequest(prompt=prompt,maxTokens=options.maxTokens,temperature=options.temperature,reuseContext=coordinator.engineTag=="llama-native-local",onToken={ token ->
                     buffer.append(token)
                     _state.update { old -> old.copy(conversations=old.conversations.map { c ->
                         if(c.id==selected) c.copy(messages=c.messages.map { if(it.id==assistant.id) it.copy(text=buffer.toString()) else it }) else c }) }
                 }))
                 if(result is MeshlitResult.Failure) error(result.error.tag)
+                if(result is MeshlitResult.Success) _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(usageNote="Input ${result.value.promptTokens ?: "unknown"}, output ${result.value.generatedTokens ?: "unknown"} tokens · cached ${result.value.cachedPromptTokens ?: "unknown"}") else c})}
                 }
             } catch(cancelled:CancellationException) { throw cancelled }
             catch(error:Exception) { _state.update { it.copy(error=error.message ?: "Generation failed") } }

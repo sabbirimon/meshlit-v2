@@ -171,16 +171,9 @@ android {
         noCompress += "gguf"
     }
 
-    // Phase 7 — lint config. Default Android lint runs without a config
-    // block, which leaves every default rule on and emits hundreds of
-    // MissingTranslation / HardcodedText / IconLocation warnings that
-    // have always been benign. We keep lint non-fatal (the gate is
-    // "no NEW warnings introduced", not "zero warnings") and disable
-    // the two rules that are noisy by default. `abortOnError = true`
-    // would block a release build on any pre-existing warning; flipping
-    // it on only after the lint tree is clean is a follow-up.
+    // Errors block builds; existing warning cleanup is tracked separately.
     lint {
-        abortOnError = false
+        abortOnError = true
         warningsAsErrors = false
         checkReleaseBuilds = true
         disable += setOf(

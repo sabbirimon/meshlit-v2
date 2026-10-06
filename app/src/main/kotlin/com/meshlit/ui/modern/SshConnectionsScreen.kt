@@ -25,6 +25,8 @@ import java.util.UUID
         editing?.let{profile->item{Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
             OutlinedTextField(profile.name,{editing=profile.copy(name=it)},label={Text("Name")});OutlinedTextField(profile.host,{editing=profile.copy(host=it)},label={Text("Host / IP")});OutlinedTextField(profile.port.toString(),{value->value.toIntOrNull()?.let{editing=profile.copy(port=it)}},label={Text("Port")});OutlinedTextField(profile.username,{editing=profile.copy(username=it)},label={Text("Username")})
             OutlinedTextField(profile.hostKeySha256,{editing=profile.copy(hostKeySha256=it)},label={Text("Verified SHA256: host-key fingerprint")})
+            OutlinedTextField(profile.credentialEnvironmentId.orEmpty(),{editing=profile.copy(credentialEnvironmentId=it.takeIf{value->value.isNotBlank()})},label={Text("Optional Cloud vault environment ID (bound to this host)")},singleLine=true)
+            Text("A vault reference overrides the credentials below and uses SSH_PASSWORD or SSH_PRIVATE_KEY. Agent use also needs environment delegation.")
             OutlinedTextField(password,{password=it},label={Text("Password (blank keeps saved credential)")},visualTransformation=PasswordVisualTransformation())
             OutlinedTextField(key,{key=it},label={Text("Or unencrypted private key PEM/OpenSSH")},visualTransformation=PasswordVisualTransformation(),maxLines=3)
             Row{Text("Allow agent commands to this host",Modifier.weight(1f));Switch(profile.agentAllowed,{editing=profile.copy(agentAllowed=it)})}

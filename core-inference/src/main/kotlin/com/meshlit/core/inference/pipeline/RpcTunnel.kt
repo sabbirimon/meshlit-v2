@@ -47,7 +47,7 @@ class RpcTunnel private constructor(
                         }
                         try {incoming.getInputStream().copyTo(target.getOutputStream(),64*1024)}
                         finally {runCatching{incoming.close()};runCatching{target.close()};reverse.cancel(true)}
-                    } catch(e:Exception) {if(!closed && e !is CapabilityComplete) onError("RPC channel closed: ${e.javaClass.simpleName}")}
+                    } catch(e:Exception) {if(!closed && e !is CapabilityComplete) onError(if(e is IllegalArgumentException && e.message=="Network policy denied") "RPC channel denied by listener firewall" else if(e is SSLHandshakeException) "RPC TLS handshake failed: ${e.message?.take(250)}" else "RPC channel closed: ${e.javaClass.simpleName}")}
                     finally {
                         sockets.remove(incoming);runCatching{incoming.close()}
                         remote?.let {sockets.remove(it);runCatching{it.close()}}

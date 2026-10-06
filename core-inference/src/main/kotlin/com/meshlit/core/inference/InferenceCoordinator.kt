@@ -289,6 +289,7 @@ class InferenceCoordinator(
     /** Display name of the active runtime for the status card. */
     val runtimeDisplayName: String
         get() = when {
+            externalEngine?.engineTag == "llama-native-local" -> "llama.cpp local CPU"
             externalEngine != null -> "llama.cpp layer pipeline"
             runAnywhereEngine.isInitialized() -> "RunAnywhere llama.cpp"
             lastRuntime?.displayName != null -> lastRuntime?.displayName!!
@@ -511,6 +512,12 @@ class InferenceCoordinator(
         }
     }
 
+    /** Native administrative operations share the same lock as generation and replacement. */
+    suspend fun <T> withExternalEngine(tag:String,operation:suspend()->T):T=inferMutex.withLock {
+        check(_state.value is CoordinatorState.Ready && externalEngine?.engineTag==tag && externalEngine?.isReady()==true){"Load the required native runtime first"}
+        operation()
+    }
+
     suspend fun unloadModel() = inferMutex.withLock {
         externalEngine?.unloadModel(); externalEngine = null
         _loadedShards.value = emptyList()
@@ -555,6 +562,8 @@ class InferenceCoordinator(
                 // `no_engine_for_infer` failure instead of a
                 // misleading success.
                 val targetEngine = pickEngineForInfer(request)
+                if(request.onDeviceOnly && targetEngine.engineTag !in setOf("runanywhere","onnx-ort","llama-native-local"))
+                    return@withContext MeshlitResult.Failure(com.meshlit.core.common.MeshlitError.Invalid("coord.inference.on_device_required"))
                 if (!targetEngine.isReady()) {
                     return@withContext MeshlitResult.Failure(
                         com.meshlit.core.common.MeshlitError.Invalid("coord.inference.not_loaded"),
@@ -565,7 +574,7 @@ class InferenceCoordinator(
                     runtime = lastRuntime,
                     format = lastFormat,
                 )
-                _events.tryEmit(InferenceEvent.GenerationStarted(request.prompt))
+                if(request.publishEvents) _events.tryEmit(InferenceEvent.GenerationStarted(request.prompt))
                 // Run inference directly on the caller's coroutine so
                 // [cancel] (which cancels the FGS-bound job) propagates
                 // through `coroutineContext.ensureActive()` in the
@@ -578,7 +587,7 @@ class InferenceCoordinator(
                     val effectiveRequest = try { request.copy(prompt=localBehavior().decorate(request.prompt)) }
                     catch(e:IllegalArgumentException){return@withContext MeshlitResult.Failure(com.meshlit.core.common.MeshlitError.Invalid("local_behavior: ${e.message}"))}
                     val result = targetEngine.infer(effectiveRequest)
-                    _events.tryEmit(InferenceEvent.GenerationFinished(result))
+                    if(request.publishEvents) _events.tryEmit(InferenceEvent.GenerationFinished(result))
                     if (targetEngine.isReady()) {
                         _state.value = CoordinatorState.Ready(
                             targetEngine.loadedModel()!!,

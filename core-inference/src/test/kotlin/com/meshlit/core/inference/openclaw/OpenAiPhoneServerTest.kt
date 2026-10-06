@@ -21,6 +21,12 @@ class OpenAiPhoneServerTest {
         if(data!=null) builder.post(data.toRequestBody("application/json".toMediaType()))
         return OkHttpClient().newCall(builder.build()).execute()
     }
+    @Test fun unknownUsageIsOmittedForStrictOpenAiClients(){
+        val server=OpenAiPhoneServer("127.0.0.1",0,token,{info}){
+            MeshlitResult.Success(InferenceResult(null,null,20,null,FinishReason.NATURAL_STOP,"test response"))
+        };server.start()
+        try{request(server).use{assertEquals(200,it.code);assertFalse("usage" in Json.parseToJsonElement(it.body!!.string()).jsonObject)}}finally{server.stop()}
+    }
     @Test fun authAndNoModelAreExplicit(){
         val server=server(false);server.start()
         try{request(server,auth="wrong").use{assertEquals(401,it.code)}

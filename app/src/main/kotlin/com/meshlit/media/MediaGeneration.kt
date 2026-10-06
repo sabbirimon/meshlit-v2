@@ -34,7 +34,7 @@ class MediaGeneration(private val context:Context,private val providers:OnlinePr
     }
     private fun save(items:List<SavedVideo>){store.put("videos",Json.encodeToString(items));_videos.value=items}
     suspend fun generate(profileId:String,kind:String,model:String,prompt:String,voice:String="coral",image:Uri?=null):MediaResult=lock.withLock {
-        val p=profile(profileId);val key=providers.token(profileId)
+        val p=profile(profileId);val key=providers.resolveToken(p)
         when(kind){
             "image"->MediaResult(client.image(p,key,model,prompt,target("png")),"image/png")
             "speech"->MediaResult(client.speech(p,key,model,prompt,voice,target("wav")),"audio/wav")
@@ -45,13 +45,13 @@ class MediaGeneration(private val context:Context,private val providers:OnlinePr
     }
     suspend fun refresh(video:SavedVideo)=lock.withLock {
         val p=profile(video.profileId);require(p.endpoint==video.endpoint){"Profile endpoint changed; refusing to send the old job reference"}
-        val updated=video.copy(job=client.videoStatus(p,providers.token(p.id),video.job.id))
+        val updated=video.copy(job=client.videoStatus(p,providers.resolveToken(p),video.job.id))
         save(_videos.value.map{if(it.profileId==video.profileId && it.job.id==video.job.id) updated else it})
     }
     suspend fun download(video:SavedVideo):MediaResult=lock.withLock {
         require(video.job.status=="completed"){"Video is not complete"}
         val p=profile(video.profileId);require(p.endpoint==video.endpoint)
-        MediaResult(client.videoContent(p,providers.token(p.id),video.job.id,target("mp4")),"video/mp4")
+        MediaResult(client.videoContent(p,providers.resolveToken(p),video.job.id,target("mp4")),"video/mp4")
     }
     fun forget(video:SavedVideo){save(_videos.value.filterNot{it.profileId==video.profileId && it.job.id==video.job.id})}
     fun files()=directory.listFiles().orEmpty().filter{it.isFile && it.extension in setOf("png","wav","mp4")}.sortedByDescending{it.lastModified()}

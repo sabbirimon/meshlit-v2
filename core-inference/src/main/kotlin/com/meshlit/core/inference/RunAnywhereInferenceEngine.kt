@@ -19,7 +19,6 @@ import com.runanywhere.sdk.public.types.RAModelLoadRequest
 import ai.runanywhere.proto.v1.DownloadProgress
 import ai.runanywhere.proto.v1.InferenceFramework
 import ai.runanywhere.proto.v1.LLMStreamEvent
-import ai.runanywhere.proto.v1.LLMStreamEventKind
 import ai.runanywhere.proto.v1.ModelCategory
 import ai.runanywhere.proto.v1.SDKEnvironment
 import kotlinx.coroutines.CoroutineDispatcher
@@ -353,17 +352,10 @@ class RunAnywhereInferenceEngine(
                 ?: return@withContext MeshlitResult.Failure(
                     com.meshlit.core.common.MeshlitError.Invalid("runanywhere.not_loaded"),
                 )
+            if(request.reuseContext) return@withContext MeshlitResult.Failure(com.meshlit.core.common.MeshlitError.Invalid("runanywhere.explicit_cache_reuse_unavailable"))
             val started = System.currentTimeMillis()
-            val accumulator = StringBuilder()
-            var stopReason = FinishReason.NATURAL_STOP
-            var tokensEmitted = 0
+            val accounting=SdkStreamAccounting()
             try {
-                // The SDK emits one flow event per token with a
-                // terminal event whose `is_final == true`. We map
-                // each non-terminal event into a single-token chunk
-                // for the existing `onToken` callback contract used
-                // by `NoOpInferenceEngine`'s fallback path and
-                // `OnnxOrtInferenceEngine`'s downstream consumers.
                 val events: Flow<LLMStreamEvent> = RunAnywhere.generateStream(
                     prompt = request.prompt,
                     options = ai.runanywhere.proto.v1.LLMGenerationOptions(
@@ -374,34 +366,10 @@ class RunAnywhereInferenceEngine(
                     ),
                 )
                 events.collect { event ->
-                    if (event.event_kind == LLMStreamEventKind.LLM_STREAM_EVENT_KIND_TOKEN &&
-                        event.token.isNotEmpty()
-                    ) {
-                        coroutineContext.ensureActive()
-                        val text = event.token
-                        accumulator.append(text)
-                        tokensEmitted += 1
-                        request.onToken(text)
-                        if (request.stopSequences.isNotEmpty() &&
-                            accumulator.toString().contains(request.stopSequences.first())
-                        ) {
-                            stopReason = FinishReason.STOP_SEQUENCE
-                            throw StopIterationSentinel()
-                        }
-                        if (tokensEmitted >= request.maxTokens) {
-                            stopReason = FinishReason.MAX_TOKENS
-                            throw StopIterationSentinel()
-                        }
-                    } else if (event.is_final) {
-                        // Natural end-of-stream.
-                        return@collect
-                    }
+                    coroutineContext.ensureActive()
+                    accounting.accept(event)?.let{request.onToken(it)}
                 }
-            } catch (sentinel: StopIterationSentinel) {
-                // Co-operative early-exit. `stopReason` was set before
-                // we threw. Swallow and fall through to result build.
             } catch (t: kotlinx.coroutines.CancellationException) {
-                stopReason = FinishReason.CANCELLED
                 // Re-throw so the calling coroutine observes the cancel.
                 throw t
             } catch (t: Throwable) {
@@ -418,24 +386,18 @@ class RunAnywhereInferenceEngine(
                 )
             }
             val durationMs = System.currentTimeMillis() - started
-            val tps = if (durationMs > 0) tokensEmitted * 1000f / durationMs else 0f
-            val result = InferenceResult(
-                promptTokens = 0,
-                generatedTokens = tokensEmitted,
-                totalDurationMs = durationMs,
-                tokensPerSecond = tps,
-                finishReason = stopReason,
-                finalText = accumulator.toString(),
-            )
+            val result=try {accounting.finish(durationMs)} catch(e:IllegalStateException){
+                return@withContext MeshlitResult.Failure(com.meshlit.core.common.MeshlitError.Native("runanywhere.incomplete_stream",e))
+            }
             request.onComplete(result)
             log.info(
                 "runanywhere.infer.done",
                 "RunAnywhere generation complete",
                 mapOf(
                     "model" to info.modelName,
-                    "tokens" to tokensEmitted,
+                    "tokens" to result.generatedTokens,
                     "durationMs" to durationMs,
-                    "reason" to stopReason.tag,
+                    "reason" to result.finishReason.tag,
                 ),
             )
             MeshlitResult.Success(result)
@@ -651,9 +613,3 @@ data class DownloadProgressView(
     val state: String,
     val error: String?,
 )
-
-/** Internal sentinel — local-only control flow, not the SDK's
- *  `CancellationException`. Must extend `Throwable` so we can
- *  `throw` it inside a `flow.collect` block and unwind to the
- *  outer `try { … } catch (sentinel: StopIterationSentinel)`. */
-private class StopIterationSentinel : Throwable()

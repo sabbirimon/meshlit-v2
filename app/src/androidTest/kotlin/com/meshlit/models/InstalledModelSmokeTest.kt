@@ -58,7 +58,9 @@ class InstalledModelSmokeTest {
                 temperature=0f,seed=42,onToken={output.append(it)}))
             assertTrue("Real bundled generation failed: $result",result is MeshlitResult.Success)
             assertTrue("Bundled generation produced no text",output.isNotBlank())
-            println("MESHLIT_REAL_BUNDLED_MODEL sha256=${manifest.sha256} output=$output")
+            val usage=(result as MeshlitResult.Success).value
+            assertTrue("SDK exceeded its native generation bound",usage.generatedTokens==null || usage.generatedTokens!! in 1..16)
+            println("MESHLIT_REAL_BUNDLED_MODEL sha256=${manifest.sha256} promptTokens=${usage.promptTokens} generatedTokens=${usage.generatedTokens} tokensPerSecond=${usage.tokensPerSecond} output=$output")
             coordinator.unloadModel();assertNull(coordinator.loadedModel())
         }
     }

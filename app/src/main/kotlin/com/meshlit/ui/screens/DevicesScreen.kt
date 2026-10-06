@@ -140,6 +140,7 @@ fun DevicesScreen(
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
     val app = remember { koinInject<MeshlitApplication>() }
     val settings = remember { koinInject<com.meshlit.settings.SettingsRepository>() }
     val scope = rememberCoroutineScope()
@@ -569,6 +570,7 @@ private fun PairingCard(
     onShowQr: () -> Unit,
 ) {
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
     val clipboard = LocalClipboardManager.current
     val payloadJson = remember { ownPayload.encode() }
 
@@ -789,6 +791,7 @@ private fun QrPairingSheet(
 ) {
     val sheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
     val payloadJson = remember { ownPayload.encode() }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     var pasteField by remember { mutableStateOf("") }
@@ -814,22 +817,22 @@ private fun QrPairingSheet(
                     if (parsed != null) {
                         onAddFromString(parsed)
                     } else {
-                        scanError = context.getString(R.string.devices_qr_scan_invalid)
+                        scanError = contextResources.getString(R.string.devices_qr_scan_invalid)
                     }
                 }
                 is QrScanner.ScanResult.Cancelled -> {
                     // user backed out — silent
                 }
                 is QrScanner.ScanResult.PlayServicesMissing -> {
-                    scanError = context.getString(R.string.devices_qr_scan_play_services)
+                    scanError = contextResources.getString(R.string.devices_qr_scan_play_services)
                 }
                 is QrScanner.ScanResult.MissingActivity -> {
-                    scanError = context.getString(R.string.devices_qr_scan_failed)
+                    scanError = contextResources.getString(R.string.devices_qr_scan_failed)
                 }
                 is QrScanner.ScanResult.Failed -> {
-                    scanError = context.getString(
+                    scanError = contextResources.getString(
                         R.string.devices_qr_scan_failed_code,
-                        r.code,
+                        r.code.toString(),
                     )
                 }
             }
@@ -946,12 +949,13 @@ private fun VpnImportCard(
     var portText by remember { mutableStateOf("51820") }
     var savedMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val contextResources=androidx.compose.ui.platform.LocalResources.current
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         if (uri != null) {
             onImportFromFile(uri)
-            savedMessage = context.getString(R.string.devices_vpn_imported, uri.lastPathSegment ?: "profile")
+            savedMessage = contextResources.getString(R.string.devices_vpn_imported, uri.lastPathSegment ?: "profile")
         }
     }
 
@@ -1028,11 +1032,11 @@ private fun VpnImportCard(
             Button(
                 onClick = {
                     if (host.isBlank()) {
-                        savedMessage = context.getString(R.string.devices_vpn_invalid)
+                        savedMessage = contextResources.getString(R.string.devices_vpn_invalid)
                         return@Button
                     }
                     onSaveManual(name, host, portText.toIntOrNull() ?: 51820)
-                    savedMessage = context.getString(
+                    savedMessage = contextResources.getString(
                         R.string.devices_vpn_imported,
                         host,
                     )

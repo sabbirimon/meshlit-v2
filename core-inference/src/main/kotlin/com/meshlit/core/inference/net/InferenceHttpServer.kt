@@ -485,8 +485,8 @@ class InferenceHttpServer(
             sink: java.io.OutputStream,
         ): JobLifecycle.Outcome {
             return runBlocking {
-                var capturedTokens = 0
-                var lastTps = 0f
+                var capturedTokens:Int? = null
+                var lastTps:Float? = null
                 var capturedTag: String? = null
                 var capturedMsg: String? = null
                 forwarder.forwardAndStream(

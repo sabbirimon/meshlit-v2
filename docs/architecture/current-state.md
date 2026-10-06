@@ -8,7 +8,7 @@ model, SSH and native-support assertions are historical.
 ## Product and runtime
 
 Android Kotlin/Compose/Koin, two build flavors with the shared modern UI. The
-structured inventory has 33 Gradle modules, 50 feature areas and 28 durable typed
+structured inventory has 33 Gradle modules, 55 feature areas and 38 durable typed
 command operations. `../../FEATURE_MAP.md`, `../feature-map.json` and
 `../../PROGRESS.md` are the current navigation/implementation/evidence ledgers.
 No percentage is inferred from feature counts.
@@ -96,3 +96,20 @@ Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
 contracts. Android synthetic gradients are removed; phone autograd reports
 unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
 remain acceptance gates. Keep phone inference layer sharding/recovery primary.
+
+## Cloud, browser and file continuation
+
+Read `../cloud-and-credential-management.md`, `../USER_GUIDE.md` and
+`../runanywhere-browser-and-llama.md`. Dedicated Cloud has fixed read adapters,
+source-stamped resource/cost observations and purpose/origin-bound encrypted
+credential environments. Human and agent actions, environment use and enrolled
+device scopes are independent. Deployment/IaC and full vendor service coverage
+remain future adapters.
+
+The visible WebView broker serves typed status/run/stop commands. Exact approved
+origins, foreground lifecycle, per-step authorization and action/timeout caps
+constrain actual local-model reasoning; failed model parsing is an error, not
+a scripted substitute. External browsers use the separate generic Android
+Accessibility tools and detected-browser app scopes. Both paths need real task/
+physical evidence. AI asset inspection and streaming bounded ZIP/unzip operate
+on user-granted storage; archive extraction is not a model import/runtime.

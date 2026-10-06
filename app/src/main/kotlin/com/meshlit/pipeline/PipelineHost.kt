@@ -20,6 +20,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.serialization.json.*
+import com.meshlit.recovery.*
 import java.io.File
 import java.math.BigInteger
 import java.net.ServerSocket
@@ -33,7 +37,7 @@ import javax.security.auth.x500.X500Principal
 
 @Serializable data class PipelinePeer(val host:String,val port:Int,val fingerprint:String,val token:String,val weight:Int=1)
 data class PipelineStatus(val worker:Boolean=false,val coordinator:Boolean=false,val starting:Boolean=false,
-    val error:String?=null,val log:List<String> = emptyList(),val coordinatorId:String?=null,val memoryBudgetBytes:Long=0,val local:Boolean=false)
+    val error:String?=null,val log:List<String> = emptyList(),val coordinatorId:String?=null,val memoryBudgetBytes:Long=0,val local:Boolean=false,val estimatedKvBytes:Long=0,val estimatedWorkerBytes:List<Long> = emptyList())
 
 /** Explicit opt-in layer offload. Native RPC is private to each app process;
  * only the certificate-pinned, authenticated TLS tunnel listens on the LAN. */
@@ -43,6 +47,12 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
     private val credentials by lazy { EncryptedCredentialStore(context,"pipeline-pairing") }
     private val _status=MutableStateFlow(PipelineStatus())
     val status=_status.asStateFlow()
+    private data class NativeSession(val port:Int,val token:String,val path:String,val options:ModelRuntimeOptions,val local:Boolean)
+    private var nativeSession:NativeSession?=null
+    private val slotDirectory=File(context.filesDir,"native-slot-staging").apply{
+        check(mkdirs() || isDirectory);listFiles()?.forEach{check(it.delete()){"Cannot clear old unencrypted slot staging"}}
+    }
+    private val checkpoints by lazy{NativeCheckpointStore(context)}
     private var worker:Process?=null
     private var server:Process?=null
     private var workerTunnel:RpcTunnel?=null
@@ -72,18 +82,29 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
     private fun randomToken():String=ByteArray(32).also{SecureRandom().nextBytes(it)}.joinToString(""){"%02x".format(it)}
     private fun certificate():Pair<SSLContext,X509Certificate> {
         val store=KeyStore.getInstance("AndroidKeyStore").apply{load(null)}
-        val alias="meshlit-pipeline-tls-v1"
+        // Conscrypt uses raw ECDSA for TLS: DIGEST_NONE must be permitted.
+        // A new alias avoids reusing the incompatible v1 key. Old peer pins must be reapproved.
+        val alias="meshlit-pipeline-tls-v2"
         if(!store.containsAlias(alias)) KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC,"AndroidKeyStore").apply {
             initialize(KeyGenParameterSpec.Builder(alias,KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
-                .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1")).setDigests(KeyProperties.DIGEST_SHA256)
+                .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1")).setDigests(KeyProperties.DIGEST_NONE,KeyProperties.DIGEST_SHA256)
                 .setCertificateSubject(X500Principal("CN=Meshlit layer worker"))
                 .setCertificateSerialNumber(BigInteger.valueOf(System.currentTimeMillis()))
                 .setCertificateNotBefore(Date(System.currentTimeMillis()-86400000))
                 .setCertificateNotAfter(Date(System.currentTimeMillis()+5L*365*86400000)).build())
             generateKeyPair()
         }
-        val managers=KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm()).apply{init(store,null)}
-        return SSLContext.getInstance("TLS").apply{init(managers.keyManagers,null,null)} to (store.getCertificate(alias) as X509Certificate)
+        val certificate=store.getCertificate(alias) as X509Certificate
+        val manager=object:X509ExtendedKeyManager(){
+            override fun getCertificateChain(name:String?)=if(name==alias) arrayOf(certificate) else null
+            override fun getPrivateKey(name:String?)=if(name==alias) store.getKey(alias,null) as PrivateKey else null
+            override fun getServerAliases(type:String?,issuers:Array<java.security.Principal>?)=if(type?.startsWith("EC")==true) arrayOf(alias) else null
+            override fun chooseServerAlias(type:String?,issuers:Array<java.security.Principal>?,socket:java.net.Socket?)=getServerAliases(type,issuers)?.firstOrNull()
+            override fun chooseEngineServerAlias(type:String?,issuers:Array<java.security.Principal>?,engine:SSLEngine?)=getServerAliases(type,issuers)?.firstOrNull()
+            override fun getClientAliases(type:String?,issuers:Array<java.security.Principal>?)=null
+            override fun chooseClientAlias(types:Array<String>?,issuers:Array<java.security.Principal>?,socket:java.net.Socket?)=null
+        }
+        return SSLContext.getInstance("TLS").apply{init(arrayOf(manager),null,null)} to certificate
     }
     fun controlTlsContext():SSLContext=certificate().first
     fun fingerprint():String=RpcTunnel.fingerprint(certificate().second)
@@ -94,10 +115,19 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
     private fun launch(name:String,args:List<String>):Process {
         val process=ProcessBuilder(listOf(executable(name).absolutePath)+args).directory(context.filesDir)
             .redirectErrorStream(true).start()
-        scope.launch(Dispatchers.IO) { process.inputStream.bufferedReader().useLines { lines -> lines.forEach { log(it) } } }
+        scope.launch(Dispatchers.IO) {
+            try { process.inputStream.bufferedReader().useLines { lines -> lines.forEach { log(it) } } }
+            catch(cancelled:CancellationException){throw cancelled}
+            catch(_:java.io.IOException){if(running(process)) log("Native log stream closed while process was active")}
+        }
         return process
     }
-    private fun service()=androidx.core.content.ContextCompat.startForegroundService(context,Intent(context,PipelineService::class.java))
+    private val serviceState=Any()
+    private var serviceRequested=false
+    private fun service()=synchronized(serviceState){
+        androidx.core.content.ContextCompat.startForegroundService(context,Intent(context,PipelineService::class.java)).also{serviceRequested=true}
+    }
+    fun serviceDestroyed(){synchronized(serviceState){serviceRequested=false}}
     suspend fun startWorker()=lock.withLock { withContext(Dispatchers.IO) {
         if(worker!=null) return@withContext
         _status.update{it.copy(starting=true,error=null)}
@@ -128,20 +158,23 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
     }
     /** Query only explicitly paired workers. Local model ownership limits current
      * activation to this coordinator; the election contract also supports remote owners. */
-    suspend fun negotiate(path:String)=withContext(Dispatchers.IO) {
+    suspend fun negotiate(path:String,contextSize:Int=2048,keyCacheType:String="f16")=withContext(Dispatchers.IO) {
         val file=File(path);ModelFiles.validateGguf(file)
+        val metadata=GgufMetadata.read(file)
+        ModelRuntimeOptions(LocalModelBackend.NATIVE_LOCAL,contextSize,keyCacheType).validate(metadata.maxContext)
+        val kv=metadata.kvBytes(contextSize,keyCacheType) ?: error("KV memory cannot be estimated for this architecture; cluster admission is unavailable")
         val hash=ModelFiles.sha256(file)
         val peerOffers=peers().map { peer -> peer to wireJson.decodeFromString<NodeOffer>(
             RpcTunnel.queryCapabilities(peer.host,peer.port,peer.fingerprint,peer.token)).copy(observedAtMs=System.currentTimeMillis()) }
         val local=offer().copy(coordinatorAllowed=true,coordinatorModelSha256=hash,workerAllowed=false)
-        val plan=ClusterNegotiation.plan(peerOffers.map{it.second}+local,hash,file.length())
+        val plan=ClusterNegotiation.plan(peerOffers.map{it.second}+local,hash,file.length(),kvBytes=kv,blocks=metadata.blocks)
         negotiatedPeers=plan.workers.mapIndexed { index,node -> peerOffers.first{it.second.nodeId==node.nodeId}.first.copy(weight=plan.weights[index]) }
-        _status.update{it.copy(coordinatorId=plan.coordinatorId,memoryBudgetBytes=plan.memoryBudgetBytes,error=null)}
+        _status.update{it.copy(coordinatorId=plan.coordinatorId,memoryBudgetBytes=plan.memoryBudgetBytes,estimatedKvBytes=plan.estimatedKvBytes,estimatedWorkerBytes=plan.estimatedWorkerBytes,error=null)}
         log("Negotiated ${plan.workers.size} workers; capacity estimate ${plan.memoryBudgetBytes} bytes")
         negotiatedPeers
     }
     suspend fun startPipeline(path:String,contextSize:Int=2048,keyCacheType:String="f16") {
-        val paired=negotiate(path)
+        val paired=negotiate(path,contextSize,keyCacheType)
         require(paired.size>=2){"Pair at least two approved workers"}
         startNative(path,ModelRuntimeOptions(LocalModelBackend.NATIVE_LOCAL,contextSize,keyCacheType),paired)
     }
@@ -167,11 +200,12 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
                         val args=mutableListOf("-m",path,"-c","$contextSize","-t","${com.meshlit.models.AccelerationPreferences(context).effectiveThreads()}","--parallel","1",
                             "--host","127.0.0.1","--port","$httpPort","--api-key-file",keyFile!!.absolutePath,
                             "--cache-type-k",options.keyCacheType,"--cache-type-v","f16",
-                            "--no-webui","--no-warmup","--fit","off")
-                        if(paired.isEmpty()) args+=listOf("--device","CPU","-ngl","0")
+                            "--no-webui","--no-warmup","--fit","off","--slots","--slot-save-path",slotDirectory.absolutePath+"/")
+                        if(paired.isEmpty()) args+=listOf("--device","none","-ngl","0")
                         else args+=listOf("--rpc",endpoints,"--device",paired.indices.joinToString(","){"RPC$it"},
                             "--split-mode","layer","--tensor-split",paired.joinToString(","){"${it.weight}"},"-ngl","99")
                         server=launch("server",args)
+                        nativeSession=NativeSession(httpPort,token,path,options,paired.isEmpty())
                         val client=OkHttpClient.Builder().callTimeout(2,java.util.concurrent.TimeUnit.SECONDS).build()
                         withTimeout(180000) {
                             while(true) {
@@ -201,9 +235,67 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
         catch(e:Exception){_status.update{it.copy(error=e.message)};throw e}
         finally {_status.update{it.copy(starting=false)};stopServiceIfIdle()}
     }
-    private fun stopServerInternal(){val process=server;server=null;process?.destroy();bridges.forEach{it.close()};bridges.clear();keyFile?.delete();keyFile=null;_status.update{it.copy(coordinator=false,local=false)}}
+    private fun stopServerInternal(){val process=server;server=null;nativeSession=null;process?.destroy();bridges.forEach{it.close()};bridges.clear();keyFile?.delete();keyFile=null;_status.update{it.copy(coordinator=false,local=false)}}
+    suspend fun checkpointList()=lock.withLock{withContext(Dispatchers.IO){checkpoints.list()}}
+    suspend fun deleteCheckpoint(id:String)=lock.withLock{withContext(Dispatchers.IO){checkpoints.delete(id)}}
+    suspend fun saveCheckpoint():NativeCheckpoint=inference.withExternalEngine("llama-native-local") {
+        lock.withLock{withContext(Dispatchers.IO){
+            val session=requireNotNull(nativeSession);check(session.local){"RPC/portable KV snapshots are not supported"}
+            val estimate=GgufMetadata.read(File(session.path)).kvBytes(session.options.contextSize,session.options.keyCacheType)
+                ?: error("Cannot budget a native KV snapshot for this architecture")
+            require(estimate<=NativeCheckpointStore.MAX_BYTES){"Native KV snapshot estimate exceeds 128 MiB"}
+            checkpointResources(estimate)
+            val raw=File(slotDirectory,"checkpoint.bin")
+            try {
+                val response=slotCommand(session,"save",raw.name)
+                val tokens=response["n_saved"]?.jsonPrimitive?.intOrNull ?: error("Native runtime did not confirm saved tokens")
+                require(tokens in 1..session.options.contextSize && raw.length()==response["n_written"]?.jsonPrimitive?.longOrNull){"Native snapshot was not verified"}
+                currentCoroutineContext().ensureActive()
+                checkpoints.save(raw,ModelFiles.sha256(File(session.path)),ModelFiles.sha256(executable("server")),session.options,tokens)
+            } finally{check(!raw.exists() || raw.delete()){"Cannot remove unencrypted checkpoint staging"}}
+        }}
+    }
+    suspend fun restoreCheckpoint(id:String):NativeCheckpoint=inference.withExternalEngine("llama-native-local") {
+        lock.withLock{withContext(Dispatchers.IO){
+            val session=requireNotNull(nativeSession);check(session.local){"RPC/portable KV restore is unavailable"}
+            checkpointResources(checkpoints.list().single{it.id==id}.bytes)
+            val raw=File(slotDirectory,"checkpoint.bin")
+            try {
+                val item=checkpoints.restore(id,raw,ModelFiles.sha256(File(session.path)),ModelFiles.sha256(executable("server")),session.options)
+                currentCoroutineContext().ensureActive()
+                val response=slotCommand(session,"restore",raw.name)
+                require(response["n_restored"]?.jsonPrimitive?.intOrNull==item.tokens && response["n_read"]?.jsonPrimitive?.longOrNull==item.bytes){"Native runtime did not confirm checkpoint restoration"}
+                item
+            } finally{check(!raw.exists() || raw.delete()){"Cannot remove unencrypted checkpoint staging"}}
+        }}
+    }
+    private fun checkpointResources(bytes:Long){
+        val memory=ActivityManager.MemoryInfo().also{context.getSystemService(ActivityManager::class.java).getMemoryInfo(it)}
+        require(!memory.lowMemory && memory.availMem>bytes*3+128L*1024*1024){"Insufficient free memory for bounded checkpoint encryption/restore"}
+        require(slotDirectory.usableSpace>bytes*2+32L*1024*1024){"Insufficient free disk space for checkpoint staging"}
+    }
+    private suspend fun slotCommand(session:NativeSession,action:String,filename:String):JsonObject=coroutineScope {
+        require(action in setOf("save","restore") && filename=="checkpoint.bin")
+        val client=OkHttpClient.Builder().callTimeout(60,java.util.concurrent.TimeUnit.SECONDS).followRedirects(false).build()
+        val call=client.newCall(Request.Builder().url("http://127.0.0.1:${session.port}/slots/0?action=$action")
+            .header("Authorization","Bearer ${session.token}")
+            .post(buildJsonObject{put("filename",filename)}.toString().toRequestBody("application/json".toMediaType())).build())
+        val watcher=launch(Dispatchers.IO){try{awaitCancellation()}finally{call.cancel()}}
+        try {call.execute().use{response ->
+            require(response.code==200){"Native checkpoint operation failed (HTTP ${response.code})"}
+            val source=requireNotNull(response.body).source();require(!source.request(65537)){"Native checkpoint response exceeds limit"}
+            Json.parseToJsonElement(source.readUtf8()).jsonObject
+        }} finally{watcher.cancel();client.connectionPool.evictAll();client.dispatcher.executorService.shutdown()}
+    }
     suspend fun stopPipeline(){inference.unloadModel();lock.withLock{stopServerInternal();stopServiceIfIdle()}}
     suspend fun stopAll(){inference.cancel();stopPipeline();stopWorker()}
     fun active()=worker!=null || server!=null || status.value.starting
-    private fun stopServiceIfIdle(){if(!active()) context.stopService(Intent(context,PipelineService::class.java))}
+    private fun stopServiceIfIdle()=synchronized(serviceState){
+        if(!active() && serviceRequested){
+            // The service checks live state and startId before stopping. A delayed
+            // stop request must not destroy a newly requested model runtime.
+            context.startService(Intent(context,PipelineService::class.java).setAction("stop-if-idle"))
+            serviceRequested=false
+        }
+    }
 }
