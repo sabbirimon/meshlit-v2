@@ -10,6 +10,8 @@
 
 **A project by IMON** · [@sabbirimon](https://github.com/sabbirimon)
 
+AI-assisted contributor: **Codex by OpenAI**. See [authors and attribution](AUTHORS.md).
+
 **Run local language models on Android. Connect owner-approved devices. Give humans
 and agents observable tools, durable tasks and explicit controls.** Meshlit is an
 open-source Android-first AI workspace built with Kotlin, Jetpack Compose,
@@ -111,6 +113,7 @@ OS and available backends. Tool versions are pinned in
 git clone https://github.com/sabbirimon/meshlit-v2.git
 cd meshlit-v2
 # Configure JAVA_HOME and ANDROID_HOME for your installed JDK/SDK.
+sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
 python3 scripts/prepare-bundled-model.py
 ./gradlew :app:assembleMeshlitV1Debug :app:assembleMeshlitV2Debug \
   --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process

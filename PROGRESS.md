@@ -14,15 +14,18 @@ emulator observations, host runtime proof and physical-phone proof are separate.
 
 ## Current publication validation (2026-10-07)
 
-Frozen executable source: `6838a7e` (packet bridge/import continuation), building
-both Full flavors and Play Review APK/AAB. Final tests/lint and final Android
-instrumentation are pending; this statement will be replaced with actual results.
+Frozen executable source: `db3aaed` (packet bridge/import and unsafe VPN disablement), building
+both Full flavors and Play Review APK/AAB. All 379 targeted unit tests pass (8 audit, 65 cloud, 46 network and 130 app
+per Full flavor). Final Android audit instrumentation passes on API35 x86_64
+(1 test, 9.343 seconds). Final lint is pending; results will be recorded after completion.
 The earlier Play Review APK/AAB assembled, but its last lint run failed during
 source analysis after network source changed. That run is not final evidence.
 
 The source includes actual-state boot animation/loader, compact Models/Monitor
 status cards, both-build legal acceptance, encrypted optional audit export and
-corrected PCAPdroid consent intents with bounded classic-PCAP imports. Blue Team,
+corrected PCAPdroid consent intents with bounded classic-PCAP imports. The legacy
+built-in VPN dropped traffic without forwarding: it is disabled in Full and removed
+in Play Review; companion live capture is still untested. Blue Team,
 forensic, root/Magisk and other Security Lab tool sources were reviewed and pinned;
 the companion assessment adapters remain plans. No listed security tool was
 installed or run. Native phone sharding/recovery and hosted Grafana proof remain
@@ -38,17 +41,20 @@ close on replacement; collection/export boundaries exclude content/secrets and
 strip exception events. A collector recipe and Grafana dashboard template are in
 docs/observability/. No hosted Grafana account or complete fleet coverage is claimed.
 
-Seven core observability tests pass, including actual loopback HTTP/protobuf trace
-and metric receipt and private-text exclusion. Initial app compile passes; full
-final builds/tests/lint and a real Android encrypted-journal test are in progress.
-Final evidence will replace this pending statement. This is bounded best-effort
+Eight core observability tests pass, including actual loopback HTTP/protobuf trace
+and metric receipt, private-text exclusion, retention and committed-write failures.
+The final Android encrypted-journal test passes; see
+`../meshlit-validation/audit-android-final.log`. Full final lint is pending. This is bounded best-effort
 observability, not signed/transactional compliance auditing. Native phone sharding,
 replicated recovery and vendor SDK telemetry opt-out remain separate open gates.
 
 Publication includes a rewritten evidence-based README with real screenshots,
 live repository badges, IMON credit, contribution forms and llms.txt discovery.
 Source stays Apache-2.0; third-party notices remain. Repository metadata/topics are
-prepared. Existing destination history will be preserved. Ranking is not guaranteed;
+published. Source is pushed to `sabbirimon/meshlit-v2/main`; destination history
+is preserved as an ancestor. The About line and banners say “Many nodes. One mind.”
+Hosted CI SDK setup now passes using the actual `android-37.0` package; hosted
+compile/tests remain in progress. Ranking is not guaranteed;
 no external promotional posts or invented adoption is claimed. Beta release
 assets are authorized; publication evidence will be recorded below.
 

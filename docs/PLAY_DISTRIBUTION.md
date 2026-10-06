@@ -7,14 +7,15 @@ Maintainer: **IMON**. Reviewed 2026-10-07. This is an engineering review candida
 
 | Build | Purpose | Signing and package | Capabilities |
 |---|---|---|---|
-| `meshlitV2Debug` | GitHub experimental beta | Debug certificate; `com.meshlit.v2.debug` | Existing optional Android autonomy, VPN capture, SMS and external shell integrations remain subject to their own grants |
+| `meshlitV2Debug` | GitHub experimental beta | Debug certificate; `com.meshlit.v2.debug` | Optional Android autonomy, SMS and external shell integrations retain independent grants. Legacy built-in VPN is disabled; external PCAPdroid capture requires its own consent |
 | `meshlitV2PlayReview` | Installable store preparation candidate and AAB inspection | Debug certificate, non-debuggable; `com.meshlit.v2.playreview` | Manifest removes Accessibility service, VPN capture service, SMS, all-files/broad-media storage, battery-exemption request and Termux command permission |
 | Future production distribution | Play submission | Operator upload key, fixed production package, Play App Signing | Requires the blockers below to be closed and actual Play Console review |
 
 Local models, user-granted file import/export, chat, model management, credential
 vaults and opt-in audit metadata remain available in the review candidate. Runtime
 settings cannot re-enable the removed Accessibility service; its automation flags
-are forced off, the autonomy controls are omitted, and packet capture is unavailable.
+are forced off, the autonomy controls are omitted, and live packet capture is unavailable.
+Bounded classic-PCAP import remains available for offline inspection.
 Battery settings use app settings instead of requesting an exemption. The separate
 application ID prevents review testing from replacing the GitHub beta's data.
 
