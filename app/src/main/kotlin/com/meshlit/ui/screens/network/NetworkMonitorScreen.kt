@@ -62,6 +62,16 @@ import com.meshlit.network.pcapdroid.PcapdroidBridge
 import com.meshlit.network.termux.TermuxBridge
 import com.meshlit.ui.components.MeshlitHeader
 import java.io.File
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.CancellationException
 
 /**
  * Android-native network diagnostics surface. It deliberately
@@ -83,6 +93,8 @@ fun NetworkMonitorScreen(
     var selectedFile by remember { mutableStateOf<File?>(null) }
     var pcapRecords by remember { mutableStateOf<List<PcapParser.Record>>(emptyList()) }
     var fileError by remember { mutableStateOf<String?>(null) }
+    val previewFile = selectedFile
+    DisposableEffect(previewFile) { onDispose { previewFile?.delete() } }
 
     val vpnConsentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -165,18 +177,13 @@ fun NetworkMonitorScreen(
                     selectedFile = selectedFile,
                     records = pcapRecords,
                     error = fileError,
-                    onSelect = { file ->
+                    onFailure = { fileError = it },
+                    onSelect = { file, parsed ->
+                        selectedFile?.delete()
                         selectedFile = file
-                        val parsed = PcapParser().parse(file)
                         when (parsed) {
-                            is PcapParser.Result.Ok -> {
-                                pcapRecords = parsed.records
-                                fileError = null
-                            }
-                            is PcapParser.Result.Invalid -> {
-                                pcapRecords = emptyList()
-                                fileError = parsed.reason
-                            }
+                            is PcapParser.Result.Ok -> { pcapRecords = parsed.records; fileError = null }
+                            is PcapParser.Result.Invalid -> { pcapRecords = emptyList(); fileError = parsed.reason }
                         }
                     },
                 )
@@ -267,26 +274,41 @@ private fun ExternalCapture(
     selectedFile: File?,
     records: List<PcapParser.Record>,
     error: String?,
-    onSelect: (File) -> Unit,
+    onSelect: (File, PcapParser.Result) -> Unit,
+    onFailure: (String) -> Unit,
 ) {
+    val scope = rememberCoroutineScope()
+    var reading by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
-            val copied = copyToCache(context, uri)
-            if (copied != null) onSelect(copied)
-            else Toast.makeText(context, "Unable to read capture", Toast.LENGTH_SHORT).show()
+        if (uri != null && !reading) scope.launch {
+            reading = true
+            var imported: File? = null
+            var published = false
+            try {
+                val parsed = withContext(Dispatchers.IO) {
+                    val file = copyToCache(context, uri)
+                    imported = file
+                    PcapParser().parse(file)
+                }
+                onSelect(checkNotNull(imported), parsed)
+                published = true
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (error: Exception) { onFailure(error.message ?: "Unable to read capture") }
+            finally { if (!published) imported?.delete(); reading = false }
         }
     }
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { picker.launch("application/vnd.tcpdump.pcap") }) {
+            Button(enabled = !reading, onClick = { picker.launch("*/*") }) {
                 Icon(Icons.Default.Download, contentDescription = null)
                 Spacer(Modifier.padding(2.dp))
-                Text("Open .pcap")
+                Text(if (reading) "Reading capture…" else "Open .pcap")
             }
             if (selectedFile != null) {
                 Text(selectedFile.name, Modifier.align(Alignment.CenterVertically), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
+        Text("Classic PCAP preview · up to 16 MiB and 10,000 packets. Use desktop Wireshark for larger files or detailed protocol analysis.", style = MaterialTheme.typography.bodySmall)
         if (error != null) Text(error, color = MaterialTheme.colorScheme.error)
         if (records.isEmpty() && error == null) {
             EmptyState(title = "No capture selected", body = "Open a .pcap exported by Meshlit, PCAPdroid, Termux, or tcpdump.")
@@ -307,36 +329,71 @@ private fun ExternalTools(
     context: Context,
     onOpenTermuxIntegration: () -> Unit,
 ) {
-    val pcapInstalled = remember { PcapdroidBridge.isInstalled(context) }
+    var pcapInstalled by remember { mutableStateOf(PcapdroidBridge.isInstalled(context)) }
+    val owner = LocalLifecycleOwner.current
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) pcapInstalled = PcapdroidBridge.isInstalled(context)
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+    val captureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        Toast.makeText(context, if (result.resultCode == Activity.RESULT_OK)
+            "PCAPdroid accepted the request. Review capture status and saved files in PCAPdroid."
+            else "PCAPdroid request was cancelled or denied.", Toast.LENGTH_LONG).show()
+    }
+    fun requestCapture(start: Boolean) {
+        try { captureLauncher.launch(PcapdroidBridge.captureIntent(context, start)) }
+        catch (_: Exception) { Toast.makeText(context, "PCAPdroid control is unavailable. Open or update the companion app.", Toast.LENGTH_LONG).show() }
+    }
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("External capture tools", style = MaterialTheme.typography.titleLarge)
         Text(
             "These tools can capture traffic outside Meshlit's own HTTP observer. They are optional and remain under your control.",
             style = MaterialTheme.typography.bodyMedium,
         )
-        ToolCard(
-            title = "PCAPdroid",
-            body = if (pcapInstalled) "Installed — open its capture flow." else "Install PCAPdroid for a mature Android packet capture path.",
-            installed = pcapInstalled,
-            onClick = { if (pcapInstalled) PcapdroidBridge.startCapture(context) else PcapdroidBridge.openInstall(context) },
-        )
+        if (!com.meshlit.BuildConfig.PLAY_REVIEW) {
+            ToolCard(
+                title = "PCAPdroid",
+                body = if (pcapInstalled) "Installed companion. Capture requests need its approval; files stay on this device."
+                    else "Get the optional Android companion for rootless packet capture and Wireshark-compatible exports.",
+                installed = pcapInstalled,
+                onClick = {
+                    val opened = if (pcapInstalled) PcapdroidBridge.openApp(context) else PcapdroidBridge.openInstall(context)
+                    if (!opened) Toast.makeText(context, "No compatible app or store could be opened.", Toast.LENGTH_LONG).show()
+                },
+            )
+            if (pcapInstalled) {
+                Text("Capture Meshlit traffic only. Root and TLS decryption are off. Export is capped at 16 MiB.", style = MaterialTheme.typography.bodySmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = { requestCapture(true) }) { Text("Request capture") }
+                    OutlinedButton(onClick = { requestCapture(false) }) { Text("Request stop") }
+                }
+            }
+        } else Text("Companion capture controls are unavailable in Play Review. You can still open a user-selected classic PCAP file.")
+        OutlinedButton(onClick = {
+            if (!PcapdroidBridge.openPage(context, "https://emanuele-f.github.io/PCAPdroid/quick_start#14-packet-analysis"))
+                Toast.makeText(context, "No browser could open the guide.", Toast.LENGTH_LONG).show()
+        }) { Text("Wireshark workflow guide") }
         // The legacy Termux tile here used to call `TermuxBridge.startCapture`,
         // which is gone — Termux support now lives behind a full
         // Settings → Integrations → Termux screen (with probe, allowlist,
         // audit, and approval). We deep-link into that screen instead
         // so users land on the real, working flow rather than a fake
         // one-button shortcut.
-        ToolCard(
+        if (!com.meshlit.BuildConfig.PLAY_REVIEW) ToolCard(
             title = "Termux",
             body = "Optional external shell integration. Open Settings → Integrations → Termux for setup, the agent tool, and the audit trail.",
             installed = false,
+            actionLabel = "Set up",
             onClick = onOpenTermuxIntegration,
         )
     }
 }
 
 @Composable
-private fun ToolCard(title: String, body: String, installed: Boolean, onClick: () -> Unit) {
+private fun ToolCard(title: String, body: String, installed: Boolean, actionLabel: String = if (installed) "Open" else "Get", onClick: () -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -346,7 +403,7 @@ private fun ToolCard(title: String, body: String, installed: Boolean, onClick: (
             OutlinedButton(onClick = onClick) {
                 Icon(Icons.Default.OpenInNew, contentDescription = null)
                 Spacer(Modifier.padding(2.dp))
-                Text(if (installed) "Open" else "Install")
+                Text(actionLabel)
             }
         }
     }
@@ -365,9 +422,23 @@ private fun EmptyState(title: String, body: String) {
     }
 }
 
-private fun copyToCache(context: Context, uri: android.net.Uri): File? = runCatching {
+private suspend fun copyToCache(context: Context, uri: android.net.Uri): File {
     val dir = File(context.cacheDir, "captures").apply { mkdirs() }
-    val file = File(dir, "import-${System.currentTimeMillis()}.pcap")
-    context.contentResolver.openInputStream(uri)!!.use { input -> file.outputStream().use { output -> input.copyTo(output) } }
-    file
-}.getOrNull()
+    val file = File.createTempFile("import-", ".pcap", dir)
+    try {
+        val input = context.contentResolver.openInputStream(uri) ?: error("Unable to open the selected file")
+        input.use { source -> file.outputStream().use { output ->
+            val buffer = ByteArray(64 * 1024)
+            var total = 0L
+            while (true) {
+                currentCoroutineContext().ensureActive()
+                val count = source.read(buffer)
+                if (count < 0) break
+                total += count
+                require(total <= PcapParser.MAX_FILE_BYTES) { "Capture exceeds 16 MiB; use desktop Wireshark for larger files" }
+                output.write(buffer, 0, count)
+            }
+        } }
+        return file
+    } catch (error: Exception) { file.delete(); throw error }
+}

@@ -113,7 +113,7 @@
       "repository": "emanuele-f/PCAPdroid",
       "revision": "66f7b3514540c20add8655a74dfee93d00a9563b",
       "license": "GPL-3.0; dependencies have separate notices",
-      "integrationStatus": "existing external intent bridge under correction; no upstream code bundled",
+      "integrationStatus": "external documented consent intent and bounded import source; live companion proof pending",
       "copiedIntoMeshlit": false,
       "licenseEvidence": "https://github.com/emanuele-f/PCAPdroid/blob/66f7b3514540c20add8655a74dfee93d00a9563b/COPYING"
     }

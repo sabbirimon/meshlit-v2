@@ -746,7 +746,10 @@
       "status": "planned-not-implemented",
       "sources": [
         "docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md",
-        "docs/runtime-and-sandbox.md"
+        "docs/runtime-and-sandbox.md",
+        "docs/ANDROID_SECURITY_TOOL_INTEGRATIONS.md",
+        "docs/BLUE_TEAM_AND_PACKET_ANALYSIS.md",
+        "docs/security-tool-sources.json"
       ]
     }
   ],

@@ -256,3 +256,10 @@ startup loading. Acceptance does not grant optional permissions or telemetry.
 Policies are also bundled offline under Settings → Terms and privacy. Maintainer: **IMON**.
 
 AI-assisted diagnosis/repair and source evolution are [planned](docs/AI_REPAIR_AND_EVOLUTION.md); current builds do not self-modify or automatically update.
+
+Security/forensic companions and Magisk are [reviewed integration plans](docs/ANDROID_SECURITY_TOOL_INTEGRATIONS.md);
+[Blue Team and packet workflows](docs/BLUE_TEAM_AND_PACKET_ANALYSIS.md) explain
+APK analysis, PCAPdroid/Wireshark, forensic tools and their evidence/licensing boundaries.
+The Full build has a corrected consent-based external PCAPdroid handoff and bounded
+classic-PCAP preview; it does not embed the full Wireshark engine. Live companion
+capture/host analysis still need testing.

@@ -50,12 +50,12 @@ requested by Meshlit.
 The reviewed [PCAPdroid API](https://github.com/emanuele-f/PCAPdroid/blob/66f7b3514540c20add8655a74dfee93d00a9563b/docs/app_api.md)
 uses the explicit CaptureCtrl activity, action extras and an activity-result caller
 for consent. Legacy START_CAPTURE/STOP_CAPTURE action strings in Meshlit were not
-the documented API. The correction must preserve user approval, report cancellation
-and default to Meshlit's own package, root off, TLS interception off, bounded PCAP
+the documented API. The source correction preserves user approval, reports cancellation
+and defaults to Meshlit's own package, root off, TLS interception off, bounded PCAP
 file output and no external collector. PCAPdroid remains separately installed;
 no GPL library/source is relabeled as Apache or bundled by this handoff.
 
-A mobile preview needs bounded file/packet budgets, off-main-thread import and
+The mobile preview source now has bounded file/packet budgets, off-main-thread import and
 classic PCAP big/little-endian microsecond/nanosecond support. Unsupported PCAPNG,
 truncation and budget limits must be visible. Large captures and detailed protocol
 analysis belong in [desktop Wireshark](https://www.wireshark.org/docs/wsug_html_chunked/ChapterIntroduction.html).
@@ -72,3 +72,6 @@ cannot create it. Live capture/API and Wireshark host tests remain acceptance ga
 Play Review omits Meshlit's device-wide VPN service and direct companion capture
 controls. Manual analysis of a user-selected file is a separate capability. Keep
 [Play distribution gates](PLAY_DISTRIBUTION.md) explicit.
+
+The bridge/parser correction requires the final build and malformed/endian/budget
+tests; actual PCAPdroid installation/capture and desktop Wireshark remain unproven.

@@ -112,6 +112,8 @@
              installed (Android 11+ package visibility) and to launch
              its RunCommandService via explicit ComponentName. -->
         <package android:name="com.termux" />
+        <!-- Narrow package visibility for the optional, separately installed capture companion. -->
+        <package android:name="com.emanuelef.remote_capture" />
     </queries>
 
     <!-- Custom permission Termux exposes to gate callers of its
