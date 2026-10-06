@@ -1,63 +1,73 @@
-# Meshlit — stopped at owner request
+# Meshlit session handoff — saved after beta publication
 
-Paused for today on 2026-10-07 (Asia/Dhaka). Do not resume or publish until IMON requests it.
+2026-10-07, Asia/Dhaka. Owner IMON stopped for sleep, requested saving all progress,
+then explicitly requested APK upload. Saving/uploading is complete. Do not resume
+other implementation, builds or publication until IMON requests it.
 
 Project: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
-Remote: https://github.com/sabbirimon/meshlit-v2
-Last pushed code/test commit: `2e37dcd3bc33e146de203d017287107577ff814f`.
 Branch: `codex/meshlit-ui-pipeline-openclaw`.
+Remote: https://github.com/sabbirimon/meshlit-v2
 
-## Completed validation
+## Published and verified
 
-`meshlit-validation/release-final-validation.log`: BUILD SUCCESSFUL in 6m32s.
-Both Full flavors and Play Review APK/AAB build. All 639 targeted unit tests pass:
-8 observability, 65 cloud, 46 network, 260 inference, 130 app tests per Full flavor.
-Lint: zero fatal/errors in all three variants; Full 348 warnings/17 hints each,
-Play Review 351 warnings/17 hints. Static review manifest/policy/23 native-library
-alignment checks pass. This is not Play approval or actual 16 KiB device proof.
+Release: https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-beta.1
+Tag: **v2.0.0-beta.1**, source commit `ad2d3a86f5060ace52c1b46c7a5501253dcc01f7`.
+Public prerelease, not draft; release ID **405174992**. All eight assets uploaded.
+Every GitHub SHA-256 digest matches the locally verified file. Evidence:
+`../meshlit-validation/github-beta-publication-results.json`.
 
-`meshlit-validation/audit-android-final.log`: one actual API35 x86_64 Android audit
-instrumentation test passes in 9.343 seconds. Final V1 Chat, Models and Monitor
-captures exist; bundled starter observed loaded. Cold launch succeeded in 7.406s
-once Gradle stopped; two starts during lint had ANRs. Physical phones untested.
+Assets: Full ARM64/x86_64 APKs, restricted Play Review ARM64/x86_64 APKs and AAB,
+BetaTesting.md, release-info.json and SHA256SUMS. They are debug-signed beta/review
+artifacts, not Play-approved releases. Files: `../meshlit-beta/`.
 
-Hosted CI succeeded for `2e37dcd` (run 37536692867). Earlier failure logs retained:
-SDK package typo, duplicate incremental review resources, review overlay lint,
-and ephemeral TLS fixture bind collision. Fixtures were corrected without changing
-production TCP/TLS behavior. Review overlay explicitly marks telephony optional.
+Source, About/topics, Apache-2.0 LICENSE/NOTICE, colorful README and real screenshots
+are published. Branding: “Many nodes. One mind.” Owner: IMON. Codex by OpenAI is
+credited in README/AUTHORS and new commit trailers. Sidebar account association
+is controlled by GitHub; no Codex avatar appearance was promised or verified.
+GitHub Packages is separate from APK Releases.
 
-## Publication and credit
+## Final validation
 
-Source is pushed; About/README/banners say “Many nodes. One mind.” IMON remains
-owner. Codex by OpenAI is in README/AUTHORS and new commit co-author trailers.
-GitHub's sidebar depends on account/email association; no avatar guarantee.
-Apache-2.0 canonical LICENSE and preserved NOTICE are published.
+Combined build: BUILD SUCCESSFUL in 6m32s, all Full flavors and Review APK/AAB.
+639 unit tests pass: 8 audit, 65 cloud, 46 network, 260 inference, 130 app per Full
+flavor. No failures/errors/skips. Full lint: zero fatal/errors, 348 warnings and
+17 hints each. Review: zero fatal/errors, 351 warnings/17 hints.
+Log: `../meshlit-validation/release-final-validation.log`.
 
-No beta release or assets have been uploaded yet. GitHub Packages is separate
-from Releases. Do not report release publication as completed.
+One actual API35 x86_64 Android audit instrumentation test passed in 9.343 seconds:
+device/human-task metadata, encrypted journal reopening, metadata export.
+`../meshlit-validation/audit-android-final.log`.
+Final Chat, Models and Monitor were inspected; the real starter was loaded and
+runtime ready. Cold launch succeeded in 7.406s after Gradle stopped; two starts
+during lint had ANRs. Physical Samsung was not attached. Loader visual proof is
+pending. Review installed/launch command completed; its UI was not inspected.
 
-## Saved local changes and next steps on explicit resume
+Static Review checks: restricted manifest/policy copies and 23 ARM64 native SO
+libraries with 16 KiB ELF alignment pass. Actual 16 KiB runtime/AAB tests and Play
+approval remain open. CI passed at 2e37dcd (run 37536692867); later docs-only CI
+was not awaited. Full runtime source is unchanged from db3aaed, Review overlay
+fix is 53ac70c. Port-allocation tests were made bounded without changing TCP/TLS
+production code or dropping auth/pin/real byte-forwarding assertions.
 
-Final README screenshots/provenance, startup observations, PROGRESS, lint and
-architecture/agent handoff are being saved in a local commit. Release assets are
-being prepared locally at the owner’s subsequent request; no build or network
-upload resumes. Check the local Git log and `../meshlit-beta/` when resuming.
+Earlier failed logs are retained: SDK package name, incremental Review resource
+state, interrupted lint, optional-telephony overlay lint and test port conflicts.
+Legacy traffic-dropping VPN is disabled in Full/removed in Review. PCAP imports
+have real bounded parser tests; external PCAPdroid capture remains untested.
 
-1. Finish recording final evidence and optional Play Review launch/first-use UI
-   observation. An install/start command was in flight when the owner stopped;
-   inspect `meshlit-validation/play-review-launch.log` before launching again.
-2. Update PROGRESS.md, docs/lint-findings.md, architecture/current-state.md and
-   AGENT_BUILD.md with these final results; preserve historical evidence scope.
-3. Commit and push final documentation with the Codex co-author trailer.
-4. Run `work/record-audit-delivery.py` and `work/package-beta.py` from the workspace
-   root. They require the final successful build and Android audit logs, validate
-   bundled model/guide/policy hashes, and create deliverable metadata/checksums.
-5. Create GitHub prerelease v2.0.0-beta.1 targeting the exact final pushed SHA;
-   upload Full ARM64/x86_64 APKs, Play Review ARM64/x86_64 APKs/AAB, release-info,
-   BetaTesting.md and SHA256SUMS. Verify remote assets before declaring published.
+## Remaining work on explicit resume
 
-Phone oversized-model sharding, replicated recovery, hosted Grafana, rooted VM and
-many companion adapters remain unproven/planned. Vendor SDK telemetry opt-out is
-unresolved. Security tool references were reviewed/pinned, not installed or run.
-No Play submission, root flashing, external promotional messages or resumed work
-is authorized by this checkpoint.
+1. Physical phone oversized-model layer execution and replicated coordinator/
+   task/session memory/KV recovery proof; no claimed completion percentage.
+2. Cold-start latency/ANRs, loader visual capture, physical UX; further SDK telemetry
+   review/opt-out and hosted Grafana/collector/account integration proof.
+3. Real SSH, OpenClaw, Android autonomy, VM/VNC, providers/media and training tests.
+   Security/root/Magisk/forensic/radio/MCU/vendor adapters remain reviewed plans or
+   partially implemented contracts, not turnkey tested capabilities.
+4. Play production identity/signing, private privacy contact, AI reporting/content
+   prevention, SDK Data safety and actual 16 KiB device/AAB/Console review.
+5. Remaining legacy UX/tutorial/IDE polish and warning cleanup, tracked in the
+   build/feature/evidence ledgers. Existing local artifacts and test logs must
+   remain intact; do not replace real data with stubs.
+
+No active local build or upload remains. Beta source tag stays fixed at the SHA
+above; later publication-status documentation commits do not change its artifacts.

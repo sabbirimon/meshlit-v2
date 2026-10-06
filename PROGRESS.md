@@ -77,9 +77,13 @@ Hosted CI passes at `2e37dcd` (run 37536692867), using the actual
 commit co-author trailers; GitHub sidebar account association is independently
 controlled by GitHub. Ranking is not guaranteed;
 no external promotional posts or invented adoption is claimed. Beta release
-assets are authorized, but no release/assets have been uploaded yet. The owner
-stopped work for sleep and requested local progress saving and asset preparation.
-Read `docs/SESSION_HANDOFF.md` before resuming; no automatic builds or uploads.
+assets are published at [https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-beta.1](https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-beta.1) as prerelease **v2.0.0-beta.1**,
+targeting `ad2d3a86f5060ace52c1b46c7a5501253dcc01f7`. All eight uploaded assets have matching GitHub SHA-256 digests:
+four Full/Review ARM64/x86_64 APKs, Review AAB, notes, metadata and checksums.
+`../meshlit-validation/github-beta-publication-results.json` records verification.
+The owner stopped for sleep, then explicitly requested saving and APK upload.
+That upload is complete; all other work stops until the owner resumes.
+Read `docs/SESSION_HANDOFF.md` before resuming.
 
 ## Agreements and Play review continuation
 
