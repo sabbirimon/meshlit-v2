@@ -70,3 +70,10 @@ Sources reviewed 2026-10-07:
 - [AOSP eBPF architecture](https://source.android.com/docs/core/architecture/kernel/bpf): kernel probes can collect statistics; system support does not grant ordinary apps unrestricted access.
 - [AOSP traffic-monitor kernel requirements](https://source.android.com/docs/core/data/ebpf-traffic-monitor).
 - [Linux KVM API](https://www.kernel.org/doc/html/latest/virt/kvm/api.html): capabilities and device access must be queried rather than assumed.
+
+## Reviewed Android tooling and root references
+
+[Android security tools and Magisk plan](ANDROID_SECURITY_TOOL_INTEGRATIONS.md)
+records IMON’s requested checklist, Objection, Drozer, Havoc and Magisk sources,
+exact review revisions, license boundaries and companion/hardware acceptance
+criteria. These are reviewed plans; none is bundled or operational in this beta.

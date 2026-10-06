@@ -1,0 +1,47 @@
+{
+  "reviewedAt": "2026-10-07",
+  "purpose": "Pinned research references for future Security Lab/root adapters; no installed or bundled tool claim",
+  "sources": [
+    {
+      "repository": "Hrishikesh7665/Android-Pentesting-Checklist",
+      "revision": "939dc220849d7e781f96e4bad98efe06e58c7f02",
+      "license": null,
+      "defaultBranch": "main",
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated"
+    },
+    {
+      "repository": "sensepost/objection",
+      "revision": "35c4e2c9e68a0354b21db4833252e0c4acd5bd28",
+      "license": "GPL-3.0",
+      "defaultBranch": "master",
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated"
+    },
+    {
+      "repository": "ReversecLabs/drozer",
+      "revision": "d992f6378d42680ea96ee03eff4117f150e1049c",
+      "license": "BSD-3-Clause with third-party exceptions",
+      "defaultBranch": "develop",
+      "copiedIntoMeshlit": false,
+      "licenseEvidence": "https://github.com/ReversecLabs/drozer/blob/d992f6378d42680ea96ee03eff4117f150e1049c/LICENSE",
+      "integrationStatus": "reviewed-not-integrated"
+    },
+    {
+      "repository": "HavocFramework/Havoc",
+      "revision": "c84f7755a8b1c0f737576bdd3a0e982a296012f1",
+      "license": "GPL-3.0",
+      "defaultBranch": "main",
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated"
+    },
+    {
+      "repository": "topjohnwu/Magisk",
+      "revision": "3b37599db9e2ff8db0fc7770c9a802ccc646afa9",
+      "license": "GPL-3.0",
+      "defaultBranch": "master",
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated"
+    }
+  ]
+}

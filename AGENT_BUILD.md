@@ -420,3 +420,11 @@ both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for accept
 Optional permissions/telemetry remain independent. Preserve the original open-source
 license rights and third-party notices. Production release signing must never fall
 back to a debug certificate; owner keys remain external to source.
+
+## Security tool references (2026-10-07)
+
+Read `docs/ANDROID_SECURITY_TOOL_INTEGRATIONS.md` and the pinned
+`docs/security-tool-sources.json`. Checklist, Objection, Drozer, Havoc and Magisk
+are reviewed references, not installed adapters. Implement original assessment
+contracts first, then owned-target companion tests. Preserve human-only root,
+independent agent grants, tool licenses and honest unavailable states.
