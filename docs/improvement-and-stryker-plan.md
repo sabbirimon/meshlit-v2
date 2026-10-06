@@ -1,7 +1,10 @@
 # Meshlit review and implementation plan
 
 Reviewed 2026-10-06 against Meshlit `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
-Reference revisions and licenses are recorded in `sources.lock.json`.
+Historical baseline review. Later implementations and proofs are recorded in
+[PROGRESS.md](../PROGRESS.md), [current state](architecture/current-state.md) and
+[third-party notices](../THIRD_PARTY_NOTICES.md). The findings below must be
+rechecked against current source; they are not an up-to-date bug count.
 
 ## Product direction
 
@@ -84,3 +87,43 @@ turnkey Linux, ship verified binaries/guest images and test root denial, missing
 binaries, namespace denial, guest SSH host keys, VNC, cancellation, orphan cleanup,
 foreground-service behavior and power budgets on physical devices. A PRoot or
 chroot environment is not a strong security boundary for hostile agent code.
+
+## Follow-up source review and reuse decision (2026-10-07)
+
+IMON authorized reuse of Stryker or other open-source components when useful.
+Reviewed Stryker revision `d7c60f13ed950c9f982e48d46dc06b4a7a62e362`, specifically
+[QemuInstaller](https://github.com/sabbirimon/strykerapp-v6.5/blob/d7c60f13ed950c9f982e48d46dc06b4a7a62e362/app/src/main/java/com/zalexdev/stryker/engine/QemuInstaller.java),
+[QemuDownloader](https://github.com/sabbirimon/strykerapp-v6.5/blob/d7c60f13ed950c9f982e48d46dc06b4a7a62e362/app/src/main/java/com/zalexdev/stryker/ota/QemuDownloader.java) and
+[VmProbe](https://github.com/sabbirimon/strykerapp-v6.5/blob/d7c60f13ed950c9f982e48d46dc06b4a7a62e362/app/src/main/java/com/zalexdev/stryker/engine/VmProbe.java).
+This review imported no source, assets, native binaries or tools into Meshlit.
+
+Useful design patterns for the next runtime phase:
+
+| Pattern observed | Meshlit integration requirement |
+| --- | --- |
+| Named installer stages and byte progress | Publish actual download/extract/verify state through typed commands and UI; never mark a missing runtime ready. |
+| Bundled/offline artifacts and a remote manifest | Pin provenance, architecture, license, size and digest before accepting installation. Cache verified artifacts for offline provisioning. |
+| Temporary decompression then rename | Bound expanded size and storage, support cancellation, and preserve the last verified artifact on failure. |
+| QEMU CPU and io_uring probes | Use bounded executable probes; acceptance of command options is separate from guest boot, SSH, VNC and physical-device proof. |
+| Separate missing-artifact/offline/failed outcomes | Return observable, actionable failure codes without raw credentials or misleading automatic fallback. |
+
+Do not reproduce unchecked fallback behavior: the reviewed downloader can return
+empty checksums, and the installer warns without necessarily rejecting the result.
+Meshlit's runtime catalog must require an independently trusted digest or signature
+for every remote executable and guest artifact. Root, architecture labels and file
+existence alone do not prove a working VM.
+
+Prefer established upstream components at an explicit integration boundary: QEMU
+for full guests, PRoot for compatible rootless userlands, OpenSSH or the existing
+JSch transport for authenticated SSH, and distro-maintained images/packages.
+Each distributed component needs its own license, notices, provenance and
+corresponding-source obligations checked. An independent optional GPL companion
+may be appropriate; separating processes alone does not automatically settle
+whether a combined product is subject to GPL. Direct Stryker imports require a
+compatible distribution licensing decision, not an Apache-only relabel.
+
+Next implementation scope is the verified artifact catalog and installer, followed
+by a real Android guest boot/SSH/VNC test. Distribution installers, root probes,
+Security Lab tooling and Metasploit remain planned rather than bundled or proven.
+See [distribution/tool plan](LINUX_DISTRIBUTIONS_AND_LAB_TOOLS.md) and
+[hardware/Security Lab plan](SECURITY_LAB_AND_HARDWARE_ACCESS.md).
