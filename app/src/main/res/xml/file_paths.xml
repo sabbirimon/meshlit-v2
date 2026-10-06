@@ -6,4 +6,5 @@
 <paths>
     <cache-path name="logs" path="logs/" />
     <cache-path name="captures" path="exports/captures/" />
+    <files-path name="generated_media" path="generated-media/" />
 </paths>

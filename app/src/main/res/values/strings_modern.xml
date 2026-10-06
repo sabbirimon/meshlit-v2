@@ -14,7 +14,7 @@
     <string name="modern_dismiss">Dismiss</string>
     <string name="modern_download">Download</string>
     <string name="modern_generating">Generating…</string>
-    <string name="modern_greeting">What can we work on?</string>
+    <string name="modern_greeting">What should we\nfocus on?</string>
     <string name="modern_greeting_body">Private conversations, powered by your devices.</string>
     <string name="modern_hf_token">Hugging Face access token</string>
     <string name="modern_import">Import files</string>
@@ -25,7 +25,7 @@
     <string name="modern_loading">Loading model…</string>
     <string name="modern_memory_warning">This model may exceed available memory. Consider a smaller model or a cluster.</string>
     <string name="modern_menu">Menu</string>
-    <string name="modern_message">Message Meshlit</string>
+    <string name="modern_message">Ask Meshlit</string>
     <string name="modern_model_disclaimer">Memory estimates are approximate. GGUF imports must be complete files; native loading checks architecture support. Split GGUF files and archives are not supported here.</string>
     <string name="modern_model_intro">Choose your local model</string>
     <string name="modern_models">Models</string>

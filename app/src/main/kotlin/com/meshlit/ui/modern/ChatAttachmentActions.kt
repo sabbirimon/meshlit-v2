@@ -2,7 +2,7 @@ package com.meshlit.ui.modern
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
@@ -13,7 +13,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 
 /** Actual user-granted file reads. Binary formats are not misrepresented as text. */
-@Composable fun ChatAttachmentActions(enabled:Boolean,onText:(String)->Unit,onMedia:()->Unit) {
+@Composable fun ChatAttachmentActions(enabled:Boolean,onText:(String)->Unit,onMedia:()->Unit,onVision:()->Unit,onOptions:()->Unit) {
     val context=LocalContext.current;val scope=rememberCoroutineScope()
     var menu by remember{mutableStateOf(false)};var error by remember{mutableStateOf<String?>(null)}
     var busy by remember{mutableStateOf(false)}
@@ -38,10 +38,12 @@ import java.nio.charset.CodingErrorAction
             require(text.length<=11000){"Combined attachments exceed the chat text budget"};onText(text)
         }catch(c:CancellationException){throw c}catch(e:Exception){error=e.message}finally{busy=false}}
     }
-    IconButton(enabled=enabled && !busy,onClick={menu=true}){Icon(Icons.Default.AttachFile,"Attach files or open media studio")}
+    IconButton(enabled=enabled && !busy,onClick={menu=true}){Icon(Icons.Default.Add,"Add photo, file or chat options")}
     DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
+        DropdownMenuItem(text={Text("Photo or camera")},onClick={menu=false;onVision()})
         DropdownMenuItem(text={Text("Attach UTF-8 text files")},onClick={menu=false;pick.launch(arrayOf("text/*","application/json","application/xml","application/javascript"))})
-        DropdownMenuItem(text={Text("Images, vision, audio and video")},onClick={menu=false;onMedia()})
+        DropdownMenuItem(text={Text("Generate images, audio or video")},onClick={menu=false;onMedia()})
+        DropdownMenuItem(text={Text("Chat options and model routing")},onClick={menu=false;onOptions()})
     }
     error?.let{message->AlertDialog(onDismissRequest={error=null},title={Text("Attachment could not be read")},text={Text(message)},confirmButton={TextButton(onClick={error=null}){Text("OK")}})}
 }

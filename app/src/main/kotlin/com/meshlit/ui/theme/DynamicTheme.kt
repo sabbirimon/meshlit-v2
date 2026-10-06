@@ -34,10 +34,10 @@ enum class SurfaceStyle(val label:String) { SOLID("Solid"), GLASS("Tinted glass"
 
 @Immutable
 data class MeshlitThemeConfig(
-    val accentHue: AccentHue = AccentHue.MESHLIT,
+    val accentHue: AccentHue = AccentHue.SKY,
     val basePalette: BasePalette = BasePalette.MIDNIGHT,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val dynamicColors: Boolean = true,
+    val dynamicColors: Boolean = false,
     val fontScale: Float = 1.0f,
     val uiFont: UiFont = UiFont.FIGTREE,
     val surfaceStyle: SurfaceStyle = SurfaceStyle.SOLID,
@@ -204,7 +204,7 @@ fun buildColorScheme(
     // values directly. Otherwise fall back to the curated
     // AccentHue-derived primary / secondary / tertiary.
     val primary = customResolved?.primary ?: run {
-        if (config.highContrast && isLight) {
+        if (isLight) {
             accentContainer(config.accentHue)
         } else {
             accentPrimary(config.accentHue)
@@ -223,13 +223,18 @@ fun buildColorScheme(
             onPrimaryContainer = customResolved?.primary ?: accentContainer(config.accentHue),
             secondary = secondary,
             onSecondary = Color(0xFF0A0E1A),
-            secondaryContainer = secondary.copy(alpha = 0.18f),
-            onSecondaryContainer = secondary,
+            secondaryContainer = primary.copy(alpha = 0.12f),
+            onSecondaryContainer = textPrimary,
             tertiary = tertiary,
             onTertiary = Color(0xFF0A0E1A),
             background = background,
             onBackground = textPrimary,
             surface = surface,
+            surfaceContainerLowest = surface,
+            surfaceContainerLow = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.025f),
+            surfaceContainer = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.04f),
+            surfaceContainerHigh = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.065f),
+            surfaceContainerHighest = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.09f),
             onSurface = textPrimary,
             surfaceVariant = surfaceVariant,
             onSurfaceVariant = textSecondary,
@@ -255,6 +260,11 @@ fun buildColorScheme(
             background = background,
             onBackground = textPrimary,
             surface = surface,
+            surfaceContainerLowest = surface,
+            surfaceContainerLow = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.025f),
+            surfaceContainer = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.04f),
+            surfaceContainerHigh = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.065f),
+            surfaceContainerHighest = androidx.compose.ui.graphics.lerp(surface, textPrimary, 0.09f),
             onSurface = textPrimary,
             surfaceVariant = surfaceVariant,
             onSurfaceVariant = textSecondary,

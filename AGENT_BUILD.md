@@ -379,3 +379,16 @@ DOM fixtures. Actual native prefix reuse 2, stored/restored occupancy 18. SDK
 usage remains null. Browser fixtures are not real-model/site task success.
 Read PROGRESS.md and ../meshlit-validation/final-emulator-proof.json before
 porting; do not replace physical/credentialed/consensus gates with these checks.
+
+## UI reference continuation (2026-10-07)
+
+Read docs/UI_REFERENCE_REDESIGN.md. Preserve a single toolbar/inset owner, compact
+settings and the reference chat composition. Keep IME padding on the chat viewport,
+not a second outer scaffold plus the composer. Reply sharing is human initiated;
+photo controls lead to real vision flows and do not add fake image understanding
+into text chat. Existing saved palettes/permissions must survive upgrades.
+
+Reference UI checkpoint: both variants assembled, 128 app tests per flavor passed,
+full lint has zero errors (342 warnings/17 hints). See PROGRESS.md and
+../meshlit-validation/reference-ui-results.json for scoped screenshots/Copy/Share
+and SDK telemetry observation. Physical UX remains pending.

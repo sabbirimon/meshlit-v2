@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.*
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -97,6 +98,12 @@ fun MeshlitTheme(
         MaterialTheme(
             colorScheme = styledColors,
             typography = typography,
+            shapes = androidx.compose.material3.Shapes(
+                extraSmall=androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                small=androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                medium=androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                large=androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                extraLarge=androidx.compose.foundation.shape.RoundedCornerShape(28.dp)),
             content = content,
         )
     }

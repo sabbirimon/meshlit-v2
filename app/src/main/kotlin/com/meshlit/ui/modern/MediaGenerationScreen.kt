@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,6 +25,7 @@ import com.meshlit.providers.OnlineProviders
 import com.meshlit.core.inference.models.OnlineProtocol
 import kotlinx.coroutines.*
 
+@OptIn(ExperimentalMaterial3Api::class,ExperimentalLayoutApi::class)
 @Composable fun MediaGenerationScreen(onBack:()->Unit) {
     val media=koinInject<MediaGeneration>();val videos by media.videos.collectAsStateWithLifecycle()
     val providers=koinInject<OnlineProviders>();val profiles by providers.profiles.collectAsStateWithLifecycle()
@@ -37,10 +43,10 @@ import kotlinx.coroutines.*
         val file=result?.file
         if(uri!=null && file!=null) run{withContext(Dispatchers.IO){context.contentResolver.openOutputStream(uri)?.use{out->file.inputStream().use{it.copyTo(out)}} ?: error("Cannot export media")}}
     }
-    Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)) {
-        TextButton(onClick=onBack){Text("Back")};Text("Media studio",style=MaterialTheme.typography.headlineSmall)
+    Scaffold(topBar={TopAppBar(title={Text("Media studio")},navigationIcon={IconButton(onClick=onBack){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")}})}){insets->
+    Column(Modifier.fillMaxSize().padding(insets).consumeWindowInsets(insets).padding(horizontal=16.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
         Text("Selected online providers receive the prompt and any chosen image. Generation may incur charges. No automatic retry. Stop cancels this app's request; a provider may already be processing or charging it.")
-        Row{listOf("vision","image","speech","video").forEach{k->FilterChip(kind==k,{kind=k;result=null},label={Text(k)})}}
+        FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("vision","image","speech","video").forEach{k->FilterChip(kind==k,{kind=k;result=null},label={Text(k)})}}
         profiles.filter{it.enabled && it.protocol in setOf(OnlineProtocol.OPENAI,OnlineProtocol.OPENAI_COMPATIBLE)}.forEach{p->FilterChip(profile==p.id,{profile=p.id},label={Text(p.name)})}
         if(profiles.none{it.enabled && it.protocol in setOf(OnlineProtocol.OPENAI,OnlineProtocol.OPENAI_COMPATIBLE)}) Text("Enable an OpenAI-format provider in Settings → Online providers. Local voice/vision controls remain in the media menu.")
         Text("Vision uses the profile's model. Generation needs a separate supported media model ID; a text model does not imply image/video/audio support.")
@@ -50,7 +56,7 @@ import kotlinx.coroutines.*
         OutlinedTextField(prompt,{prompt=it},Modifier.fillMaxWidth(),label={Text(if(kind=="speech") "Text to speak" else "Prompt / question")},minLines=3,maxLines=7)
         Row{Button(enabled=!running && profile!=null && prompt.isNotBlank(),onClick={run{result=media.generate(profile!!,kind,model,prompt,voice,image)}}){Text(if(kind=="video") "Create 4-second video job" else "Run")};TextButton(enabled=running,onClick={job?.cancel()}){Text("Stop request")}}
         if(running) LinearProgressIndicator(Modifier.fillMaxWidth())
-        result?.text?.let{Text(it)}
+        result?.text?.let{SelectionContainer{Text(it)};MessageActions(it)}
         result?.file?.let{file->
             Text("${file.name} · ${file.length()} bytes")
             if(file.extension=="png") {
@@ -65,7 +71,10 @@ import kotlinx.coroutines.*
                 }
                 preview?.let{bitmap->Image(bitmap.asImageBitmap(),"Actual generated image",Modifier.fillMaxWidth().heightIn(max=320.dp))}
             }
-            OutlinedButton(onClick={export.launch(file.name)}){Text("Export output")}
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                OutlinedButton(onClick={export.launch(file.name)}){Text("Save output")}
+                FilledTonalButton(onClick={try{shareGeneratedFile(context,file)}catch(e:Exception){error="Output could not be shared"}}){Icon(Icons.Default.Share,null);Spacer(Modifier.width(8.dp));Text("Share")}
+            }
             if(file.extension=="wav") TextButton(onClick={try{player?.release();player=android.media.MediaPlayer().apply{setDataSource(file.absolutePath);setOnPreparedListener{it.start()};setOnErrorListener{_,_,_->error="Audio playback failed";true};prepareAsync()}}catch(e:Exception){error=e.message}}){Text("Play AI-generated speech")}
         }
         videos.forEach{video->Card(Modifier.fillMaxWidth()){Column(Modifier.padding(10.dp)){
@@ -80,4 +89,6 @@ import kotlinx.coroutines.*
         error?.let{Text(it,color=MaterialTheme.colorScheme.error)}
         Text("Generic music/sound synthesis and on-device image/video generation need installed model-specific adapters. They are unavailable here. Video status is retained locally; provider retention and billing remain provider-controlled.")
     }
+}
+
 }

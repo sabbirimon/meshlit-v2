@@ -10,7 +10,29 @@ Historical upstream records in `docs/history/` are not current test evidence.
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
 
-## Latest verified continuation
+## Latest verified UI checkpoint
+
+The reference layout removes duplicated Settings headers/insets and the Appearance
+banner. Chat uses a centered welcome, pale blue/cyan glow, compact model selector,
+rounded composer above the keyboard and real Copy/Share actions. Models puts actual
+models/import/search before optional device/startup details. Font and color controls
+remain persisted; retained legacy tools still need individual redesign.
+
+Both debug variants build; **128 app tests per variant pass**, with **0 lint
+errors, 342 warnings and 17 hints per variant**. Evidence:
+`../meshlit-validation/reference-ui-final-build.log` and `reference-ui-results.json`.
+Final APK screenshots cover Chat, Settings, Appearance and Models. Earlier UI
+iterations exercised light/dark keyboard placement, 320dp width/150% text,
+real bundled-model generation and Android Copy/Share (no recipient selected).
+Physical Samsung UX and live generated-media sharing remain unverified.
+
+Actual SDK generation attempted its development telemetry endpoint; DNS failed.
+No successful transmission or payload is established. This remains tracked in
+`docs/remaining-engine-bugs.md`; SDK development mode is not a proven opt-out.
+The owner's next request is local auditing/export plus optional OpenTelemetry
+collector/Grafana integration; its implementation is a separate checkpoint.
+
+## Previous verified backend continuation
 
 Both debug flavors and instrumentation APK build. Full lint passes with **0 errors,
 337 warnings and 17 hints per flavor**, with fatal errors still blocking builds.

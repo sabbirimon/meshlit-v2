@@ -1,6 +1,6 @@
 # Remaining model-engine correctness gates
 
-Updated 2026-10-06. Real bundled generation now passes on the API35 x86_64
+Updated 2026-10-07. Real bundled generation now passes on the API35 x86_64
 emulator; this document records unresolved correctness work, not fake failures.
 
 ## Stream accounting corrected; SDK native usage still unavailable
@@ -17,7 +17,7 @@ or native throughput. A future SDK change must expose measured counters with
 provenance and agree with actual backend evidence before this gate is removed.
 
 The standalone native adapter reads tokens_predicted, tokens_evaluated,
-tokens_cached and decode throughput from the native completion response.
+timings.cache_n and decode throughput from the native completion response.
 Context/path checks and real native checkpoint reuse now have emulator evidence.
 Read `native-checkpoints.md` and the latest PROGRESS entry.
 
@@ -35,3 +35,21 @@ Read `native-checkpoints.md` and the latest PROGRESS entry.
   future implementations; current local job persistence is insufficient.
 
 See PROGRESS.md and the layer/recovery plan for the broader acceptance sequence.
+
+## SDK development telemetry attempts observed (2026-10-07)
+
+A real bundled chat generation during UI validation logged attempted POSTs to
+`https://dev.runanywhere.local/api/v2/sdk/telemetry/llm`, ending in DNS failures.
+The inference adapter's comment that DEVELOPMENT disables telemetry is contradicted
+by this runtime observation. Evidence is in
+`../../meshlit-validation/reference-ui/sdk-telemetry-observation.log` (PID 10603).
+No successful transmission or payload contents were established. Do not describe
+this SDK configuration as a demonstrated zero-network/telemetry opt-out.
+
+Follow-up: review the exact 0.20.12 native HTTP/event integration; implement a
+supported, default-disabled telemetry boundary independent of environment URLs;
+then prove generation/download/import still work and no telemetry HTTP callback
+or connection is attempted. The bridge lifecycle in newer cloned source is an
+internal API and differs from the pinned AAR; do not patch it blindly or use a
+broken URL as an opt-out. Native standalone CPU inference is a separate backend.
+This UI continuation records the bug; it does not claim to have corrected it.

@@ -12,7 +12,7 @@ No overall percentage is inferred.
 | 4 | Integration tests | Explicit model/router and native Android instrumentation; opt-in JSch/OpenSSH host harness | Operator-provided/working SSH host, OpenClaw gateway, physical Android permissions/autonomy, real guest VM/VNC, authenticated providers and compatible media runtimes |
 | 5 | Fine-tuning | Actual Soup host command/log/job/cancel contracts and Android unavailable states | Compatible host/Python/Soup installation, real licensed dataset, train/evaluate adapter, merge/export and real imported generation |
 | 6 | Future adapters | Existing capability interfaces and truthful unavailable states | Working CCTV/audio/radio/MCU hardware connectors, vendor backend builds, other OS clients and fenced cross-cluster deployment |
-| 7 | Polish/release | Shared modern screens, new recovery and Cloud/vault screens, corrected lint errors and fatal error gate | Tutorial, chat export, remaining legacy redesign/full IDE, latest Cloud/vault lint verification, physical UX and release checks |
+| 7 | Polish/release | Shared modern screens, new recovery and Cloud/vault screens, corrected lint errors and fatal error gate | Interactive tutorial, full chat export, remaining legacy redesign/full IDE, physical UX and release checks; reference UI passes both builds/128 app tests per flavor/zero lint errors |
 
 ## Continue without fabricating missing hardware
 

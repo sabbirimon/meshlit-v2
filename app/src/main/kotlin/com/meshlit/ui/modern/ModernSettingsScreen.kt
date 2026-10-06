@@ -15,6 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meshlit.di.koinInject
@@ -24,9 +27,10 @@ import com.meshlit.ui.theme.ChatTokens as T
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable fun ModernSettingsScreen(initialDestination:String?=null,onExit:(()->Unit)?=null) {
+@Composable fun ModernSettingsScreen(initialDestination:String?=null,onExit:(()->Unit)?=null,onMenu:(()->Unit)?=null,onDestinationChanged:(String?)->Unit={}) {
     var destination by rememberSaveable{mutableStateOf(initialDestination)}
     var query by rememberSaveable{mutableStateOf("")}
+    LaunchedEffect(destination){onDestinationChanged(destination)}
     val context=LocalContext.current
     val prefs=remember{context.getSharedPreferences("settings-navigation",0)}
     var advanced by rememberSaveable{mutableStateOf(prefs.getBoolean("advanced",false))}
@@ -61,9 +65,9 @@ import kotlinx.coroutines.*
     if(destination=="automation"){com.meshlit.ui.screens.cloud.AndroidAutomationSettingsScreen(repository,back);return}
     if(destination=="hooks"){com.meshlit.ui.screens.settings.HooksScreen(back,{destination="hook:$it"});return}
     if(destination?.startsWith("hook:")==true){com.meshlit.ui.screens.settings.HookEditorScreen(destination!!.removePrefix("hook:"),{destination="hooks"});return}
-    Scaffold(topBar={TopAppBar(title={Text(SettingsDestinations.all.firstOrNull{it.id==destination}?.title ?: "Settings")},
+    Scaffold(topBar={TopAppBar(colors=TopAppBarDefaults.topAppBarColors(containerColor=Color.Transparent),title={Text(SettingsDestinations.all.firstOrNull{it.id==destination}?.title ?: "Settings")},
         navigationIcon={if(destination!=null || onExit!=null) IconButton(onClick={if(destination!=null) destination=null else onExit?.invoke()}){
-            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")}})}){padding ->
+            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")} else if(onMenu!=null) IconButton(onClick=onMenu){Icon(Icons.Default.Menu,"Open menu")}})}){padding ->
         when(destination){
             "appearance" -> AppearanceSettings(Modifier.padding(padding))
             "device" -> Box(Modifier.padding(padding)){com.meshlit.ui.screens.settings.DeviceScreen(back)}
@@ -86,17 +90,18 @@ import kotlinx.coroutines.*
                         Text("Project and third-party notices are maintained in the repository LICENSE and vendored source notices.")
                     }}}
                     else -> {
-                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth(),singleLine=true,label={Text("Search settings")},
-                            leadingIcon={Icon(Icons.Default.Search,null)},trailingIcon={if(query.isNotEmpty()) IconButton(onClick={query=""}){Icon(Icons.Default.Close,"Clear search")}},shape=MaterialTheme.shapes.large)}
+                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Search settings")},
+                            leadingIcon={Icon(Icons.Default.Search,null)},trailingIcon={if(query.isNotEmpty()) IconButton(onClick={query=""}){Icon(Icons.Default.Close,"Clear search")}},shape=RoundedCornerShape(28.dp))}
                         item {Row(horizontalArrangement=Arrangement.spacedBy(T.small)){
                             FilterChip(!advanced,{advanced=false;prefs.edit().putBoolean("advanced",false).apply()},label={Text("Basic")})
                             FilterChip(advanced,{advanced=true;prefs.edit().putBoolean("advanced",true).apply()},label={Text("Advanced")})
                         }}
                         val results=SettingsDestinations.search(query,advanced)
                         if(results.isEmpty()) item{Text("No matching settings. Advanced includes runtime, networking and automation controls.")}
-                        items(results,key={it.id}){entry -> Card(onClick={destination=entry.id},modifier=Modifier.fillMaxWidth(),
+                        items(results,key={it.id}){entry -> Card(shape=RoundedCornerShape(20.dp),onClick={destination=entry.id},modifier=Modifier.fillMaxWidth(),
                             colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainerLow)){
-                            Row(Modifier.padding(T.large),verticalAlignment=Alignment.CenterVertically){
+                            Row(Modifier.padding(T.large),horizontalArrangement=Arrangement.spacedBy(T.medium),verticalAlignment=Alignment.CenterVertically){
+                                Icon(settingsIcon(entry.id),null,tint=MaterialTheme.colorScheme.onSurfaceVariant)
                                 Column(Modifier.weight(1f)){Text(entry.title,style=MaterialTheme.typography.titleMedium);Text(entry.description,
                                     style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
                                 Icon(Icons.Default.ChevronRight,null)
@@ -116,36 +121,36 @@ import kotlinx.coroutines.*
     val scope=rememberCoroutineScope()
     var error by remember{mutableStateOf<String?>(null)}
     fun write(action:suspend()->Unit){scope.launch{try{action()}catch(e:CancellationException){throw e}catch(e:Exception){error=e.message}}}
-    LazyColumn(modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.medium)){
-        item {Card(colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.primaryContainer)){
-            Column(Modifier.fillMaxWidth().padding(T.section)){Icon(Icons.Default.AutoAwesome,null,tint=MaterialTheme.colorScheme.onPrimaryContainer)
-                Spacer(Modifier.height(T.medium));Text("Make Meshlit yours",style=MaterialTheme.typography.headlineSmall)
-                Text("Your colors update throughout the app.")}
-        }}
+    LazyColumn(modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.large)){
+        item {Text("Colors, type and display",style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+        item {OutlinedButton(onClick={write{settings.applyReferenceAppearance()}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(24.dp)){
+            Icon(Icons.Default.AutoAwesome,null);Spacer(Modifier.width(T.small));Text("Reference blue · light theme")}}
         item {Text("Display mode",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
-            ThemeMode.entries.forEach{mode -> FilterChip(config.themeMode==mode,{write{settings.setThemeMode(mode)}},label={Text(mode.displayName)})}
+            ThemeMode.entries.forEach{mode -> FilterChip(config.themeMode==mode,{write{settings.setThemeMode(mode)}},label={Text(when(mode){ThemeMode.SYSTEM->"System";ThemeMode.LIGHT->"Light";ThemeMode.DARK->"Dark";ThemeMode.AUTO_TIME->"Scheduled"})})}
         }}
-        item {Row(verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Wallpaper dynamic colors")
+        item {Row(horizontalArrangement=Arrangement.spacedBy(T.medium),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Wallpaper dynamic colors")
             Text(if(Build.VERSION.SDK_INT>=31) "Use your system palette" else "Available on Android 12 and later",style=MaterialTheme.typography.bodySmall)}
             Switch(config.dynamicColors,{enabled -> write{settings.setDynamicColors(enabled);if(enabled) settings.setCustomPalette(CustomPalette.None)}},enabled=Build.VERSION.SDK_INT>=31)}}
+        item {HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=0.5f))}
         item {Text("Accent color",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
             AccentHue.entries.forEach{accent -> FilterChip(!config.dynamicColors && config.accentHue==accent,
                 {write{settings.setDynamicColors(false);settings.setCustomPalette(CustomPalette.None);settings.setAccentHue(accent)}},
-                label={Text(accent.displayName)},leadingIcon={Icon(Icons.Default.Circle,null,tint=accent.primary)})}
+                label={Text(if(accent==AccentHue.AMBER) "Amber" else accent.displayName)},leadingIcon={Icon(Icons.Default.Circle,null,tint=accent.primary)})}
         }}
-        item {Text("Base palette",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
-            BasePalette.entries.forEach{base -> FilterChip(config.basePalette==base,{write{settings.setDynamicColors(false);settings.setBasePalette(base)}},label={Text(base.displayName)})}
+        item {Text("Dark palette",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
+            BasePalette.entries.forEach{base -> FilterChip(config.basePalette==base,{write{settings.setDynamicColors(false);settings.setBasePalette(base)}},label={Text(when(base){BasePalette.MIDNIGHT->"Midnight";BasePalette.PAPER->"Paper";BasePalette.RUNANYWHERE->"RunAnywhere";else->base.displayName})})}
         };Text("Light mode uses a light surface; dark palettes apply in dark mode.",style=MaterialTheme.typography.bodySmall)}
         item {Row(verticalAlignment=Alignment.CenterVertically){Text("Color animations",Modifier.weight(1f));Switch(config.animationsEnabled,{write{settings.setAnimationsEnabled(it)}})}}
         item {OutlinedButton(onClick={write{settings.setDynamicColors(false);settings.setCustomPalette(CustomPalette.AnimatedGradient(
             stops=listOf(0xFF6366F1,0xFF14B8A6,0xFFF43F5E),cycleSeconds=18))}}){Text("Use a slowly shifting accent")}}
+        item{HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant.copy(alpha=0.5f))}
         item{Text("UI font",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
             UiFont.entries.forEach{font->FilterChip(config.uiFont==font,{write{settings.setUiFont(font)}},label={Text(font.label)})}
         };Text("The quick brown fox — Meshlit 0123456789",style=MaterialTheme.typography.bodyLarge)}
         item{Text("Surface style",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
             SurfaceStyle.entries.forEach{style->FilterChip(config.surfaceStyle==style,{write{settings.setSurfaceStyle(style)}},label={Text(style.label)})}
         };Text("Tinted glass uses translucent surfaces without live blur. Low-memory, power-saving, severe-thermal and high-contrast modes use solid surfaces.",style=MaterialTheme.typography.bodySmall)}
-        item{Row{Text("High contrast / solid surfaces",Modifier.weight(1f));Switch(config.highContrast,{write{settings.setHighContrast(it)}})}}
+        item{Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(T.medium)){Text("High contrast / solid surfaces",Modifier.weight(1f));Switch(config.highContrast,{write{settings.setHighContrast(it)}})}}
         item {Text("Font size: ${"%.0f".format(config.fontScale*100)}%")
             Slider(config.fontScale,{value -> write{settings.setFontScale(value)}},valueRange=0.85f..1.5f)}
         error?.let{item{ErrorCard(it){error=null}}}
@@ -167,4 +172,22 @@ import kotlinx.coroutines.*
                     enabledByUser=value,permissionGranted=setup?.runCommandPermissionGranted==true))
             enabled=value
         }},onBack=onBack)
+}
+
+/** The same icon vocabulary is used in settings and the app drawer. */
+private fun settingsIcon(id:String)=when(id){
+    "appearance"->Icons.Default.Palette
+    "models","router","acceleration"->Icons.Default.Storage
+    "cloud","providers"->Icons.Default.Cloud
+    "network","peers","ssh","firewall"->Icons.Default.Wifi
+    "agents","openclaw","automation"->Icons.Default.SmartToy
+    "tasks"->Icons.Default.Checklist
+    "files","configuration"->Icons.Default.FolderOpen
+    "media"->Icons.Default.PermMedia
+    "power"->Icons.Default.BatteryChargingFull
+    "help"->Icons.Default.HelpOutline
+    "logs","monitor"->Icons.Default.Insights
+    "permissions"->Icons.Default.Security
+    "ide","termux","runtime","hooks"->Icons.Default.Code
+    else->Icons.Default.Settings
 }

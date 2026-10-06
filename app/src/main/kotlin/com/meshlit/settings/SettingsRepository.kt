@@ -58,7 +58,7 @@ open class SettingsRepository(private val context: Context) {
                 ?: MeshlitThemeConfig.Default.basePalette,
             themeMode = ThemeMode.entries.firstOrNull { it.name == prefs[Keys.themeMode] }
                 ?: MeshlitThemeConfig.Default.themeMode,
-            dynamicColors = prefs[Keys.dynamicColors] ?: true,
+            dynamicColors = prefs[Keys.dynamicColors] ?: MeshlitThemeConfig.Default.dynamicColors,
             uiFont = com.meshlit.ui.theme.UiFont.entries.firstOrNull{it.name==prefs[Keys.uiFont]} ?: com.meshlit.ui.theme.UiFont.FIGTREE,
             surfaceStyle = com.meshlit.ui.theme.SurfaceStyle.entries.firstOrNull{it.name==prefs[Keys.surfaceStyle]} ?: com.meshlit.ui.theme.SurfaceStyle.SOLID,
             fontScale = prefs[Keys.fontScale] ?: MeshlitThemeConfig.Default.fontScale,
@@ -852,6 +852,17 @@ open class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setDynamicColors(enabled: Boolean) { store.edit { it[Keys.dynamicColors] = enabled } }
+
+    /** One committed edit for the reference palette; retains accessibility/font preferences. */
+    suspend fun applyReferenceAppearance() {
+        store.edit { prefs ->
+            prefs[Keys.accentHue]=AccentHue.SKY.name
+            prefs[Keys.basePalette]=BasePalette.PAPER.name
+            prefs[Keys.themeMode]=ThemeMode.LIGHT.name
+            prefs[Keys.dynamicColors]=false
+            prefs.remove(Keys.customPaletteJson)
+        }
+    }
 
     suspend fun setThemeMode(mode: ThemeMode) {
         store.edit { it[Keys.themeMode] = mode.name }

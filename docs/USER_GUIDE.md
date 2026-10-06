@@ -1,6 +1,6 @@
 # Meshlit full app guide and configuration tutorial
 
-Updated 2026-10-06. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
+Updated 2026-10-07. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
 
 ## Start here: what Meshlit does
 
@@ -55,6 +55,8 @@ Online profiles can reference an API vault environment and variable name. The en
 Model router recipes can select by scenario, run sequential model chains or compare answers. Review the actual steps, model availability, instructions and agent policy. Sequential chaining/job distribution is not splitting transformer layers. Cloud usage-based estimates require reported tokens and known rates; missing data is unknown.
 
 Use attachment/media options appropriate to the selected backend. Text file input, vision, image generation, speech or video are separate adapters; attaching a file is not proof that the model can perceive or generate its modality. Full general chat export remains a follow-up, not a hidden completed control.
+
+The compact chat layout centers the welcome message and anchors a rounded composer above the keyboard. Welcome text and the secondary caption hide while typing. The plus menu opens text files, photo/camera input, media generation and chat options. Reply Copy and Share use the clipboard and a human-initiated Android chooser. Generated media has Save and Share controls. Photo input remains a separate vision workflow; a text model does not acquire vision capability from the button.
 
 ## Files, AI assets and ZIP / unzip
 
@@ -173,6 +175,8 @@ Tinted glass is an optional translucent surface treatment over color-tinted back
 Use the live text sample, keep important controls readable and test large text on your device. System font scaling is preserved in addition to the app font scale. High contrast prioritizes solid surfaces. Custom font-file import and arbitrary blur/background effects are future work.
 
 The redesign does not mean every retained legacy screen is modernized. Guide/tutorial and new settings sections share the modern navigation. Real phone layout, touch/keyboard, contrast and scrolling still need inspection; emulator screenshots are distinct evidence.
+
+Settings uses one toolbar; detail pages hide the main tab bar. Appearance has compact controls instead of a large banner. Fresh defaults use Sky accent and system light/dark with neutral surfaces. Existing saved choices remain. Reference blue selects light/Paper/Sky in one saved edit while preserving font and accessibility preferences. Models opens with import, downloads, search and models; device/startup policy and download access details expand on demand.
 
 ## Configuration transfer, logs and troubleshooting
 

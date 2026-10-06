@@ -39,6 +39,8 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
     val startupStatus by library.startupStatus.collectAsStateWithLifecycle()
     val runtime by coordinator.state.collectAsStateWithLifecycle()
     val scope=rememberCoroutineScope()
+    var showDeviceDetails by remember { mutableStateOf(false) }
+    var showDownloadOptions by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
     var filter by remember { mutableStateOf(0) }
     var addUrl by remember { mutableStateOf(false) }
@@ -69,13 +71,6 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
                 Text(stringResource(R.string.modern_resources,formatBytes(memory),formatBytes(storage)),style=MaterialTheme.typography.bodySmall,
                     color=MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            item {DeviceRuntimeCard(library)}
-            item {HuggingFacePanel(library)}
-            item {Card{Column(Modifier.padding(T.large)){
-                Row(verticalAlignment=Alignment.CenterVertically){Text("Load model after app startup",Modifier.weight(1f));Switch(startupEnabled,library::setStartupEnabled)}
-                Text(startupStatus,style=MaterialTheme.typography.bodySmall)
-                Text("Uses your selected model, last successful load, or the bundled starter. No automatic downloads.",style=MaterialTheme.typography.bodySmall)
-            }}}
             item {
                 Row(horizontalArrangement=Arrangement.spacedBy(T.small)) {
                     OutlinedButton(onClick={ importer.launch(arrayOf("*/*")) },modifier=Modifier.weight(1f)) {
@@ -83,6 +78,8 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
                     Button(onClick={ addUrl=true },modifier=Modifier.weight(1f)) {
                         Icon(Icons.Default.Add,null);Spacer(Modifier.width(T.small));Text(stringResource(R.string.modern_add_url)) }
                 }
+                TextButton(onClick={showDownloadOptions=!showDownloadOptions}){Text(if(showDownloadOptions) "Hide download options" else "Download options and access token")}
+                if(showDownloadOptions) {
                 Text("Download method",style=MaterialTheme.typography.labelLarge)
                 Row(horizontalArrangement=Arrangement.spacedBy(T.small)) {
                     FilterChip(downloadBackend==ModelDownloadBackend.RUNANYWHERE,{downloadBackend=ModelDownloadBackend.RUNANYWHERE},label={Text("RunAnywhere")})
@@ -90,7 +87,9 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
                 }
                 Text("Both verify real GGUF files. Use HTTPS / token for private Hugging Face repositories. SDK partial downloads use its own resume policy.",style=MaterialTheme.typography.bodySmall)
                 TextButton(onClick={ auth=true }) { Text(stringResource(R.string.modern_hf_token)) }
+                }
             }
+            item {HuggingFacePanel(library)}
             item {
                 OutlinedTextField(search,{search=it},Modifier.fillMaxWidth(),singleLine=true,
                     placeholder={Text(stringResource(R.string.modern_search_models))},leadingIcon={Icon(Icons.Default.Search,null)},shape=MaterialTheme.shapes.large)
@@ -163,6 +162,15 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
                         }
                     }
                 }
+            }
+            item {TextButton(onClick={showDeviceDetails=!showDeviceDetails}){Text(if(showDeviceDetails) "Hide device and startup settings" else "Device and startup settings")}}
+            if(showDeviceDetails) {
+            item {DeviceRuntimeCard(library)}
+            item {Card{Column(Modifier.padding(T.large)){
+                Row(verticalAlignment=Alignment.CenterVertically){Text("Load model after app startup",Modifier.weight(1f));Switch(startupEnabled,library::setStartupEnabled)}
+                Text(startupStatus,style=MaterialTheme.typography.bodySmall)
+                Text("Uses your selected model, last successful load, or the bundled starter. No automatic downloads.",style=MaterialTheme.typography.bodySmall)
+            }}}
             }
             item { Text(stringResource(R.string.modern_model_disclaimer),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant) }
         }
