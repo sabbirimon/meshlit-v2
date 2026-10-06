@@ -1,6 +1,7 @@
 # vendored/
 
-This directory is intentionally **not tracked** (see `.gitignore`). It
+Dependency pins, documentation and notices are tracked. Third-party source
+trees are intentionally **not tracked** (see `.gitignore`). This directory
 holds local copies of large third-party trees that Meshlit consumes
 during development but that should not bloat the repository.
 

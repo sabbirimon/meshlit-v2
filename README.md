@@ -135,7 +135,7 @@ For native CPU checkpoints and pipeline execution, install CMake plus Android
 NDK 28.2.13676358, then build the pinned optional source for each required ABI:
 
 ```sh
-python3 scripts/sync-optional-sources.py
+python3 scripts/sync-optional-sources.py runanywhere-llama
 python3 scripts/build-pipeline-native.py --android --abi arm64-v8a \
   --ndk "$ANDROID_HOME/ndk/28.2.13676358" --jobs 2
 # Repeat with --abi x86_64 for an emulator, then rebuild the APK.
