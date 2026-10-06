@@ -12,6 +12,22 @@ Historical upstream records in `docs/history/` are not current test evidence.
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
 
+## Current publication validation (2026-10-07)
+
+Frozen executable source: `6838a7e` (packet bridge/import continuation), building
+both Full flavors and Play Review APK/AAB. Final tests/lint and final Android
+instrumentation are pending; this statement will be replaced with actual results.
+The earlier Play Review APK/AAB assembled, but its last lint run failed during
+source analysis after network source changed. That run is not final evidence.
+
+The source includes actual-state boot animation/loader, compact Models/Monitor
+status cards, both-build legal acceptance, encrypted optional audit export and
+corrected PCAPdroid consent intents with bounded classic-PCAP imports. Blue Team,
+forensic, root/Magisk and other Security Lab tool sources were reviewed and pinned;
+the companion assessment adapters remain plans. No listed security tool was
+installed or run. Native phone sharding/recovery and hosted Grafana proof remain
+open. Physical Samsung was not attached; only API35 x86_64 emulator is available.
+
 ## Audit telemetry and publication continuation
 
 Source wires Settings → Audit and telemetry: opt-in encrypted bounded history,
