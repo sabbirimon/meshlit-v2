@@ -38,6 +38,7 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
     /** Human-only UI entry. No command may enlarge its own delegation. */
     fun setDelegated(permission:Scope,enabled:Boolean){
         check(policy.edit().putBoolean(permission.name,enabled).commit()){ "Delegation could not be saved" }
+        audit?.invoke(com.meshlit.core.observability.AuditRecord(source=com.meshlit.core.observability.AuditSource.SETTINGS,action="agent.delegation.updated",actor=com.meshlit.core.observability.AuditActor.HUMAN,outcome=com.meshlit.core.observability.AuditOutcome.SUCCEEDED))
         if(!enabled) scope.launch{controller.ready.await();controller.jobs.value.filter{!it.terminal && required(it.command)==permission}.forEach{controller.cancel(it.command.requestId)}}
     }
     private fun required(command:AgentCommand):Scope?=when(command.operation){
@@ -51,17 +52,28 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         AgentOperation.WORKSPACE_LIST,AgentOperation.WORKSPACE_READ,AgentOperation.WORKSPACE_WRITE->Scope.WORKSPACE
         else->null
     }
+    @Volatile var audit:((com.meshlit.core.observability.AuditRecord)->Unit)?=null
+    private suspend fun audited(command:AgentCommand,actor:com.meshlit.core.observability.AuditActor,block:suspend()->JsonElement):JsonElement {
+        val start=android.os.SystemClock.elapsedRealtime()
+        fun report(outcome:com.meshlit.core.observability.AuditOutcome){audit?.invoke(com.meshlit.core.observability.AuditRecord(
+            source=com.meshlit.core.observability.AuditSource.AGENT,action="command.${command.operation.name.lowercase()}",actor=actor,outcome=outcome,
+            targetHash=com.meshlit.core.observability.AuditRecord.hashTarget(command.requestId),measurements=mapOf("duration_ms" to (android.os.SystemClock.elapsedRealtime()-start).toDouble())))}
+        report(com.meshlit.core.observability.AuditOutcome.STARTED)
+        try{return block().also{report(com.meshlit.core.observability.AuditOutcome.SUCCEEDED)}}
+        catch(e:CancellationException){report(com.meshlit.core.observability.AuditOutcome.CANCELLED);throw e}
+        catch(e:Exception){report(if(e is AgentCommandFailure && e.code=="permission_denied")com.meshlit.core.observability.AuditOutcome.DENIED else com.meshlit.core.observability.AuditOutcome.FAILED);throw e}
+    }
     var remoteAuthorizer:(suspend(AgentCommand)->Unit)?=null
-    private suspend fun executeAgent(command:AgentCommand):JsonElement {
+    private suspend fun executeAgent(command:AgentCommand):JsonElement = audited(command,com.meshlit.core.observability.AuditActor.AGENT) {
         remoteAuthorizer?.invoke(command)
         required(command)?.let{if(!delegated(it)) throw AgentCommandFailure("permission_denied","Enable saved ${it.name.lowercase()} delegation first")}
         if(command.operation==AgentOperation.MODEL_GENERATE && command.modelId?.startsWith("cloud:")==true) {
             require(online.profiles.value.firstOrNull{it.id==command.modelId!!.removePrefix("cloud:")}?.agentAllowed==true){"Selected online profile does not allow agents"}
         }
-        if(command.operation in setOf(AgentOperation.CLOUD_PROFILES,AgentOperation.ENVIRONMENT_PROFILES,AgentOperation.CLOUD_EXECUTE)) return executeCloud(command,com.meshlit.core.cloudmcp.management.CloudActor.AGENT)
-        return executeCommand(command,true)
+        if(command.operation in setOf(AgentOperation.CLOUD_PROFILES,AgentOperation.ENVIRONMENT_PROFILES,AgentOperation.CLOUD_EXECUTE)) return@audited executeCloud(command,com.meshlit.core.cloudmcp.management.CloudActor.AGENT)
+        executeCommand(command,true)
     }
-    suspend fun executeHuman(command:AgentCommand):JsonElement=executeCommand(command,false)
+    suspend fun executeHuman(command:AgentCommand):JsonElement=audited(command,com.meshlit.core.observability.AuditActor.HUMAN){executeCommand(command,false)}
     private suspend fun executeCommand(command:AgentCommand,agent:Boolean):JsonElement {
         command.validate();library.ready.await()
         return when(command.operation){

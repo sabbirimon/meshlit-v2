@@ -253,13 +253,14 @@ class MeshlitApplication : android.app.Application() {
         val settingsRepository: SettingsRepository = get()
         val tracingController: TracingController = get()
         settingsRepository.startTracingCache(appScope)
-        startHooksFeed(appScope, settingsRepository)
-
         // Single background launch owning every remaining bootstrap step.
         // Order matters where there's a dependency; otherwise the steps
         // are independent and the launch{} block runs them concurrently
         // with `awaitAll` after the sequential prefix.
         appScope.launch {
+            com.meshlit.legal.LegalAgreementStore(this@MeshlitApplication).awaitAccepted()
+            appScope.launch(kotlinx.coroutines.Dispatchers.IO) { get<com.meshlit.observability.AuditTelemetry>().start() }
+            startHooksFeed(appScope, settingsRepository)
             try {
                 get<com.meshlit.agent.AgentCapabilityRegistrar>().start()
             } catch (t: Throwable) {
@@ -303,23 +304,7 @@ class MeshlitApplication : android.app.Application() {
                 log.error("app.peer_repo.fail", "PeerRepository start failed", t)
             }
 
-            // Tracing config flow — stays subscribed for the process lifetime.
-            try {
-                combine(
-                    settingsRepository.tracingModeFlow,
-                    settingsRepository.tracingOtelEndpointFlow,
-                    settingsRepository.tracingOtelHeadersFlow,
-                ) { mode, endpoint, headers -> Triple(mode, endpoint, headers) }
-                    .collect { (mode, endpoint, headers) ->
-                        tracingController.reconfigure(
-                            mode = mode.toCoreTracingMode(),
-                            otlpEndpoint = endpoint,
-                            otlpHeaders = parseOtelHeaders(headers),
-                        )
-                    }
-            } catch (t: Throwable) {
-                log.error("app.tracing.flow.fail", "Tracing reconfigure flow crashed", t)
-            }
+
         }
     }
 

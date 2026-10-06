@@ -53,8 +53,8 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
     var quantFilter by remember { mutableStateOf("All") }
     var pendingDelete by remember { mutableStateOf<LibraryModel?>(null) }
     var loadingId by remember { mutableStateOf<String?>(null) }
-    var memory by remember { mutableLongStateOf(0L) }
-    var storage by remember { mutableLongStateOf(0L) }
+    var memory by remember { mutableLongStateOf(-1L) }
+    var storage by remember { mutableLongStateOf(-1L) }
     LaunchedEffect(library) { library.ready.await();withContext(Dispatchers.IO) { memory=library.availableMemory();storage=library.freeStorage() } }
     val requestNotifications=com.meshlit.permissions.rememberNotificationRequest()
     val importer=rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
@@ -66,7 +66,9 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
         LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax),
             contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.medium)) {
             item {
-                Text(stringResource(R.string.modern_model_intro),style=MaterialTheme.typography.headlineSmall)
+                StatusHeroCard("Your model library", "${entries.count { it.installed }} installed · ${entries.count { it.active }} active transfers") {
+                    TextButton(onClick = { filter = 2 }) { Text("View installed models") }
+                }
                 Spacer(Modifier.height(T.small))
                 Text(stringResource(R.string.modern_resources,formatBytes(memory),formatBytes(storage)),style=MaterialTheme.typography.bodySmall,
                     color=MaterialTheme.colorScheme.onSurfaceVariant)

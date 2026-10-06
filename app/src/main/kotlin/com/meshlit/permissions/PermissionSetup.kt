@@ -42,7 +42,7 @@ fun permissionFeatures()=listOf(
                     if(!granted) Button(onClick={launcher.launch(feature.permissions.toTypedArray())}){Text("Request ${feature.name.lowercase()}")}
                 }}
             }}
-            item{OutlinedButton(onClick={context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))}){Text("Accessibility for Android control")}
+            item{if(!com.meshlit.BuildConfig.PLAY_REVIEW) OutlinedButton(onClick={context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))}){Text("Accessibility for Android control")}
                 OutlinedButton(onClick={context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,android.net.Uri.parse("package:${context.packageName}")))}){Text("Open Android app settings")}
                 Text("If Android no longer shows a permission prompt, use app settings. Accessibility and battery exemptions remain separate system choices.")}
         }

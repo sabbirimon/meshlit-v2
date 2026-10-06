@@ -104,9 +104,10 @@ class RunAnywhereInferenceEngine(
     private val defaultModelId: String = DEFAULT_MODEL_ID,
     /**
      * SDK environment flag passed to `RunAnywhere.initialize`.
-     * `DEVELOPMENT` keeps telemetry off in the dev APK; production
-     * builds should switch this to `PRODUCTION` once the SDK's
-     * telemetry contract is signed off.
+     * DEVELOPMENT selects the SDK's development environment; it is not a
+     * verified telemetry opt-out. A real run attempted the development telemetry
+     * endpoint (DNS failed). See docs/remaining-engine-bugs.md before changing
+     * environments or advertising zero-network behavior.
      */
     private val environment: SDKEnvironment = SDKEnvironment.SDK_ENVIRONMENT_DEVELOPMENT,
 ) : InferenceEngine {

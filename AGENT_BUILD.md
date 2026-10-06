@@ -33,8 +33,13 @@ only `git diff` misses new files. Do not copy build directories, credentials,
 model weights, caches, cloned upstream repositories or generated native binaries.
 Use the pinned source synchronization and native build scripts instead.
 
-User scope includes implementation, routine fixes and local validation. No push,
-merge or release is authorized by this file. Do not send messages to other people
+User scope includes implementation, routine fixes and local validation. On
+2026-10-07 the owner also explicitly authorized publishing this source to
+https://github.com/sabbirimon/meshlit-v2.git, including the root source license and
+repository discovery metadata. Preserve the destination initial commit; no force
+push is authorized. A later owner instruction explicitly authorized GitHub beta
+release assets and Play review artifacts, plus first-use Terms/Privacy acceptance.
+Read docs/PLAY_DISTRIBUTION.md; Play submission is not authorized. Do not send messages to other people
 or agents without explicit human authorization.
 
 ## Architecture and build
@@ -392,3 +397,26 @@ Reference UI checkpoint: both variants assembled, 128 app tests per flavor passe
 full lint has zero errors (342 warnings/17 hints). See PROGRESS.md and
 ../meshlit-validation/reference-ui-results.json for scoped screenshots/Copy/Share
 and SDK telemetry observation. Physical UX remains pending.
+
+## Audit and publication continuation (2026-10-07)
+
+Project owner credit: IMON (@sabbirimon). Read docs/AUDIT_TELEMETRY.md for actual
+coverage, privacy, retention, drop reporting, OTLP/HTTP setup and export boundaries.
+Audit/tracing switches default off. Export JSONL/CSV includes filtered metadata;
+never include secrets/content. Auth headers are encrypted and endpoint-bound.
+Keep closed span export sanitization and close replaced SDKs. Local batching is
+not a transactionally complete or tamper-proof ledger. The vendor SDK telemetry
+issue remains separate. Do not infer hosted dashboard success from loopback OTLP.
+README, llms.txt and CONTRIBUTING describe actual scope and intended discovery;
+do not promise search ranking, buy/fabricate popularity or send unsolicited posts.
+
+## Distribution and agreement continuation (2026-10-07)
+
+The owner authorized GitHub beta assets, a separate Play review APK/AAB, and
+first-use Terms/Privacy acceptance. Read docs/PLAY_DISTRIBUTION.md (relative to
+repository root) and the public/offline policy copies. `playReview` is a restricted
+review candidate; no Play approval/submission is claimed. Policies are versioned,
+both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for acceptance.
+Optional permissions/telemetry remain independent. Preserve the original open-source
+license rights and third-party notices. Production release signing must never fall
+back to a debug certificate; owner keys remain external to source.

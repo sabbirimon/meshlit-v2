@@ -29,6 +29,7 @@ object SettingsDestinations {
         SettingsDestination("termux","Termux integration","Probe an installed shell, manage delegation and view its audit",true,"terminal commands Linux tools networking"),
         SettingsDestination("notifications","Notifications","System notification permission and channels",keywords="alert sound silent"),
         SettingsDestination("monitor","Monitoring and layer pipeline","Memory, thermal status and approved model workers",keywords="shard cluster battery CPU"),
+        SettingsDestination("audit","Audit and telemetry","Encrypted audit history, device metrics, OTLP collector and exports",keywords="OpenTelemetry Grafana Tempo Prometheus Loki observability tracing monitoring CSV JSONL retention actor event"),
         SettingsDestination("logs","Logs and export","Search logs; filter severity and source; export TXT or JSONL",keywords="debug diagnostics error trace download"),
         SettingsDestination("network","Network and pairing","Enroll devices, choose transports and approve layer workers",keywords="QR SSH Bluetooth web NAS hive pairing discovery"),
         SettingsDestination("peers","Forwarding peers","Manage peers for the existing inference router",true,"network IP routing"),
@@ -38,8 +39,9 @@ object SettingsDestinations {
         SettingsDestination("automation","Android automation","Accessibility automation and app allowlists",true,"permissions security agents"),
         SettingsDestination("hooks","Agent hooks","Enable and edit user-authored lifecycle scripts",true,"scripts tools"),
         SettingsDestination("help","Guide and tutorial","Offline walkthrough, configuration recipes and illustrated feature guide",keywords="help setup learn tutorial docs manual guide troubleshooting"),
+        SettingsDestination("legal","Terms and privacy","Offline policies, accepted version and data controls",keywords="agreement consent privacy terms data delete IMON"),
         SettingsDestination("about","About and availability","Build information and feature implementation status",keywords="licenses version help")
-    )
+    ).filterNot { com.meshlit.BuildConfig.PLAY_REVIEW && it.id in setOf("automation", "termux") }
     fun search(query:String,advanced:Boolean)=all.filter{ (advanced || !it.advanced) &&
         query.trim().split(Regex("\\s+")).filter{it.isNotBlank()}.all { word ->
             "${it.title} ${it.description} ${it.keywords}".contains(word,true)

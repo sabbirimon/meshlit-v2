@@ -279,12 +279,15 @@ val coreModule = module {
     // -----------------------------------------------------------------
     // Observability
     // -----------------------------------------------------------------
+    single { com.meshlit.observability.AuditTelemetry(androidContext(),get(),get(),get(),get(),get(),get(),get(),get()) }
     single { MetricsRegistry() }
     single<LogBuffer> {
         AppLoggerFactory.install()
         AppLoggerFactory.buffer
     }
     single<TracingController> {
+        val telemetryPrefs=androidContext().getSharedPreferences("telemetry-instance",0)
+        val instanceId=telemetryPrefs.getString("id",null) ?: java.util.UUID.randomUUID().toString().also{ telemetryPrefs.edit().putString("id",it).apply() }
         TracingController(object : TraceSink {
             override fun onSpan(name: String, attributes: Map<String, String>) {
                 get<LogBuffer>().info(
@@ -294,7 +297,7 @@ val coreModule = module {
                     attributes,
                 )
             }
-        }).also { TracerHolder.bind(it) }
+        }, instanceId).also { TracerHolder.bind(it) }
     }
 
     // -----------------------------------------------------------------

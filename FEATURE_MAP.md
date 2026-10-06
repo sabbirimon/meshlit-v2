@@ -1,6 +1,6 @@
 # Meshlit structured feature and architecture map
 
-Updated 2026-10-06. This is the map of the separate Codex implementation, not the
+Updated 2026-10-07. This is the map of the separate Codex implementation, not the
 old Android checkout. `PROGRESS.md` records evidence; `PLAN.md` records unfinished
 acceptance. Machine-readable companion: `docs/feature-map.json`.
 
@@ -12,8 +12,11 @@ Planned = a requirement still needing implementation. Never treat those as synon
 
 ```mermaid
 flowchart TD
-    Boot[App boot and SDK init] --> Policy[Remembered installed model policy]
-    Boot --> App[Shared V1 and V2 shell]
+    Boot[Minimal app startup] --> Consent{Current Terms and Privacy accepted?}
+    Consent -->|Decline| Exit[Exit app]
+    Consent -->|Accept| Init[SDK and remembered model startup]
+    Init --> Loader[Animated actual-state loader]
+    Loader --> App[Shared V1 and V2 shell]
     App --> Chat[Chat and recent conversations]
     App --> Models[Models and transfers]
     App --> Devices[Devices and clusters]
@@ -352,7 +355,25 @@ loop and needs physical validation. Real model/site task acceptance remains a ga
 
 Appearance persists Figtree/system/serif/mono fonts and solid/tinted-glass
 surfaces; constrained devices/high contrast fall back to solid. Guide/tutorial
-has 19 offline chapters, three conceptual SVG diagrams and eight reading lessons.
+has 20 offline chapters, three conceptual SVG diagrams and eight reading lessons.
 Files keeps granted-storage browsing, adds bounded AI text inspection and streaming
 ZIP/unzip with limits, cancellation, CRC checks, unsafe-path/collision rejection
 and cleanup. Large provider-backed storage acceptance remains separate.
+
+## Audit telemetry
+
+Settings → Audit and telemetry wires encrypted retained metadata, filters, JSONL/CSV
+export and optional OTLP/HTTP traces/metrics. Device measurements and typed human/
+agent command outcomes are real observations; source coverage/retention/drop limits
+and collector setup are in [docs/AUDIT_TELEMETRY.md](docs/AUDIT_TELEMETRY.md).
+
+## Distribution, agreements and new roadmap areas
+
+The structured map now contains 61 areas, including explicitly planned AI-assisted
+repair, signed update channels and hardware/security lab profiles. These are not
+implemented by the existing retry/resume or runtime shell controls. Two distribution
+channels are GitHub Full and the future Google Play edition. The present Play Review
+APK/AAB is a restricted candidate with remaining submission gates. Both include
+versioned first-use policies, an actual-state animated boot loader and compact Models/
+Monitor hero cards. Read docs/PLAY_DISTRIBUTION.md, docs/AI_REPAIR_AND_EVOLUTION.md
+and docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md.

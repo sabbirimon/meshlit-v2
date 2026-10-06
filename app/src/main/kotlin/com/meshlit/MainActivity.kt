@@ -26,7 +26,11 @@ class MainActivity:ComponentActivity() {
                 MeshlitTheme {
                     // Both flavors use the shared optional permission setup. A second
                     // legacy wizard must not race navigation or cover the first chat.
-                    if(BuildConfig.USE_NEW_UI) V2Root() else MeshlitApp()
+                    com.meshlit.legal.LegalAgreementGate(onDecline = { finishAndRemoveTask() }) {
+                        com.meshlit.ui.modern.BootLoadingGate {
+                            if(BuildConfig.USE_NEW_UI) V2Root() else MeshlitApp()
+                        }
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-06",
+  "updated": "2026-10-07",
   "operations": [
     "SETTINGS_READ",
     "SETTINGS_PATCH",
@@ -82,7 +82,9 @@
       "status": "implemented",
       "sources": [
         "app/src/main/kotlin/com/meshlit/ui/modern/ModernSettingsScreen.kt",
-        "app/src/main/kotlin/com/meshlit/ui/modern/SettingsDestinations.kt"
+        "app/src/main/kotlin/com/meshlit/ui/modern/SettingsDestinations.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/StatusHeroCard.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/BootLoadingGate.kt"
       ],
       "authority": [
         "SETTINGS"
@@ -682,6 +684,69 @@
       ],
       "authority": [
         "human-SAF-grants"
+      ]
+    },
+    {
+      "id": "audit-telemetry",
+      "title": "Audit telemetry and optional OTLP collector",
+      "status": "implemented; validation pending",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/observability/AuditTelemetry.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/AuditTelemetryScreen.kt",
+        "core-observability/src/main/kotlin/com/meshlit/core/observability/AuditJournal.kt",
+        "docs/AUDIT_TELEMETRY.md"
+      ]
+    },
+    {
+      "id": "first-use-legal-agreement",
+      "title": "Versioned first-use Terms and Privacy acceptance",
+      "status": "implemented-validation-in-progress",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/legal/LegalAgreementStore.kt",
+        "app/src/main/kotlin/com/meshlit/legal/LegalScreens.kt",
+        "docs/PRIVACY_POLICY.md",
+        "docs/TERMS_OF_USE.md"
+      ],
+      "authority": [
+        "human-explicit-agreement",
+        "independent-optional-grants"
+      ]
+    },
+    {
+      "id": "play-review-distribution",
+      "title": "Restricted Play review APK/AAB and submission gates",
+      "status": "candidate-not-store-approved",
+      "sources": [
+        "app/src/playReview/AndroidManifest.xml",
+        "app/build.gradle.kts",
+        "scripts/check-play-review.py",
+        "docs/PLAY_DISTRIBUTION.md"
+      ]
+    },
+    {
+      "id": "ai-assisted-repair",
+      "title": "AI/web diagnosis, bounded repair and source evolution",
+      "status": "planned-not-implemented",
+      "sources": [
+        "docs/AI_REPAIR_AND_EVOLUTION.md"
+      ]
+    },
+    {
+      "id": "signed-update-channels",
+      "title": "Signed GitHub/Play update and rollback channels",
+      "status": "planned-not-implemented",
+      "sources": [
+        "PLAN.md",
+        "docs/PLAY_DISTRIBUTION.md"
+      ]
+    },
+    {
+      "id": "security-lab-hardware-access",
+      "title": "Capability-probed Blue Team and Red Team lab",
+      "status": "planned-not-implemented",
+      "sources": [
+        "docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md",
+        "docs/runtime-and-sandbox.md"
       ]
     }
   ],

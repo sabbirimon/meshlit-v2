@@ -11,8 +11,8 @@ import kotlinx.serialization.json.*
 /** Explicit saved delegation, evaluated against the real foreground app on every action. */
 class AndroidControl(private val context:Context,private val settings:SettingsRepository) {
     private val prefs=context.getSharedPreferences("android-agent-delegation",0)
-    fun enabled()=prefs.getBoolean("autonomous",false)
-    fun setEnabled(value:Boolean){prefs.edit().putBoolean("autonomous",value).commit()}
+    fun enabled()=!com.meshlit.BuildConfig.PLAY_REVIEW && prefs.getBoolean("autonomous",false)
+    fun setEnabled(value:Boolean){prefs.edit().putBoolean("autonomous",value && !com.meshlit.BuildConfig.PLAY_REVIEW).commit()}
     fun packages():Set<String> = prefs.getStringSet("packages",emptySet()).orEmpty().toSet()
     fun savePackages(values:Set<String>){require(values.size<=128 && values.all{it.matches(Regex("[A-Za-z0-9_.]+"))});prefs.edit().putStringSet("packages",values).commit()}
     fun allApps()=prefs.getBoolean("all-apps",false)

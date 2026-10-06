@@ -160,3 +160,15 @@ unsafe paths/collisions, clean incomplete outputs and retain provider failures.
 Fonts/glass persist; constrained/high-contrast fallback must remain readable.
 Tutorial read progress is not execution evidence. Keep the offline asset guide
 and repository guide synchronized. Do not claim replicated recovery/IaC from UI.
+
+## Audit and publication continuation (2026-10-07)
+
+Read docs/AUDIT_TELEMETRY.md and the latest PROGRESS.md. Opt-in audit metadata,
+JSONL/CSV export and OTLP/HTTP traces/metrics are distinct from vendor SDK telemetry.
+Retain redaction at collection/export boundaries, encrypted endpoint-bound collector
+headers, bounded queues/retention and honest failures. No hosted dashboard proof is
+implied by loopback requests. The owner IMON explicitly authorized source publication
+to sabbirimon/meshlit-v2 with Apache-2.0 root LICENSE and repository metadata; preserve
+history and third-party notices. The owner subsequently authorized GitHub beta release assets and a separate Play
+review build. No force push, Play Store submission or external promotion posts
+are authorized. Read docs/PLAY_DISTRIBUTION.md and docs/PRIVACY_POLICY.md.

@@ -10,7 +10,7 @@
 #
 # Override behaviour via repo variables:
 #   MESHLIT_DEVICE_SERIAL   the device's adb serial
-#                           (default: R9KN2009CZJ)
+#                           (required; no real device serial is committed)
 #   MESHLIT_PACKAGE         the apk's applicationId
 #                           (default: com.meshlit.debug)
 #   MESHLIT_RUN_UI          "true" to run the @ui spec (needs a
@@ -23,13 +23,6 @@
 name: Playwright E2E
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'tests/e2e/**'
-      - 'app/**'
-      - 'core-inference/**'
-      - 'core-net/**'
   workflow_dispatch:
     inputs:
       grep:
@@ -43,10 +36,14 @@ jobs:
     timeout-minutes: 30
 
     env:
-      MESHLIT_DEVICE: ${{ vars.MESHLIT_DEVICE_SERIAL || 'R9KN2009CZJ' }}
+      MESHLIT_DEVICE: ${{ vars.MESHLIT_DEVICE_SERIAL }}
       MESHLIT_PACKAGE: ${{ vars.MESHLIT_PACKAGE || 'com.meshlit.debug' }}
 
     steps:
+      - name: Require an explicitly selected owned device
+        run: |
+          test -n "$MESHLIT_DEVICE" || { echo "Set MESHLIT_DEVICE_SERIAL for this owned runner"; exit 1; }
+          adb -s "$MESHLIT_DEVICE" get-state
       - name: Checkout
         uses: actions/checkout@v4
 

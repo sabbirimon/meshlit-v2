@@ -192,7 +192,7 @@ Current physical-phone ADB testing is blocked while Samsung is absent from adb d
 
 ## Settings directory and safe recipes
 
-Basic destinations: Appearance; Models; Camera/vision/audio; Configuration profiles; Custom local model behavior; Checkpoints/recovery; Fine-tuning; Model router; Cloud/vault; Online providers; Power/costs; External devices/OTG; Acceleration; Agents; SSH; Network rules; Device; Tasks; Code workspace; Permissions; Files; Notifications; Monitoring; Logs; Network/pairing; OpenClaw; Guide/tutorial; About. Advanced also exposes Termux, forwarding peers, Linux runtime, crawler, Android automation and hooks.
+Basic destinations: Appearance; Models; Camera/vision/audio; Configuration profiles; Custom local model behavior; Checkpoints/recovery; Fine-tuning; Model router; Cloud/vault; Online providers; Power/costs; External devices/OTG; Acceleration; Agents; SSH; Network rules; Device; Tasks; Code workspace; Permissions; Files; Notifications; Monitoring; Audit and telemetry; Logs; Network/pairing; OpenClaw; Guide/tutorial; About. Advanced also exposes Termux, forwarding peers, Linux runtime, crawler, Android automation and hooks.
 
 Offline starter recipe: keep external providers/VM/autonomy off; use bundled starter, short context, measured generation, solid surfaces and logs. Higher-capability single device: verify memory, import a compatible larger GGUF and raise context only within admission. Phone cluster: independently approve compatible native workers and verify actual layered execution before depending on oversized weights.
 
@@ -207,3 +207,11 @@ Read PROGRESS.md, BUILD_MILESTONES.md and the feature map for exact source/test 
 Cloud/vault, modern fonts/surfaces, guided offline help and safe archive source are part of the current continuation. Managed IaC, full vendor services, OAuth/refresh, general browser credential automation, native platform apps, full IDE/compiler and every hardware connector are not automatically completed by those screens.
 
 Never report completion percentages from feature counts or convert a unit fixture, UI control, emulator run or desktop proof into physical cluster acceptance. Unsupported features must clearly return unavailable or blocked states. Use real resources/models/metrics and keep credentials entered locally.
+
+## Audit telemetry and exports
+
+Open Settings → Audit and telemetry. Local collection defaults off. Enable it for encrypted metadata history, real device samples and typed human/agent operation outcomes. Choose retention, record limit and sampling interval; filter source, actor, outcome and time. Export the full filtered snapshot as JSONL or CSV through the Android file picker. Export files are plaintext; protect the destination.
+
+Optional OpenTelemetry uses your HTTPS OTLP base URL and encrypted, endpoint-bound headers. The app adds /v1/traces and /v1/metrics; select OTLP collector mode to send metadata traces, counters, duration histograms and device gauges. Use Grafana Cloud, an owner-controlled Collector/Alloy, Tempo plus a metrics backend or another compatible destination. A successful flush does not prove a dashboard stored the data. Local audit collection and tracing mode have separate switches.
+
+Prompts, replies, credentials, URLs, paths and command arguments are excluded. Unknown sensor/token values remain absent. History is bounded and asynchronous; crashes can lose pending batches. This is not a tamper-proof compliance ledger. Meshlit switches do not establish vendor SDK telemetry opt-out. Detailed coverage, dashboard template and collector recipe: docs/AUDIT_TELEMETRY.md.

@@ -101,3 +101,16 @@ the direct child process, but does not guarantee rooted descendants are killed.
 Native process-group handling and OS isolation are prerequisites for running
 untrusted shell programs safely. Do not treat APP, PRoot or root chroot as a
 security sandbox for arbitrary generated code.
+
+## Rooted-device extension roadmap
+
+GitHub Full retains the implemented root/root-chroot runtime plans, rootless
+compatibility and optional VM controls. Physical rooted-device/VM execution is
+still unverified. Potential additions are capability-probed Linux namespaces,
+cgroup quotas, native process-group supervision/descendant cancellation, richer
+read-only thermal/driver diagnostics, and KVM detection only where `/dev/kvm`,
+kernel/SELinux policy and owner permission allow it. Root does not create kernel
+features or grant a working vendor GPU/NPU backend. Keep these as planned rather
+than operational controls until actual hardware and cancellation tests pass.
+Play distribution needs an independently reviewed capability/permission surface;
+its narrower manifest alone does not certify every retained runtime integration.

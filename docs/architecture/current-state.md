@@ -1,6 +1,6 @@
 # Current architecture and evidence boundaries
 
-Updated 2026-10-06. Working branch `codex/meshlit-ui-pipeline-openclaw`, baseline
+Updated 2026-10-07. Working branch `codex/meshlit-ui-pipeline-openclaw`, baseline
 `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`. The upstream architecture text is
 preserved at `../history/current-state-upstream-baseline.md`; its phase, module,
 model, SSH and native-support assertions are historical.
@@ -8,7 +8,7 @@ model, SSH and native-support assertions are historical.
 ## Product and runtime
 
 Android Kotlin/Compose/Koin, two build flavors with the shared modern UI. The
-structured inventory has 33 Gradle modules, 55 feature areas and 38 durable typed
+structured inventory has 33 Gradle modules, 61 feature areas and 38 durable typed
 command operations. `../../FEATURE_MAP.md`, `../feature-map.json` and
 `../../PROGRESS.md` are the current navigation/implementation/evidence ledgers.
 No percentage is inferred from feature counts.
@@ -113,3 +113,25 @@ a scripted substitute. External browsers use the separate generic Android
 Accessibility tools and detected-browser app scopes. Both paths need real task/
 physical evidence. AI asset inspection and streaming bounded ZIP/unzip operate
 on user-granted storage; archive extraction is not a model import/runtime.
+
+## Audit telemetry
+
+Opt-in metadata collection samples actual Android device state, model/library/task/
+pipeline transitions and typed human/agent operation outcomes. An encrypted bounded
+journal provides retention, filters and JSONL/CSV export. Optional OTLP/HTTP exports
+private metadata traces and metrics with endpoint-bound encrypted auth. Closed
+export sanitization excludes prompts, URLs, paths, credentials and exception bodies.
+See ../AUDIT_TELEMETRY.md for actual coverage/loss limits and collector/dashboard
+setup. Vendor SDK telemetry opt-out, full fleet coverage and a durable remote outbox
+remain unverified/unimplemented; no hosted Grafana proof is implied by loopback OTLP.
+
+## Distribution and agreement continuation (2026-10-07)
+
+The owner authorized GitHub beta assets, a separate Play review APK/AAB, and
+first-use Terms/Privacy acceptance. Read docs/PLAY_DISTRIBUTION.md (relative to
+repository root) and the public/offline policy copies. `playReview` is a restricted
+review candidate; no Play approval/submission is claimed. Policies are versioned,
+both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for acceptance.
+Optional permissions/telemetry remain independent. Preserve the original open-source
+license rights and third-party notices. Production release signing must never fall
+back to a debug certificate; owner keys remain external to source.

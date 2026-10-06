@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.File
 import java.security.MessageDigest
 
 plugins {
@@ -7,13 +8,29 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// Operator-owned signing properties are never generated or committed by this build.
+val meshlitSigningFile = providers.gradleProperty("meshlit.signingProperties").orNull?.let { rootProject.file(it) }
+    ?: File(System.getProperty("user.home"), ".gradle/meshlit-release.properties")
+
 android {
+    signingConfigs {
+        create("release") {
+            if (meshlitSigningFile.exists()) {
+                val props = Properties().apply { meshlitSigningFile.inputStream().use { load(it) } }
+                storeFile = rootProject.file(requireNotNull(props.getProperty("storeFile")))
+                storePassword = requireNotNull(props.getProperty("storePassword"))
+                keyAlias = requireNotNull(props.getProperty("keyAlias"))
+                keyPassword = requireNotNull(props.getProperty("keyPassword"))
+            }
+        }
+    }
     packaging { jniLibs.useLegacyPackaging = true }
     namespace = "com.meshlit"
     compileSdk = 37
 
     defaultConfig {
         applicationId = "com.meshlit"
+        buildConfigField("boolean", "PLAY_REVIEW", "false")
         // Floor = API 24 (Android 7.0). The RunAnywhere SDK 0.20.12
         // ships `libllama.so` with API 24+ symbol requirements (and
         // uses java.time on cold paths); `:core-inference` already
@@ -85,18 +102,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Phase 7 — wire the release signing config. When
-            // `~/.gradle/meshlit-release.properties` is present (operator
-            // has populated the four keystore fields) this resolves to
-            // a real production APK. Otherwise we fall back to debug
-            // signing so the build still completes for local smoke
-            // tests; the §1 release gate then flags the build as
-            // "unsigned at tag time" — see `docs/release-checklist.md` §1.
-            signingConfig = if (rootProject.file("~/.gradle/meshlit-release.properties").exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // Production release is unsigned without explicit operator keys; never fall back to debug.
+            signingConfig = if (meshlitSigningFile.exists()) signingConfigs.getByName("release") else null
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -122,6 +129,18 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
         }
+    }
+
+    // Review-only distribution: narrower manifest, no cross-app autonomous service.
+    // Debug-signed for installation; neither this APK nor its AAB is Play approved.
+    buildTypes.create("playReview") {
+        initWith(buildTypes.getByName("debug"))
+        matchingFallbacks += listOf("debug")
+        applicationIdSuffix = ".playreview"
+        versionNameSuffix = "-play-review"
+        isDebuggable = false
+        signingConfig = signingConfigs.getByName("debug")
+        buildConfigField("boolean", "PLAY_REVIEW", "true")
     }
 
     // Phase 1.0 — Lean APK (debug only). The Debug variant ships
@@ -183,34 +202,6 @@ android {
             "IconMissingDensityFolder",
             "GoogleAppIndexingWarning",
         )
-    }
-
-    // Phase 7 — release signing. The Phase 8 hook PR shipped without
-    // any `signingConfigs` block, so `:app:assembleRelease` could not
-    // produce a signed APK and §1 of the release checklist stayed red.
-    //
-    // We do NOT generate a production keystore here (the release
-    // captain owns that — see `keystore.properties.example` at the
-    // repo root for the operator template). Instead the build reads
-    // the four keystore fields from `~/.gradle/meshlit-release.properties`
-    // if that file exists, otherwise falls back to debug signing so
-    // `./gradlew :app:assembleRelease` still produces an installable
-    // APK for local smoke tests. Tag-time build with a real keystore
-    // is the release captain's responsibility (see §8 in
-    // `docs/release-checklist.md`).
-    signingConfigs {
-        create("release") {
-            val ksProps = rootProject.file("~/.gradle/meshlit-release.properties")
-            if (ksProps.exists()) {
-                val props = Properties().apply {
-                    ksProps.inputStream().use { load(it) }
-                }
-                storeFile = file(props.getProperty("storeFile"))
-                storePassword = props.getProperty("storePassword")
-                keyAlias = props.getProperty("keyAlias")
-                keyPassword = props.getProperty("keyPassword")
-            }
-        }
     }
 
     // Phase 1.0 — Lean APK. The bundled `smollm2-360m-instruct-q8_0.gguf`

@@ -2,13 +2,57 @@
 
 Updated 2026-10-07 (Asia/Dhaka; validation ran 2026-10-06 UTC). Baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
-Branch: `codex/meshlit-ui-pipeline-openclaw`. No push or release authorized.
+Branch: `codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
+to `sabbirimon/meshlit-v2` on 2026-10-07, followed by GitHub beta APK release assets
+and a separate Play review build. No force push or Play submission is authorized.
 Historical upstream records in `docs/history/` are not current test evidence.
 
-`FEATURE_MAP.md` and `docs/feature-map.json` inventory **55 feature areas,
+`FEATURE_MAP.md` and `docs/feature-map.json` inventory **61 feature areas,
 38 durable command operations and 33 modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
+
+## Audit telemetry and publication continuation
+
+Source wires Settings → Audit and telemetry: opt-in encrypted bounded history,
+source/actor/outcome/time filters, JSONL/CSV export, real process-lifetime Android
+samples and typed human/agent command outcomes. Optional OTLP/HTTP traces/metrics
+use an explicit HTTPS base URL and encrypted endpoint-bound headers. SDK exporters
+close on replacement; collection/export boundaries exclude content/secrets and
+strip exception events. A collector recipe and Grafana dashboard template are in
+docs/observability/. No hosted Grafana account or complete fleet coverage is claimed.
+
+Seven core observability tests pass, including actual loopback HTTP/protobuf trace
+and metric receipt and private-text exclusion. Initial app compile passes; full
+final builds/tests/lint and a real Android encrypted-journal test are in progress.
+Final evidence will replace this pending statement. This is bounded best-effort
+observability, not signed/transactional compliance auditing. Native phone sharding,
+replicated recovery and vendor SDK telemetry opt-out remain separate open gates.
+
+Publication includes a rewritten evidence-based README with real screenshots,
+live repository badges, IMON credit, contribution forms and llms.txt discovery.
+Source stays Apache-2.0; third-party notices remain. Repository metadata/topics are
+prepared. Existing destination history will be preserved. Ranking is not guaranteed;
+no external promotional posts or invented adoption is claimed. Beta release
+assets are authorized; publication evidence will be recorded below.
+
+## Agreements and Play review continuation
+
+Both flavors now have an installation-local, versioned Terms/Privacy gate and
+persistent offline policy pages in Settings. Application-owned SDK initialization,
+startup loading, bootstrap and audit startup wait for acceptance. Android grants,
+agent scopes and optional telemetry remain separate. Agreement preferences are
+excluded from backups; old versions require renewed acceptance. Tests cover both
+choices and persistence/version invalidation.
+
+`playReview` supplies a separate debug-signed, non-debuggable APK and AAB candidate.
+The narrower manifest removes autonomous Accessibility/VPN services, SMS, broad
+storage/media grants, battery-exemption requests and Termux command permission.
+Runtime controls cannot re-enable Android autonomy. Missing operator release keys
+now produce unsigned release output rather than silently using debug signing.
+`docs/PLAY_DISTRIBUTION.md` tracks AI reporting/prevention, SDK data flows, private
+privacy contact, production identity/signing and actual Play/device review gates.
+No Play compliance certificate or store upload is claimed.
 
 ## Latest verified UI checkpoint
 
@@ -29,8 +73,8 @@ Physical Samsung UX and live generated-media sharing remain unverified.
 Actual SDK generation attempted its development telemetry endpoint; DNS failed.
 No successful transmission or payload is established. This remains tracked in
 `docs/remaining-engine-bugs.md`; SDK development mode is not a proven opt-out.
-The owner's next request is local auditing/export plus optional OpenTelemetry
-collector/Grafana integration; its implementation is a separate checkpoint.
+The audit continuation below adds local metadata history/export and optional
+OpenTelemetry collector/Grafana integration.
 
 ## Previous verified backend continuation
 
@@ -91,7 +135,7 @@ or production successful stub data are used. The other Android checkout is untou
 | OpenClaw/autonomy | Gateway client, scoped signed Android-node adapter, optional loopback model provider, opt-in allowlisted Accessibility actions | Live gateway and physical consent/stop/revoke tests pending |
 | Media/IoT | Main media settings; bounded image import/phone-camera thumbnail; existing voice wrappers; Pi/MCU/sensor/radio categories/role claims | Compatible media models/backends required; CCTV/UVC/MCU/radio adapters planned |
 | Browser | Real local-model observe/act loop in visible WebView, 38-command backend browser controls, origin/site/agent permissions, deadline/limits/Stop; installed external-browser Accessibility scope selection | Real-model real-site task and physical Chrome/Samsung Internet tests pending; sensitive workflows stay human |
-| Files/guide | Granted-storage browsing; bounded AI text inspection; streaming ZIP/unzip with safe paths, limits, cancellation and cleanup; 19 offline illustrated chapters and eight reading lessons | Large SAF/provider tests and interactive execution walkthroughs pending; browser preview of local HTML blocked |
+| Files/guide | Granted-storage browsing; bounded AI text inspection; streaming ZIP/unzip with safe paths, limits, cancellation and cleanup; 20 offline illustrated chapters and eight reading lessons | Large SAF/provider tests and interactive execution walkthroughs pending; browser preview of local HTML blocked |
 | Terminal/VM/crawler | Optional bounded terminal/runtime/QEMU/SSH/VNC paths; scoped Crawl4AI companion | Real binaries/guest/physical runtime tests still required |
 | Future platforms/recovery | Capability interfaces and detailed vendor/OS, journal/lease/checkpoint and internet federation plans | Linux/Windows/macOS/HarmonyOS apps, portable KV and automatic cluster failover not implemented |
 
@@ -236,3 +280,40 @@ and an ADB interface, but ADB 37.0.1 lists only the emulator. Its Mac log report
 wireless pairing is pending. No physical-phone tests are claimed yet. Test scope,
 preservation rules and exact model evidence gates are in
 `docs/physical-device-test-guide.md`. The updated APKs are in `../meshlit-install`.
+
+## AI-assisted repair request
+
+The owner requested diagnosis and evolution using local/online AI and web evidence.
+`docs/AI_REPAIR_AND_EVOLUTION.md` records the bounded repair and isolated source-patch
+workflow. This is a design milestone, not an implemented autonomous repair service.
+Existing resume/retry/local checkpoint features must retain their narrower labels.
+
+## Boot loader, hero cards and distribution split
+
+The UI continuation adds an animated Android 12+ launch icon and an actual-state
+Compose loader across supported Android versions. SDK initialization and startup
+model loading drive the status; no timer or fabricated percentage marks completion.
+Open app while loading bypasses the overlay without declaring the model ready.
+Models and Monitor gain compact theme-aware hero cards with observed status;
+Appearance and chat keep their compact reference layouts. These additions require
+final rebuild/device verification before the beta assets are uploaded.
+
+The owner explicitly wants two distributions: GitHub Full retains implemented
+advanced features with their separate grants; Play has a narrower review manifest
+and must meet its documented remaining gates before production publication.
+
+## Hardware and authorized Security Lab request
+
+The owner requested deeper hardware/core access and Blue Team/Red Team capabilities.
+The capability-probed, scoped lab design is in
+`docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md`. Existing bounded DNS/TCP checks and runtime
+plans are distinct from a working penetration-testing suite. Rooted physical-device,
+VM, eBPF/perf, driver and process-tree cleanup acceptance remains unverified.
+
+## Linux distribution and lab tool request
+
+Alpine/Kali/Parrot/Ubuntu/licensed RHEL/custom profiles and optional Metasploit/lab
+packages are documented in docs/LINUX_DISTRIBUTIONS_AND_LAB_TOOLS.md. These are
+provisioning requirements, not installed APK assets or verified guest executions.
+Current runtime plans require supplied compatible binaries/rootfs/images, with
+restricted QEMU networking and ephemeral disk snapshots.

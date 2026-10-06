@@ -97,3 +97,62 @@ fonts/surfaces, bounded streaming ZIP/unzip and visible approved-origin local-mo
 browser sessions. Execution walkthroughs, physical large-storage tests, browser
 real-site model evaluations and external Chrome/Samsung Internet automation remain
 acceptance work. Read PROGRESS and docs/runanywhere-browser-and-llama.md.
+
+## Audit follow-up
+
+Local encrypted metadata/filter/export and optional OTLP/HTTP source are implemented;
+validation is tracked in PROGRESS.md. Next: full adapter coverage, durable exporter
+outbox, fleet query API, signed remote anchors, and operator-tested Grafana/Loki alert
+paths. Fix vendor SDK telemetry opt-out with supported API evidence. Keep physical
+phone sharding and replicated/fenced recovery the main product gates.
+
+## Distribution and agreement continuation (2026-10-07)
+
+The owner authorized GitHub beta assets, a separate Play review APK/AAB, and
+first-use Terms/Privacy acceptance. Read docs/PLAY_DISTRIBUTION.md (relative to
+repository root) and the public/offline policy copies. `playReview` is a restricted
+review candidate; no Play approval/submission is claimed. Policies are versioned,
+both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for acceptance.
+Optional permissions/telemetry remain independent. Preserve the original open-source
+license rights and third-party notices. Production release signing must never fall
+back to a debug certificate; owner keys remain external to source.
+
+## Update and bounded repair roadmap
+
+No general app auto-updater or autonomous self-repair service is implemented.
+Existing resumable model downloads, durable local jobs, retry/cancel and encrypted
+native CPU checkpoints must not be described as fleet self-healing. Future work:
+
+1. Separate GitHub beta and Play update channels; compare real signed release
+   versions, verify APK checksum and signing identity, and require Android install
+   consent. Production Play builds should use Play's supported update flow. Never
+   download and silently execute replacement code or weaken the signing boundary.
+2. Use typed health states for model artifacts, runtime, storage, tools, transport,
+   worker leases and checkpoints. Record actual errors and recovery outcomes.
+3. Bound retries/backoff, prevent crash loops, respect battery/thermal/network
+   policy, and expose Stop plus separate human/agent repair settings.
+4. Allow reversible repairs (restart an opted-in adapter, resume an owned download,
+   revalidate an artifact); request approval before deleting user data, rotating
+   credentials, changing firewall policy, enabling root or resetting configuration.
+5. Add fenced coordinator failover and compatible replicated task/checkpoint recovery
+   before claiming cluster healing. Never auto-replay irreversible tools from an old
+   journal. Validate update and repair failure cases on physical phones and the
+   intended signed distribution before enabling unattended policies.
+
+## Hardware access and Security Lab
+
+Read docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md. Owner-requested Blue Team/Red Team
+profiles are planned around approved engagements, actual capability probes,
+separate human/agent permission, bounded work, evidence and emergency stop.
+Root/kernel access may enable additional diagnostics and isolation on compatible
+hardware; it does not create missing KVM, radio or vendor GPU/NPU support. Keep
+physical rooted-device/VM execution and broader security tooling as open gates.
+
+## Optional distro and security-tool provisioning
+
+Read docs/LINUX_DISTRIBUTIONS_AND_LAB_TOOLS.md. The owner requested Alpine, Kali,
+Parrot, Ubuntu, licensed RHEL/custom environments and optional Metasploit/other
+lab tools. Implement verified artifact provisioning, architecture/resource probes,
+explicit disk persistence and approved networking before promising one-click
+installation. Current QEMU snapshots discard guest changes and restricted networking
+prevents general package downloads. Physical guest/tool execution remains unverified.

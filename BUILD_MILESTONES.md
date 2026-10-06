@@ -61,3 +61,22 @@ usage remains unknown, public catalog/vault/WebView contracts have real evidence
 Physical oversized phone execution, replicated journal/fencing/failover and real
 browser-model tasks remain outstanding. New cloud/files/guide/browser work does
 not close those gates. No physical device is visible to ADB in this environment.
+
+## Audit telemetry continuation
+
+Source implemented: encrypted bounded metadata journal, actual Android sampling,
+typed human/agent command auditing, filtered CSV/JSONL export, optional OTLP/HTTP
+traces/metrics and collector/dashboard templates. See docs/AUDIT_TELEMETRY.md.
+Validation evidence is in PROGRESS.md. Hosted dashboard ingestion, durable remote
+outbox, signed audit anchors and complete fleet/adapter coverage remain gates.
+
+## Distribution and agreement continuation (2026-10-07)
+
+The owner authorized GitHub beta assets, a separate Play review APK/AAB, and
+first-use Terms/Privacy acceptance. Read docs/PLAY_DISTRIBUTION.md (relative to
+repository root) and the public/offline policy copies. `playReview` is a restricted
+review candidate; no Play approval/submission is claimed. Policies are versioned,
+both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for acceptance.
+Optional permissions/telemetry remain independent. Preserve the original open-source
+license rights and third-party notices. Production release signing must never fall
+back to a debug certificate; owner keys remain external to source.

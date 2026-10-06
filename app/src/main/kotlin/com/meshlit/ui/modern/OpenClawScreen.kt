@@ -58,6 +58,7 @@ import java.util.UUID
                 var allowed by remember{mutableStateOf(backend.delegated(permission))}
                 Row{Text(permission.name.lowercase(),Modifier.weight(1f));Switch(allowed,{backend.setDelegated(permission,it);allowed=it})}
             }}
+            if(!com.meshlit.BuildConfig.PLAY_REVIEW){
             item{HorizontalDivider();Text("Autonomous Android actions",style=MaterialTheme.typography.titleLarge)
                 Text("Allow agents to snapshot, open, tap, type, go Back and Home within saved scope. Enable the Android accessibility service separately. Root, protected OS surfaces and password input are outside this permission.")
                 Row{Text("Autonomous delegation",Modifier.weight(1f));Switch(delegated,{on ->run{
@@ -75,6 +76,7 @@ import java.util.UUID
                 Button(onClick={run{control.savePackages(packages.lines().map{it.trim()}.filter{it.isNotBlank()}.toSet())}}){Text("Save app scope")}
                 Button(onClick={control.setEnabled(false);delegated=false;node.disconnect();host.stopSharing();task?.cancel();run{settings.setAndroidAutomationEnabled(false)}}){Text("Emergency stop")}
                 Text("Revocation affects the next dispatched action. Android grants remain managed by the operating system.",style=MaterialTheme.typography.bodySmall)}
+            } else item{Text("Cross-app Android autonomy is unavailable in the Play review build. Gateway chat and model sharing remain separate features.")}
             (error ?: status.error)?.let{message ->item{ErrorCard(message){error=null}}}
         }
     }

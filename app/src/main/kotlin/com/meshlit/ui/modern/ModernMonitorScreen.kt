@@ -61,8 +61,8 @@ fun ModernMonitorScreen() {
     }
     LazyColumn(Modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),
         verticalArrangement=Arrangement.spacedBy(T.medium)) {
+        item { StatusHeroCard("Your device, at a glance", "${runtime.javaClass.simpleName} · ${if (total > 0) "${formatBytes(memory)} available RAM" else "Reading device memory"} · ${if (battery >= 0) "$battery% battery" else "Battery unavailable"}") }
         item {DeviceRuntimeCard(library)}
-        item { Text("Your device",style=MaterialTheme.typography.headlineSmall) }
         item { MonitorCard("Inference") {
             Text("${coordinator.runtimeDisplayName} · ${runtime.javaClass.simpleName}")
             coordinator.loadedModel()?.let { Text(it.modelName);Text("Model file: ${formatBytes(it.sizeBytes)}");Text("Context: ${if(it.contextSize>0) "${it.contextSize} tokens" else "Not exposed by backend"}") }

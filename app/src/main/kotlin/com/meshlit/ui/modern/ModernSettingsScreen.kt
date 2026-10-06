@@ -37,6 +37,7 @@ import kotlinx.coroutines.*
     val repository=koinInject<SettingsRepository>()
     val back={destination=null}
     BackHandler(destination!=null){destination=null}
+    if(destination=="legal"){com.meshlit.legal.LegalDocumentsScreen(back);return}
     if(destination=="behavior"){LocalBehaviorScreen(back,{destination="models"});return}
     if(destination=="help"){HelpTutorialScreen(back);return}
     if(destination=="cloud"){CloudManagementScreen(back);return}
@@ -58,6 +59,7 @@ import kotlinx.coroutines.*
     if(destination=="ide"){com.meshlit.ide.CodeWorkspaceScreen(back);return}
     if(destination=="permissions"){com.meshlit.permissions.PermissionSetupScreen(back);return}
     if(destination=="openclaw"){OpenClawScreen(back);return}
+    if(destination=="audit"){AuditTelemetryScreen(back);return}
     if(destination=="logs"){ModernLogsScreen(back);return}
     if(destination=="models"){ModernModelsScreen(back);return}
     if(destination=="network"){ModernNetworkScreen(back);return}
@@ -186,7 +188,7 @@ private fun settingsIcon(id:String)=when(id){
     "media"->Icons.Default.PermMedia
     "power"->Icons.Default.BatteryChargingFull
     "help"->Icons.Default.HelpOutline
-    "logs","monitor"->Icons.Default.Insights
+    "logs","monitor","audit"->Icons.Default.Insights
     "permissions"->Icons.Default.Security
     "ide","termux","runtime","hooks"->Icons.Default.Code
     else->Icons.Default.Settings

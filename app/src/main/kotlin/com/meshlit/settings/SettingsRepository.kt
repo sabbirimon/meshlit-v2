@@ -48,6 +48,7 @@ import kotlinx.serialization.json.Json
  */
 open class SettingsRepository(private val context: Context) {
 
+    private val tracingSecrets by lazy { com.meshlit.core.trust.EncryptedCredentialStore(context,"tracing-secrets") }
     private val store: DataStore<Preferences> by lazy { context.settingsDataStore }
 
     val flow: Flow<MeshlitThemeConfig> = store.data.map { prefs ->
@@ -268,11 +269,11 @@ open class SettingsRepository(private val context: Context) {
      *  and the AccessibilityService tools are exposed. Default =
      *  false. */
     val androidAutomationEnabledFlow: Flow<Boolean> = store.data.map {
-        it[Keys.androidAutomationEnabled] ?: false
+        !com.meshlit.BuildConfig.PLAY_REVIEW && (it[Keys.androidAutomationEnabled] ?: false)
     }
 
     suspend fun setAndroidAutomationEnabled(enabled: Boolean) {
-        store.edit { it[Keys.androidAutomationEnabled] = enabled }
+        store.edit { it[Keys.androidAutomationEnabled] = enabled && !com.meshlit.BuildConfig.PLAY_REVIEW }
     }
 
     // --- Android automation allowlist + high-risk packages -------------
@@ -399,7 +400,7 @@ open class SettingsRepository(private val context: Context) {
     // flows on every change. `TracingMode.Off` (default) means no
     // spans; `Local` writes spans to the in-app LogBuffer;
     // `Otel` boots an OpenTelemetry SDK and forwards spans via
-    // OTLP/gRPC to the user's endpoint URL.
+    // OTLP/HTTP to the user's endpoint URL.
 
     /** Active tracing mode. Default Off. */
     val tracingModeFlow: Flow<TracingMode> = store.data.map { prefs ->
@@ -449,9 +450,9 @@ open class SettingsRepository(private val context: Context) {
     }
 
     /**
-     * OTLP/gRPC endpoint URL. Empty = OTel remote export disabled.
+     * OTLP/HTTP endpoint URL. Empty = OTel remote export disabled.
      * The user pastes this in Settings → Tracing; pointing at
-     * `https://otlp-gateway-<region>.grafana.cloud:443` is the
+     * `https://your-collector.example/otlp` is the
      * canonical Grafana Cloud path.
      */
     val tracingOtelEndpointFlow: Flow<String> = store.data.map {
@@ -459,6 +460,7 @@ open class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setTracingOtelEndpoint(url: String) {
+        if(url.isNotBlank()) com.meshlit.core.observability.TelemetryPrivacy.endpoint(url)
         store.edit { prefs ->
             if (url.isBlank()) prefs.remove(Keys.tracingOtelEndpoint)
             else prefs[Keys.tracingOtelEndpoint] = url.trim()
@@ -472,14 +474,22 @@ open class SettingsRepository(private val context: Context) {
      * [com.meshlit.core.observability.OtelBootstrap].
      */
     val tracingOtelHeadersFlow: Flow<String> = store.data.map {
-        it[Keys.tracingOtelHeaders] ?: ""
+        if(tracingSecrets.get("bound-endpoint")==it[Keys.tracingOtelEndpoint].orEmpty()) tracingSecrets.get("headers").orEmpty() else ""
     }
 
     suspend fun setTracingOtelHeaders(raw: String) {
-        store.edit { prefs ->
-            if (raw.isBlank()) prefs.remove(Keys.tracingOtelHeaders)
-            else prefs[Keys.tracingOtelHeaders] = raw.trim()
+        require(raw.length<=8192) { "Collector headers exceed limit" }
+        val lines=raw.lineSequence().map{it.trim()}.filter{it.isNotBlank() && !it.startsWith('#')}.toList()
+        require(lines.size<=16 && lines.all{line ->
+            val at=line.indexOf('=')
+            at>0 && line.substring(0,at).trim().matches(Regex("[A-Za-z0-9_.-]{1,64}")) &&
+                line.substring(at+1).all{it.code in 32..126}
+        }) { "Use at most 16 printable key=value headers" }
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            tracingSecrets.putCommitted("headers",raw.trim())
+            tracingSecrets.putCommitted("bound-endpoint",store.data.first()[Keys.tracingOtelEndpoint].orEmpty())
         }
+        store.edit { prefs -> prefs.remove(Keys.tracingOtelHeaders);prefs[Keys.tracingHeaderRevision]=(prefs[Keys.tracingHeaderRevision] ?: 0)+1 }
     }
 
     // --- Sync (non-flow) accessors ----------------------------------------
@@ -516,6 +526,15 @@ open class SettingsRepository(private val context: Context) {
      * `onCreate` block on DataStore I/O.
      */
     fun startTracingCache(scope: CoroutineScope) {
+        scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val legacy=store.data.first()[Keys.tracingOtelHeaders]
+            if(!legacy.isNullOrBlank()) {
+                // Preserve old data encrypted even if it needs formatting repair.
+                tracingSecrets.putCommitted("headers",legacy)
+                tracingSecrets.putCommitted("bound-endpoint",store.data.first()[Keys.tracingOtelEndpoint].orEmpty())
+                store.edit{it.remove(Keys.tracingOtelHeaders);it[Keys.tracingHeaderRevision]=(it[Keys.tracingHeaderRevision] ?: 0)+1}
+            }
+        }
         scope.launch { tracingModeFlow.collect { cachedTracingMode = it } }
         scope.launch { tracingOtelEndpointFlow.collect { cachedOtlpEndpoint = it } }
         scope.launch { tracingOtelHeadersFlow.collect { cachedOtlpHeaders = it } }
@@ -994,6 +1013,7 @@ open class SettingsRepository(private val context: Context) {
         val tracingIncludeInference = booleanPreferencesKey("tracing.include_inference")
         val tracingIncludeAgent = booleanPreferencesKey("tracing.include_agent")
         val tracingOtelEndpoint = stringPreferencesKey("tracing.otel_endpoint")
+        val tracingHeaderRevision = intPreferencesKey("tracing.header_revision")
         val tracingOtelHeaders = stringPreferencesKey("tracing.otel_headers")
         val netDeviceCaptureEnabled = booleanPreferencesKey("feature.net.device_capture")
         val feedbackRepoSlug = stringPreferencesKey("feedback.repo_slug")

@@ -127,7 +127,9 @@ fun NetworkMonitorScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
-            CaptureHeader(
+            if (com.meshlit.BuildConfig.PLAY_REVIEW) {
+                Text("Device-wide VPN capture is unavailable in the Play review build.", Modifier.padding(16.dp))
+            } else CaptureHeader(
                 running = captureRunning,
                 onStart = {
                     val intent = VpnService.prepare(context)
