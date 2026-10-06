@@ -6,6 +6,8 @@
 
 # Meshlit v2 — Android local AI and experimental phone LLM clusters
 
+**Many nodes. One mind.** On-device AI runtime + federated inference cluster for Android.
+
 **A project by IMON** · [@sabbirimon](https://github.com/sabbirimon)
 
 **Run local language models on Android. Connect owner-approved devices. Give humans
