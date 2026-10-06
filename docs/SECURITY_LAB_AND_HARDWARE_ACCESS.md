@@ -77,3 +77,7 @@ Sources reviewed 2026-10-07:
 records IMON’s requested checklist, Objection, Drozer, Havoc and Magisk sources,
 exact review revisions, license boundaries and companion/hardware acceptance
 criteria. These are reviewed plans; none is bundled or operational in this beta.
+
+[Blue Team and packet-analysis roadmap](BLUE_TEAM_AND_PACKET_ANALYSIS.md) adds
+Quark, Androguard, archived Cuckoo, Atomic Red Team, Autopsy/Sleuth Kit and the
+PCAPdroid/Wireshark workflow with evidence and licensing gates.

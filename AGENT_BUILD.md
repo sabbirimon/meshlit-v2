@@ -428,3 +428,8 @@ Read `docs/ANDROID_SECURITY_TOOL_INTEGRATIONS.md` and the pinned
 are reviewed references, not installed adapters. Implement original assessment
 contracts first, then owned-target companion tests. Preserve human-only root,
 independent agent grants, tool licenses and honest unavailable states.
+
+Read `docs/BLUE_TEAM_AND_PACKET_ANALYSIS.md` for static APK analysis, sandbox
+qualification, forensic evidence and mobile-PCAP/desktop-Wireshark boundaries.
+The linked Cuckoo repository is archived. No tool/ruleset executes automatically
+from an imported file or web suggestion. Companion adapters remain planned.

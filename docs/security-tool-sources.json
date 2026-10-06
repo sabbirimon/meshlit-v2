@@ -42,6 +42,80 @@
       "defaultBranch": "master",
       "copiedIntoMeshlit": false,
       "integrationStatus": "reviewed-not-integrated"
+    },
+    {
+      "repository": "ev-flow/quark-engine",
+      "revision": "f6147d7aec6eab40074c51f1dd2a567070e52601",
+      "license": "GPL-3.0",
+      "defaultBranch": "master",
+      "archived": false,
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated",
+      "licensePath": "LICENSE",
+      "licenseEvidence": "https://github.com/ev-flow/quark-engine/blob/f6147d7aec6eab40074c51f1dd2a567070e52601/LICENSE"
+    },
+    {
+      "repository": "cuckoosandbox/cuckoo",
+      "revision": "50452a39ff7c3e0c4c94d114bc6317101633b958",
+      "license": "GPL-3.0 (actual LICENSE; GitHub metadata NOASSERTION)",
+      "defaultBranch": "master",
+      "archived": true,
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated",
+      "licensePath": "LICENSE",
+      "licenseEvidence": "https://github.com/cuckoosandbox/cuckoo/blob/50452a39ff7c3e0c4c94d114bc6317101633b958/LICENSE"
+    },
+    {
+      "repository": "androguard/androguard",
+      "revision": "15a7439dddcce47456d48f795b5dff18733d652e",
+      "license": "Apache-2.0",
+      "defaultBranch": "master",
+      "archived": false,
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated",
+      "licensePath": "LICENCE",
+      "licenseEvidence": "https://github.com/androguard/androguard/blob/15a7439dddcce47456d48f795b5dff18733d652e/LICENCE"
+    },
+    {
+      "repository": "redcanaryco/atomic-red-team",
+      "revision": "388942adbd9641f4dfdcf079d7efe9a75ec0ac43",
+      "license": "MIT",
+      "defaultBranch": "master",
+      "archived": false,
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated",
+      "licensePath": "LICENSE.txt",
+      "licenseEvidence": "https://github.com/redcanaryco/atomic-red-team/blob/388942adbd9641f4dfdcf079d7efe9a75ec0ac43/LICENSE.txt"
+    },
+    {
+      "repository": "sleuthkit/autopsy",
+      "revision": "cb3dacdcad67abe7cf863c74f10dcdb8e25a5c21",
+      "license": "Apache-2.0 per upstream README; dependencies retain separate licenses",
+      "defaultBranch": "develop",
+      "archived": false,
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated",
+      "licensePath": "README.md",
+      "licenseEvidence": "https://github.com/sleuthkit/autopsy/blob/cb3dacdcad67abe7cf863c74f10dcdb8e25a5c21/README.md"
+    },
+    {
+      "repository": "sleuthkit/sleuthkit",
+      "revision": "bca04ea949ccc3382c011ead3d15f5345b72f7e0",
+      "license": "Mixed IPL-1.0/CPL-1.0/Apache-2.0 and component licenses",
+      "defaultBranch": "develop-4.1x",
+      "archived": false,
+      "copiedIntoMeshlit": false,
+      "integrationStatus": "reviewed-not-integrated",
+      "licensePath": "licenses/README.md",
+      "licenseEvidence": "https://github.com/sleuthkit/sleuthkit/blob/bca04ea949ccc3382c011ead3d15f5345b72f7e0/licenses/README.md"
+    },
+    {
+      "repository": "emanuele-f/PCAPdroid",
+      "revision": "66f7b3514540c20add8655a74dfee93d00a9563b",
+      "license": "GPL-3.0; dependencies have separate notices",
+      "integrationStatus": "existing external intent bridge under correction; no upstream code bundled",
+      "copiedIntoMeshlit": false,
+      "licenseEvidence": "https://github.com/emanuele-f/PCAPdroid/blob/66f7b3514540c20add8655a74dfee93d00a9563b/COPYING"
     }
   ]
 }
