@@ -8,6 +8,17 @@ import javax.net.ssl.*
 import java.util.concurrent.Executors
 class RpcTunnelTest {
     private fun unusedPort()=ServerSocket(0).use{it.localPort}
+    private fun bindTestTunnel(tls:SSLContext,nativePort:Int,token:String):RpcTunnel {
+        // The API takes an explicit public port. Reserving then releasing an
+        // ephemeral test port cannot reserve it across the actual TLS bind.
+        // Retry only allocation conflicts, retaining every TLS/auth assertion.
+        var conflict:BindException?=null
+        repeat(20) {
+            try { return RpcTunnel.server(tls,unusedPort(),nativePort,token,capabilities={"{\"workerAllowed\":true}"}) }
+            catch(e:BindException) { conflict=e }
+        }
+        throw requireNotNull(conflict)
+    }
     @Test fun authenticatedTunnelForwardsAndWrongPinFails() {
         // This keystore is a public, disposable TEST FIXTURE, never a deployment identity.
         val fixture=requireNotNull(javaClass.getResourceAsStream("/pipeline-test-only.p12"))
@@ -19,7 +30,7 @@ class RpcTunnelTest {
         val executor=Executors.newSingleThreadExecutor()
         val echo=executor.submit {native.accept().use{socket -> val data=ByteArray(4);java.io.DataInputStream(socket.inputStream).readFully(data);socket.outputStream.write(data);socket.outputStream.flush()}}
         val token="t".repeat(64)
-        RpcTunnel.server(tls,unusedPort(),native.localPort,token,capabilities={"{\"workerAllowed\":true}"}).use { server ->
+        try { bindTestTunnel(tls,native.localPort,token).use { server ->
             assertEquals("{\"workerAllowed\":true}",RpcTunnel.queryCapabilities("127.0.0.1",server.port,pin,token))
             assertTrue(runCatching{RpcTunnel.queryCapabilities("127.0.0.1",server.port,"0".repeat(64),token)}.isFailure)
             assertTrue(runCatching{RpcTunnel.queryCapabilities("127.0.0.1",server.port,pin,"x".repeat(64))}.isFailure)
@@ -28,6 +39,7 @@ class RpcTunnelTest {
                     val received=ByteArray(4);java.io.DataInputStream(socket.inputStream).readFully(received);assertArrayEquals(byteArrayOf(1,2,3,4),received)}
             }
         }
-        echo.get(5,java.util.concurrent.TimeUnit.SECONDS);native.close();executor.shutdownNow()
+        echo.get(5,java.util.concurrent.TimeUnit.SECONDS)
+        } finally {native.close();executor.shutdownNow()}
     }
 }
