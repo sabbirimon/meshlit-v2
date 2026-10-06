@@ -689,7 +689,7 @@
     {
       "id": "audit-telemetry",
       "title": "Audit telemetry and optional OTLP collector",
-      "status": "implemented; validation pending",
+      "status": "implemented-unit-and-Android-audit-tested; hosted-collector-validation-pending",
       "sources": [
         "app/src/main/kotlin/com/meshlit/observability/AuditTelemetry.kt",
         "app/src/main/kotlin/com/meshlit/ui/modern/AuditTelemetryScreen.kt",
@@ -700,7 +700,7 @@
     {
       "id": "first-use-legal-agreement",
       "title": "Versioned first-use Terms and Privacy acceptance",
-      "status": "implemented-validation-in-progress",
+      "status": "implemented-unit-and-Android-agreement-tested",
       "sources": [
         "app/src/main/kotlin/com/meshlit/legal/LegalAgreementStore.kt",
         "app/src/main/kotlin/com/meshlit/legal/LegalScreens.kt",

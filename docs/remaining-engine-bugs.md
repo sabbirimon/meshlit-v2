@@ -61,3 +61,12 @@ network access. Its service is now disabled in the app manifest and fails closed
 without creating a TUN. The capture UI directs users to the separately installed
 PCAPdroid companion. Final validation must cover the merged manifests and verify
 this unavailable state; live companion capture remains unproven.
+
+## Beta cold-start observation (2026-10-07)
+
+Two normal V1 launches on API35 x86_64 emulator-5580 were killed by Android
+with “failed to complete startup” while full Gradle lint ran on the same host.
+The audit instrumentation itself passes (1 test, 9.343 seconds). No cold-start
+fix or causal attribution is established; normal launch must be retried after
+the build becomes idle, and physical startup remains untested. Evidence:
+`../meshlit-validation/beta-startup-during-build.log`.
