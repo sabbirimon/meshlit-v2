@@ -53,3 +53,11 @@ or connection is attempted. The bridge lifecycle in newer cloned source is an
 internal API and differs from the pinned AAR; do not patch it blindly or use a
 broken URL as an opt-out. Native standalone CPU inference is a separate backend.
 This UI continuation records the bug; it does not claim to have corrected it.
+
+## Legacy capture connectivity (2026-10-07)
+
+The built-in VPN capture read TUN packets without forwarding and could interrupt
+network access. Its service is now disabled in the app manifest and fails closed
+without creating a TUN. The capture UI directs users to the separately installed
+PCAPdroid companion. Final validation must cover the merged manifests and verify
+this unavailable state; live companion capture remains unproven.

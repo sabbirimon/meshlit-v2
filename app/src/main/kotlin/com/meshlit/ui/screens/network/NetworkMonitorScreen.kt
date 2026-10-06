@@ -3,7 +3,6 @@ package com.meshlit.ui.screens.network
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.net.VpnService
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,13 +53,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import com.meshlit.core.net.capture.MeshlitCaptureVpnService
 import com.meshlit.core.net.capture.PacketCaptureRegistry
 import com.meshlit.core.net.capture.PcapParser
 import com.meshlit.network.pcapdroid.PcapdroidBridge
-import com.meshlit.network.termux.TermuxBridge
-import com.meshlit.ui.components.MeshlitHeader
 import java.io.File
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.Lifecycle
@@ -76,8 +71,8 @@ import kotlinx.coroutines.CancellationException
 /**
  * Android-native network diagnostics surface. It deliberately
  * separates Meshlit's own HTTP event list from device-wide packet
- * capture: TLS payloads remain encrypted and the device capture is
- * opt-in behind the system VPN consent dialog.
+ * capture. Built-in VPN capture is disabled until packet forwarding is proven;
+ * the external companion retains its own approval and Android VPN consent.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,33 +83,12 @@ fun NetworkMonitorScreen(
 ) {
     val context = LocalContext.current
     var selectedTab by remember { mutableIntStateOf(0) }
-    var captureRunning by remember { mutableStateOf(false) }
     var packets by remember { mutableStateOf(PacketCaptureRegistry.snapshot()) }
     var selectedFile by remember { mutableStateOf<File?>(null) }
     var pcapRecords by remember { mutableStateOf<List<PcapParser.Record>>(emptyList()) }
     var fileError by remember { mutableStateOf<String?>(null) }
     val previewFile = selectedFile
     DisposableEffect(previewFile) { onDispose { previewFile?.delete() } }
-
-    val vpnConsentLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            context.startService(
-                Intent(context, MeshlitCaptureVpnService::class.java),
-            )
-            captureRunning = true
-        }
-    }
-
-    LaunchedEffect(captureRunning) {
-        if (captureRunning) {
-            while (captureRunning) {
-                packets = PacketCaptureRegistry.snapshot()
-                kotlinx.coroutines.delay(500)
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -141,25 +115,13 @@ fun NetworkMonitorScreen(
         ) {
             if (com.meshlit.BuildConfig.PLAY_REVIEW) {
                 Text("Device-wide VPN capture is unavailable in the Play review build.", Modifier.padding(16.dp))
-            } else CaptureHeader(
-                running = captureRunning,
-                onStart = {
-                    val intent = VpnService.prepare(context)
-                    if (intent == null) {
-                        context.startService(Intent(context, MeshlitCaptureVpnService::class.java))
-                        captureRunning = true
-                    } else {
-                        vpnConsentLauncher.launch(intent)
-                    }
-                },
-                onStop = {
-                    context.startService(
-                        Intent(context, MeshlitCaptureVpnService::class.java)
-                            .setAction(MeshlitCaptureVpnService.ACTION_STOP),
-                    )
-                    captureRunning = false
-                },
-            )
+            } else Card(Modifier.fillMaxWidth().padding(16.dp)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Mobile packet analysis", style = MaterialTheme.typography.titleMedium)
+                    Text("Use the optional PCAPdroid companion for capture, then open its PCAP file here or in desktop Wireshark. Built-in VPN capture is unavailable.", style = MaterialTheme.typography.bodyMedium)
+                    Button(onClick = { selectedTab = 3 }) { Text("Open capture tools") }
+                }
+            }
             SecondaryTabRow(selectedTabIndex = selectedTab) {
                 listOf("Meshlit HTTP", "Device packets", "External capture", "Tools").forEachIndexed { index, label ->
                     Tab(
@@ -194,45 +156,6 @@ fun NetworkMonitorScreen(
 }
 
 @Composable
-private fun CaptureHeader(running: Boolean, onStart: () -> Unit, onStop: () -> Unit) {
-    Card(Modifier.fillMaxWidth().padding(16.dp)) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.NetworkCheck, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.padding(4.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(if (running) "Capture running" else "Capture idle", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        if (running) "Metadata is kept on this device and written to a .pcap file."
-                        else "Meshlit HTTP is always listed separately; device packets require consent.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                if (running) {
-                    OutlinedButton(onClick = onStop) {
-                        Icon(Icons.Default.Stop, contentDescription = null)
-                        Spacer(Modifier.padding(2.dp))
-                        Text("Stop")
-                    }
-                } else {
-                    Button(onClick = onStart) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                        Spacer(Modifier.padding(2.dp))
-                        Text("Start")
-                    }
-                }
-            }
-            Text(
-                "TLS payloads are not decrypted. Use PCAPdroid or Termux for a full device capture when needed.",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.tertiary,
-            )
-        }
-    }
-}
-
-@Composable
 private fun HttpEmptyState() {
     EmptyState(
         title = "Meshlit HTTP",
@@ -245,7 +168,7 @@ private fun PacketList(packets: List<PacketCaptureRegistry.Entry>) {
     if (packets.isEmpty()) {
         EmptyState(
             title = "No device packets yet",
-            body = "Start capture, then use a network-enabled feature. Packet metadata stays local.",
+            body = "No live packet source is connected. Import a PCAP file or open capture tools.",
         )
         return
     }

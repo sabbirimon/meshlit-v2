@@ -39,8 +39,10 @@ an exit code or self-reported success.
 
 ## Mobile Wireshark-style workflow
 
-Meshlit already has a limited local classic-PCAP record viewer, an opt-in capture
-service and a PCAPdroid external bridge. This is not the full Wireshark protocol
+Meshlit has a limited local classic-PCAP record viewer and a PCAPdroid external
+bridge. The legacy built-in VPN service is disabled: it routed packets into a TUN
+but did not forward them, so it could interrupt connectivity. Both its manifest
+and start handler now fail closed; the UI directs users to the companion. This is not the full Wireshark protocol
 engine, stream reassembly or display-filter language. Prefer the established
 [PCAPdroid companion](https://github.com/emanuele-f/PCAPdroid) for mobile capture;
 its rootless path uses Android VPN consent and can conflict with another active VPN.
@@ -75,3 +77,7 @@ controls. Manual analysis of a user-selected file is a separate capability. Keep
 
 The bridge/parser correction requires the final build and malformed/endian/budget
 tests; actual PCAPdroid installation/capture and desktop Wireshark remain unproven.
+
+The legacy connectivity bug was found during this source review; the final frozen
+build must include the disabled service. No traffic-preserving built-in VPN backend
+or full Wireshark engine is claimed.

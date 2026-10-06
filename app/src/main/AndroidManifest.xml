@@ -194,14 +194,10 @@
                 android:resource="@xml/accessibility_service_config" />
         </service>
 
-        <!-- Phase Observability 1 — opt-in device-wide packet capture
-             (the network monitor). The user enables this via the
-             Network monitor screen; the system prompts for the VPN
-             profile consent. ForegroundServiceType=specialUse is the
-             only allowed type for in-app capture on Android 14+; we
-             declare the explanation in res/xml/vpn_service_config.xml. -->
+        <!-- Legacy capture stays disabled: its TUN reader lacked packet forwarding. -->
         <service
             android:name="com.meshlit.core.net.capture.MeshlitCaptureVpnService"
+            android:enabled="false"
             android:permission="android.permission.BIND_VPN_SERVICE"
             android:exported="true">
             <intent-filter>
