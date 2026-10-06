@@ -15,12 +15,15 @@ jobs:
       matrix:
         flavor: [MeshlitV1, MeshlitV2]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v6.0.1
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4.0.4
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - name: Android platform
         run: sdkmanager 'platforms;android-37' 'build-tools;37.0.0'
       - name: Gradle cache
@@ -38,13 +41,14 @@ jobs:
       - name: Assemble, unit checks and fatal lint
         env:
           FLAVOR: ${{ matrix.flavor }}
-        run: ./gradlew ":app:assemble${FLAVOR}Debug" ":app:test${FLAVOR}DebugUnitTest" ":app:lint${FLAVOR}Debug" :core-observability:testDebugUnitTest :core-inference:testDebugUnitTest :core-mcp:testDebugUnitTest :core-cloud-mcp:testDebugUnitTest --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
+        run: ./gradlew ":app:assemble${FLAVOR}Debug" ":app:test${FLAVOR}DebugUnitTest" ":app:lint${FLAVOR}Debug" :core-observability:testDebugUnitTest :core-inference:testDebugUnitTest :core-mcp:testDebugUnitTest :core-cloud-mcp:testDebugUnitTest :core-net:testDebugUnitTest --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
       - name: Preserve reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: reports-${{ matrix.flavor }}
           path: |
             app/build/reports/
             core-observability/build/reports/tests/
+            core-net/build/reports/tests/
           if-no-files-found: warn

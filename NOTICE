@@ -1,0 +1,13 @@
+Meshlit
+Copyright 2026 Sabbir (https://github.com/sabbirimon)
+Project owner/maintainer credit: IMON (sabbirimon).
+
+The project source is distributed under the Apache License, Version 2.0.
+The LICENSE text was restored to the canonical Apache text on 2026-10-07;
+the earlier copyright attribution is retained here.
+
+Third-party software, model weights and optional companions retain their own
+copyrights, licenses and notices. See THIRD_PARTY_NOTICES.md and the notices
+retained in app assets, vendored/licenses and companion/source documentation.
+This attribution notice does not modify those licenses or assert ownership
+of upstream dependencies.
