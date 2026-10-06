@@ -273,11 +273,13 @@ class MeshlitApplication : android.app.Application() {
                 inferenceCoordinator.markInitialized()
             }
 
+            // A managed installed model loads after SDK initialization and library reconciliation.
+            launch { get<com.meshlit.models.ModelLibrary>().loadAtBoot() }
+
             // Independent subsystems run concurrently after the prefix.
             coroutineScope {
                 val jobs = listOf(
                     async { runSystemProbe() },
-                    async { extractBundledModel() },
                     async { bootMcp() },
                     async { runBootstrap() },
                     async { registerUsbTetherCallback() },
@@ -358,7 +360,7 @@ class MeshlitApplication : android.app.Application() {
                 override fun onAvailable(network: android.net.Network) {
                     val caps = connectivity.getNetworkCapabilities(network) ?: return
                     val mtu = try {
-                        connectivity.getLinkProperties(network)?.mtu ?: 1500
+                        if (Build.VERSION.SDK_INT >= 29) connectivity.getLinkProperties(network)?.mtu ?: 1500 else 1500
                     } catch (t: Throwable) {
                         1500
                     }

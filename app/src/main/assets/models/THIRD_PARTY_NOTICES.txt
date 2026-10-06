@@ -1,0 +1,11 @@
+Bundled model: SmolLM2-135M-Instruct Q4_K_M GGUF
+Base model authors: Hugging Face / HuggingFaceTB
+GGUF quantization publisher: bartowski
+License: Apache License 2.0 (LICENSE-Apache-2.0.txt)
+Sources:
+https://huggingface.co/HuggingFaceTB/SmolLM2-135M-Instruct
+https://huggingface.co/bartowski/SmolLM2-135M-Instruct-GGUF
+Pinned quantization revision: 09816acd5d99df7be770d85ea30822623dab342c
+SHA-256: 2e8040ceae7815abe0dcb3540b9995eaa1fa0d2ca9e797d0a635ae4433c68c2d
+The application performs extraction and content-addressed runtime copying;
+model weights are otherwise unchanged.

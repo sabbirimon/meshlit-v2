@@ -34,6 +34,7 @@ data class MeshlitThemeConfig(
     val accentHue: AccentHue = AccentHue.MESHLIT,
     val basePalette: BasePalette = BasePalette.MIDNIGHT,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val dynamicColors: Boolean = true,
     val fontScale: Float = 1.0f,
     val densityScale: Float = 1.0f,
     val animationsEnabled: Boolean = true,

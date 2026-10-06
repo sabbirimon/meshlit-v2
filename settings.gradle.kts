@@ -51,6 +51,7 @@ include(
     ":core-tunnel",
     ":core-users",
     ":core-terminal",
+    ":core-sandbox",
     ":core-bootstrap",
     ":core-registry",
     ":core-lifecycle",

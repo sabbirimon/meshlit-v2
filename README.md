@@ -20,13 +20,11 @@
 
 # Meshlit — Many phones. One mind.
 
-> ## 🚧 **THIS IS THE `dev` BRANCH — ACTIVE DEVELOPMENT IN PROGRESS**
->
-> **You are reading the latest integration branch.** Things here change daily, may break, and may not be tied to a release yet. The interface, screens, and SDK wiring are evolving as Phase 2.x → Phase 3 work lands. For the frozen snapshot, see the [`main`](https://github.com/sabbirimon/meshlit/tree/main) branch instead.
->
-> **Status:** 🟡 **Active development** · Phase 2.x shipped · Phase 3 (cluster-shard federation, MoE routing) in progress · latest tag: none yet.
->
-> Quick links: [📦 main (frozen)](https://github.com/sabbirimon/meshlit/tree/main) · [🌿 dev (this branch)](https://github.com/sabbirimon/meshlit/tree/dev) · [📓 PROGRESS.md](PROGRESS.md) · [🛠 TODO.md](TODO.md) · [📋 Issues](https://github.com/sabbirimon/meshlit/issues) · [💬 Discussions](https://github.com/sabbirimon/meshlit/discussions)
+> **Current checkout:** `codex/meshlit-ui-pipeline-openclaw`, based on upstream
+> `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`. Android development build; no release published.
+> Read [PROGRESS.md](PROGRESS.md) for evidence and limitations, [FEATURE_MAP.md](FEATURE_MAP.md)
+> for the complete feature map, and [AGENT_BUILD.md](AGENT_BUILD.md) for build/handoff instructions.
+> Physical-phone oversized-model sharding and replicated-memory recovery are not yet demonstrated.
 
 > **On-device AI runtime + federated inference cluster for Android.**
 > Turn a fleet of Android phones into a private LLM cluster — no cloud,
@@ -631,3 +629,54 @@ Built on the shoulders of:
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) — MIT
 - [Hugging Face](https://huggingface.co) — model hosting
 - [Jetpack Compose](https://developer.android.com/jetpack/compose) + [Material 3](https://m3.material.io)
+
+### Optional runtime and browser additions
+
+On-device RunAnywhere inference stays the default. See the [project review](docs/improvement-and-stryker-plan.md), [root/rootless and on-demand VM setup](docs/runtime-and-sandbox.md), [local browser assistant and pinned RunAnywhere sources](docs/runanywhere-browser-and-llama.md), and [Crawl4AI companion](companions/crawler/README.md). Native VM tools and guest images require separate installation and device validation.
+
+### Build plan and progress
+See [PLAN.md](PLAN.md), [BUILD.md](BUILD.md), [PROGRESS.md](PROGRESS.md) and
+[AGENT_BUILD.md](AGENT_BUILD.md) for current requirements, reproducible validation,
+implementation evidence and the next-agent handoff. Experimental OpenClaw gateway,
+Android node and phone-model integration is described in
+[docs/openclaw-integration.md](docs/openclaw-integration.md).
+
+## Structured maps and task/device commands
+
+Read [FEATURE_MAP.md](FEATURE_MAP.md), `docs/feature-map.json`,
+`docs/task-manager.md` and `docs/web-api-and-devices.md`.
+Manual tasks and actual operation jobs are distinct; web clients need per-device
+access plus saved delegation. Groups are local selections, not compute membership.
+Run `python3 scripts/validate-feature-map.py` after changing public commands or paths.
+
+## Latest continuation priorities (2026-10-06)
+
+Keep genuine phone layer sharding/model execution and committed recovery as the
+main product priority. Nodes also contribute storage, tools, capture, sensors,
+actuation, preprocessing, DSP, routing and monitoring according to real evidence.
+ESP32/Arduino/IoT membership does not imply transformer execution.
+Read `docs/online-power-peripherals-and-configuration.md`,
+`docs/declarative-federation-roadmap.md` and `docs/media-iot-and-radio-nodes.md`.
+These record offline/online selection, free/public/gated model distinctions,
+actual pricing provenance, power readings, hardware/vendor backend limits, open
+source SSH, configuration transfer, media sources and owner-paired radio carriers.
+Keep unsupported adapters visibly unavailable; never invent devices, samples,
+throughput, tokens, costs, account entitlements or recovery success.
+
+## Scenario routing and media continuation (2026-10-06)
+
+Read `docs/model-router-and-media.md`. Scenario recipes, sequential chains/comparisons,
+chat text attachments and explicit online vision/image/speech/video adapters are
+wired in source. Validate real execution; paid provider media outputs and generic
+music/sound/on-device diffusion/video remain separate gates. Do not substitute
+text event counts for native tokens. Keep phone layer execution/recovery primary.
+
+## Custom models and training continuation (2026-10-06)
+
+Read [docs/local-model-behavior-and-training.md](docs/local-model-behavior-and-training.md). Custom local prompt behavior is default-off;
+compatible custom weights are imported through Models. No toggle changes learned
+refusals or hosted-provider rules. Settings → Fine-tuning drives the optional
+Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
+contracts. Android synthetic gradients are removed; phone autograd reports
+unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
+remain acceptance gates. Keep phone inference layer sharding/recovery primary.

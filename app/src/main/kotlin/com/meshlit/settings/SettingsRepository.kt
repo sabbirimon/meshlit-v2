@@ -58,6 +58,7 @@ open class SettingsRepository(private val context: Context) {
                 ?: MeshlitThemeConfig.Default.basePalette,
             themeMode = ThemeMode.entries.firstOrNull { it.name == prefs[Keys.themeMode] }
                 ?: MeshlitThemeConfig.Default.themeMode,
+            dynamicColors = prefs[Keys.dynamicColors] ?: true,
             fontScale = prefs[Keys.fontScale] ?: MeshlitThemeConfig.Default.fontScale,
             densityScale = prefs[Keys.densityScale] ?: MeshlitThemeConfig.Default.densityScale,
             animationsEnabled = prefs[Keys.animationsEnabled] ?: MeshlitThemeConfig.Default.animationsEnabled,
@@ -664,7 +665,7 @@ open class SettingsRepository(private val context: Context) {
     val firewallFlow: Flow<PortLayerPolicy> = store.data.map { prefs ->
         val raw = prefs[Keys.firewallPolicy]
         if (raw.isNullOrBlank()) return@map PortLayerPolicy()
-        runCatching { json.decodeFromString(PortLayerPolicy.serializer(), raw) }
+        runCatching { json.decodeFromString(PortLayerPolicy.serializer(), raw).also{it.validate()} }
             .getOrDefault(PortLayerPolicy())
     }
 
@@ -685,6 +686,7 @@ open class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setFirewallPolicy(policy: PortLayerPolicy) {
+        policy.validate()
         val encoded = json.encodeToString(PortLayerPolicy.serializer(), policy)
         store.edit { it[Keys.firewallPolicy] = encoded }
     }
@@ -847,6 +849,8 @@ open class SettingsRepository(private val context: Context) {
         store.edit { it[Keys.basePalette] = palette.name }
     }
 
+    suspend fun setDynamicColors(enabled: Boolean) { store.edit { it[Keys.dynamicColors] = enabled } }
+
     suspend fun setThemeMode(mode: ThemeMode) {
         store.edit { it[Keys.themeMode] = mode.name }
     }
@@ -938,6 +942,7 @@ open class SettingsRepository(private val context: Context) {
         val accentHue = stringPreferencesKey("theme.accent_hue")
         val basePalette = stringPreferencesKey("theme.base_palette")
         val themeMode = stringPreferencesKey("theme.theme_mode")
+        val dynamicColors = booleanPreferencesKey("theme.dynamic_colors")
         val fontScale = floatPreferencesKey("theme.font_scale")
         val densityScale = floatPreferencesKey("theme.density_scale")
         val animationsEnabled = booleanPreferencesKey("theme.animations_enabled")

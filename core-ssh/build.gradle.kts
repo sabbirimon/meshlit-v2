@@ -10,6 +10,7 @@ android {
 }
 
 dependencies {
+    implementation("com.github.mwiede:jsch:2.28.7")
     implementation(project(":core-common"))
     implementation(project(":core-trust"))
     implementation(libs.kotlinx.coroutines.core)

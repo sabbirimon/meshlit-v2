@@ -1,256 +1,91 @@
-# PLAN — working state + roadmap
+# Meshlit implementation plan
 
-> Local-only scratch log. Not committed to the repo — see
-> `.gitignore`. Companion to `REQUESTS.md`.
->
-> Format:
->
-> ```
-> ## <topic>
-> **Status:** pending | in-progress | done | blocked | wontfix
-> **Files:** <list>
-> **Verification:** <commands + expected outcome>
-> ```
+Previous upstream records are preserved in `docs/history/PLAN-before-2026-10-06.md`; their old build/device claims are historical, not validation of this checkout.
+Updated: 2026-10-06. Follow `AGENTS.md` and `AGENT_BUILD.md` before implementation.
+`PROGRESS.md` is the evidence ledger; `BUILD.md` contains reproducible commands.
+User requirements outrank historical restrictions on layer/pipeline sharding.
 
----
+## Priority 1 — reliable Android foundation
+- Finish both-flavor compilation, unit tests, lint and emulator UI inspection.
+- Validate GGUF download/resume/import/hash, actual SDK load/unload and generation on physical phones.
+- Exercise Settings search/Basic/Advanced, persisted dynamic colors, log export and lifecycle cancellation.
+- Validate encrypted OpenClaw gateway profile and opt-in phone model endpoint.
+- Prove accessibility actions in an ordinary installed APK, not only instrumentation.
+- Expose clear model/runtime/permission/error state; no successful stub results.
 
-## Branch / build state
+## Priority 2 — real phone layer execution
+- Enroll at least two physical Android workers with TLS pins and explicit grants.
+- Compare deterministic output to a single-device baseline with the same model SHA and runtime revision.
+- Record nonzero layer/tensor allocation on each worker and coordinator memory.
+- Demonstrate a model larger than the coordinator's feasible local RAM budget.
+- Measure throughput, first-token latency, network volume, thermal throttling and battery on heterogeneous phones.
+- Stop/kill worker, coordinator and service; verify bounded failure and cancellation.
+- Separate layer/pipeline placement from tensor parallelism and independent job distribution.
 
-```
-Branch:  dev
-Remote:  origin/dev
-Ahead:   6 commits (not pushed)
-HEAD:    ca7a613  Add RA-style UI components + wire into Agent + Catalog screens (0.2.3)
-Working: dirty — 142 entries (51 modified tracked + 91 untracked)
-Build:   ✅ :app:assembleDebug  (BUILD SUCCESSFUL in 9s, 444 actionable)
-Install: ✅ R9KN2009CZJ  (Success)
-Device:  SM-A207F + R9KN2009CZJ both on adb
-```
+## Priority 3 — hive durability and autonomy
+- Replicate a bounded task/compact-memory journal on every enrolled phone; NAS optional.
+- Use selected holders for heavy model files/checkpoints with hashes, quotas and leases.
+- Add fencing epochs, authenticated heartbeats, quorum-aware election and idempotent task claims.
+- Recover by replay first. Portable KV recovery requires genuine native export/import and compatibility checks.
+- Integrate OpenClaw paired operator + node WebSocket sessions and persisted device identities.
+- Expose delegated Android controls through an authenticated gateway bridge with revocation and audit.
+- Add model-appropriate structured function calling; do not advertise it until actual model tests pass.
+- Validate emergency stop, target scope and protected/password surfaces. Accessibility grants do not confer root.
 
-The 6 unpushed commits already on `dev`:
-1. `ca7a613`  Add RA-style UI components + wire into Agent + Catalog
-2. `e5c6b63`  Add RunAnywhere brand gradient + Figtree / Maple Mono typography
-3. `48b324a`  Add Phase Cloud 2 — Search/Web/Tools adapters + Browser automation
-4. `a4c7328`  Add Cloud-Hosted MCP Agent + Multi-Cloud Control Center
-5. `0c88890`  feat(nav): make loaded-model chip tappable from Agent and Jobs
-6. `08e0542`  feat(models): re-skin picker with RaListCard + ModelTrailingAction
+## Priority 4 — devices, transports and platforms
+- Improve QR/manual/BLE enrollment UX, distinguish discovery from authorization and compute capability.
+- Validate implemented TLS web/API enrollment and local groups; implement verified SSH enrollment adapters; routers/switches/firewalls may contribute connectivity only.
+- Optional rootless/Linux VM/desktop and terminal remain off until requested or delegated.
+- Keep portable core DTOs and adapters for Linux, Windows, macOS and HarmonyOS.
+- Probe and benchmark optional CUDA, HIP, SYCL, Metal, Vulkan, OpenCL, MUSA and CANN backends.
+- Reserve adapters for Huawei/HarmonyOS, Hygon and other Chinese vendors without fabricated support badges.
 
-The current working tree (142 dirty) splits cleanly into 5 phase
-commits — see `PLAN — Commits` below.
+## Acceptance and changes
+Each milestone must name changed files, build/test commands, results and remaining device checks.
+Do not estimate a whole-project percentage from source presence. Track acceptance cases instead.
+Update this plan when the user changes scope; preserve previous evidence in `PROGRESS.md`.
 
----
+## Later — user guide and replayable tutorial
+Requested by the user after core/model/backend work. Add a first-run walkthrough and
+Help → Replay tutorial. Cover permissions and denial recovery, model download/import/
+startup load, chat/stop, QR pairing, layer workers versus discovery, phone groups,
+OpenClaw gateway/node/provider boundaries, code workspace and log export. Keep a skip
+option and resume points. Use simulated data only in a clearly marked demo mode; never
+fake model tokens, worker health, system permission grants or successful execution.
 
-## Today — what landed in the working tree (NOT yet committed)
+## Current task-manager acceptance
+- Validate manual task creation/edit/subtasks/search/filter/sort/bulk completion.
+- Verify real human/agent job start, queue, Stop, results and explicit retry.
+- Later: recurrence, dependencies, assignments, distributed claims and replicas.
 
-These are the changes I made during this session that should land
-in their own logical phase commit. None are committed yet.
+## Latest continuation priorities (2026-10-06)
 
-### Phase A — UI bug fixes (small, low-risk)
+Keep genuine phone layer sharding/model execution and committed recovery as the
+main product priority. Nodes also contribute storage, tools, capture, sensors,
+actuation, preprocessing, DSP, routing and monitoring according to real evidence.
+ESP32/Arduino/IoT membership does not imply transformer execution.
+Read `docs/online-power-peripherals-and-configuration.md`,
+`docs/declarative-federation-roadmap.md` and `docs/media-iot-and-radio-nodes.md`.
+These record offline/online selection, free/public/gated model distinctions,
+actual pricing provenance, power readings, hardware/vendor backend limits, open
+source SSH, configuration transfer, media sources and owner-paired radio carriers.
+Keep unsupported adapters visibly unavailable; never invent devices, samples,
+throughput, tokens, costs, account entitlements or recovery success.
 
-**Status:** ready to commit
-**Files:**
-- `app/src/main/kotlin/com/meshlit/ui/components/MeshlitHeader.kt`
-  — `TierPill` `width(IntrinsicSize.Min)` + `maxLines=1` + `softWrap=false`
-- `app/src/main/kotlin/com/meshlit/ui/components/MeshlitBottomBar.kt`
-  — item width 72→80dp, auto-scroll target `index-2`→`index-1`
-- `app/src/main/kotlin/com/meshlit/ui/components/SuggestionChipPill.kt`
-  — `maxLines=1`, `softWrap=false`, ellipsis
-- `app/src/main/kotlin/com/meshlit/ui/theme/DynamicTheme.kt`
-  — opaque `surfaceContainerLowest..Highest`, `surfaceTint`,
-    `scrim = 0xCC000000`
-- `app/src/main/kotlin/com/meshlit/ui/screens/settings/ModelFilterRow.kt`
-  — opaque selected chip colour
-**Verification:**
-- `./gradlew :app:assembleDebug` ✅
-- adb install + manual check (Devices screen chips opaque,
-  LITE badge horizontal)
+## Scenario routing and media continuation (2026-10-06)
 
-### Phase B — Agent screen redesign
+Read `docs/model-router-and-media.md`. Scenario recipes, sequential chains/comparisons,
+chat text attachments and explicit online vision/image/speech/video adapters are
+wired in source. Validate real execution; paid provider media outputs and generic
+music/sound/on-device diffusion/video remain separate gates. Do not substitute
+text event counts for native tokens. Keep phone layer execution/recovery primary.
 
-**Status:** ready to commit
-**Files:**
-- `app/src/main/kotlin/com/meshlit/agent/AgentScreen.kt`
-  — new `CompactToolbar`, `ModelPickerInline`, `SuggestionTile`,
-    `ModeIconChip`, `IconToggleButton`; removed `ModelPickerBar`,
-    `ModeBar`, `ActiveModelPill`; flat chat canvas; capped token-
-    count text; ChatGPT-style empty state
-- `app/src/main/res/values/strings.xml` — added `ra_summarize`
-**Verification:**
-- `./gradlew :app:assembleDebug` ✅
-- APK installs ✅
-- Visual: blocked by Phase C bug below
+## Custom models and training continuation (2026-10-06)
 
-### Phase C — Import surface (device + URL + HF + GitHub)
-
-**Status:** ready to commit
-**Files:**
-- `app/src/main/kotlin/com/meshlit/ui/screens/settings/ImportModelCard.kt`
-  (new) — 4 paths: SAF device picker, HTTPS URL, `owner/repo`+file,
-    GitHub URL or `owner/repo/path` + ref
-- `app/src/main/kotlin/com/meshlit/models/ModelCatalog.kt`
-  - `suspend fun importFromSaf(...)`
-  - `data class HfResolved`
-  - `suspend fun resolveHfFile(...)`
-  - `suspend fun resolveGithubFile(...)`
-  - `private fun translateGithubUrl(...)`
-- `app/src/main/res/values/strings.xml`
-  — 13 new `ra_import_card_*` strings incl. `ra_import_card_gh_*`
-**Verification:**
-- `./gradlew :app:assembleDebug` ✅
-- APK installs ✅
-- Manual: tap "From this device" → SAF picker → grant → file
-  copied to `filesDir/imported-models/`
-- Manual: paste a GitHub URL → resolves to raw URL → download
-
-### Phase G — Power / Battery / Thermal Monitor
-
-**Status:** ready to commit
-**Files:**
-- `app/src/main/kotlin/com/meshlit/power/PowerMonitorController.kt`
-  (new) — thin wrapper around `BatteryManager` + `PowerManager`.
-  Subscribes to `Intent.ACTION_BATTERY_CHANGED`. Polls thermal
-  status at 2 Hz. Exposes `PowerSnapshot` data class plus a
-  rolling `history: StateFlow<FloatArray>` sparkline stream.
-- `app/src/main/kotlin/com/meshlit/ui/components/power/Gauges.kt`
-  (new) — `CircularGauge` (Canvas donut + arc, sweep-gradient
-  at mid-range) and `MiniSparkline` (Canvas line + filled
-  gradient). Custom rather than Vico.
-- `app/src/main/kotlin/com/meshlit/ui/screens/power/PowerMonitorScreen.kt`
-  (new) — three side-by-side gauges (battery level / temp /
-  thermal), live text readouts card, sparkline history, "Keep
-  screen on while charging" toggle
-  (`view.keepScreenOn = enabled && charging`), and OSS
-  recommendations card (Castro + Battery Historian).
-- `app/src/main/kotlin/com/meshlit/ui/nav/TopLevelDestination.kt`
-  — new `Power` enum entry, added to `drawerOnly`.
-- `app/src/main/kotlin/com/meshlit/ui/components/MeshlitBottomBar.kt`
-  — `shortLabel` branch for `Power -> "Power"`.
-- `app/src/main/kotlin/com/meshlit/ui/MeshlitApp.kt` — wires
-  `PowerMonitorScreen` into the NavHost.
-- `app/src/main/kotlin/com/meshlit/ui/screens/ScreenStubs.kt` —
-  title/body when-expressions extended for `Power`.
-- `app/src/main/kotlin/com/meshlit/ui/screens/help/UiTourScreen.kt`
-  — blurb + use-case strings for `Power`.
-- `app/src/main/res/values/strings.xml` — added `screen_power`.
-**Verification:**
-- `./gradlew :app:assembleDebug` ✅ (BUILD SUCCESSFUL in 26s)
-- `adb -s R9KN2009CZJ install -r app-debug.apk` ✅ (Success)
-- Manual: hamburger → Power → gauge row + readouts + history
-  render; OSS links open browser.
-
----
-
-## Open follow-ups (always pending)
-
-### Phase D — Bottom nav tap bug fix
-
-**Status:** pending (blocks visual verification of Phase B + C
-on device)
-**Files:**
-- `app/src/main/kotlin/com/meshlit/ui/components/MeshlitBottomBar.kt`
-  — switch from custom LazyRow to M3 `NavigationBar` OR fix
-    `Modifier.requiredWidth` on `BottomBarItem`
-**Verification:**
-- `./gradlew :app:assembleDebug` ✅
-- `adb install -r ...`
-- Manual: tap each bottom nav tab, screen changes
-- `uiautomator dump` should show non-zero bounds for each tab
-
-### Phase E — Models picker UI redesign per reference
-
-**Status:** pending (R-14 reference applied to Agent so far)
-**Files:**
-- `app/src/main/kotlin/com/meshlit/ui/screens/settings/ModelsScreen.kt`
-  — apply "Top pick" / "Loaded" / "Smart" / "Thinks" / "Fast"
-    badges per `Screenshots/UI suggestion/model ui part , i want this .jpeg`
-  — "Add from Hugging Face" CTA row
-  — "Get" button with download glyph + delete icon
-  — file size + NPU/LlamaCPP chip on each card
-**Verification:**
-- `./gradlew :app:assembleDebug`
-- Manual: Devices → Models → catalog grid renders recommendation
-  cards with badges
-
-### Phase F — SmolLM2 stuck at 0% investigation
-
-**Status:** pending (#26)
-**Files:**
-- `app/src/main/kotlin/com/meshlit/models/ModelCatalog.kt`
-  — possibly the `onProgress` callback never fires for sub-MB
-    chunks; or HTTP redirect 301→302→200 chain is being
-    followed serially without progress
-**Verification:**
-- Reproduce: tap "Download SmolLM2-360M-Q8" on a fresh install,
-  observe progress bar
-- Expected: progress increments within 5s of start; reaches 100%
-  in <2 minutes on Wi-Fi
-
----
-
-## Suggested commit order (today's pile)
-
-```
-git add app/src/main/kotlin/com/meshlit/ui/components/MeshlitHeader.kt
-git add app/src/main/kotlin/com/meshlit/ui/components/MeshlitBottomBar.kt
-git add app/src/main/kotlin/com/meshlit/ui/components/SuggestionChipPill.kt
-git add app/src/main/kotlin/com/meshlit/ui/theme/DynamicTheme.kt
-git add app/src/main/kotlin/com/meshlit/ui/screens/settings/ModelFilterRow.kt
-git commit -m "fix(ui): opaque dropdowns, horizontal LITE badge, no-wrap chips"
-
-git add app/src/main/kotlin/com/meshlit/agent/AgentScreen.kt
-git add app/src/main/res/values/strings.xml
-git commit -m "feat(agent): icon-only toolbar + ChatGPT-style empty state"
-
-git add app/src/main/kotlin/com/meshlit/ui/screens/settings/ImportModelCard.kt
-git add app/src/main/kotlin/com/meshlit/models/ModelCatalog.kt
-git add app/src/main/res/values/strings.xml
-git commit -m "feat(import): import models/agents/tools from device, URL, HF, GitHub"
-
-git add app/src/main/kotlin/com/meshlit/power/PowerMonitorController.kt
-git add app/src/main/kotlin/com/meshlit/ui/components/power/Gauges.kt
-git add app/src/main/kotlin/com/meshlit/ui/screens/power/PowerMonitorScreen.kt
-git add app/src/main/kotlin/com/meshlit/ui/nav/TopLevelDestination.kt
-git add app/src/main/kotlin/com/meshlit/ui/components/MeshlitBottomBar.kt
-git add app/src/main/kotlin/com/meshlit/ui/MeshlitApp.kt
-git add app/src/main/kotlin/com/meshlit/ui/screens/ScreenStubs.kt
-git add app/src/main/kotlin/com/meshlit/ui/screens/help/UiTourScreen.kt
-git add app/src/main/res/values/strings.xml
-git commit -m "feat(power): battery / thermal / voltage monitor with gauges + OSS recs"
-
-# Phase D bug fix as separate commit (different concern)
-# Phase E Models picker UI as separate commit
-# Phase F SmolLM2 investigation as separate commit
-```
-
----
-
-## Things I noticed but didn't fix (open questions)
-
-1. **`core-terminal/`** — vendored Ghostty swap per TODO #179 vs
-   just an empty scaffold? Read first 30 lines of `build.gradle.kts`
-   to decide before committing
-2. **`vendored/`** — fonts + gradient (commit with Phase B) vs
-   full Ghostty source (commit separately or never)?
-3. **`Screenshots/`** — keep in repo with brief README, or
-   `.gitignore` (already ignored — never committed)?
-4. **Scaffolded empty modules** — `core-gpu/`, `core-advanced-engines/`,
-   `feature-advanced/`, `feature-ghosty/` — keep and register, or
-   delete? Each one is a place-holder; if not used by Phase A-F,
-   `git rm --cached` and `.gitignore` is fine.
-
----
-
-## Verification checklist (after every commit)
-
-```bash
-./gradlew :app:assembleDebug
-# Must remain green
-
-# Specific tests
-./gradlew :core-observability:test :core-net:test   # after Phase Obs-1
-./gradlew :app:lintDebug                            # after any UI work
-./gradlew :core-inference:test :core-trust:test     # after Phase Cluster+Trust
-
-# Pre-push
-./gradlew :app:assembleDebug && git push origin dev
-```
+Read [docs/local-model-behavior-and-training.md](docs/local-model-behavior-and-training.md). Custom local prompt behavior is default-off;
+compatible custom weights are imported through Models. No toggle changes learned
+refusals or hosted-provider rules. Settings → Fine-tuning drives the optional
+Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
+contracts. Android synthetic gradients are removed; phone autograd reports
+unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
+remain acceptance gates. Keep phone inference layer sharding/recovery primary.

@@ -332,52 +332,9 @@ class InferenceForegroundService : Service(), org.koin.core.component.KoinCompon
      * button will re-evaluate next time.
      */
     private suspend fun autoLoadDefaultModel() {
-        val app = koinInject<MeshlitApplication>()
-        val settingsRepo: SettingsRepository = app.settingsRepository
-        val customPath = settingsRepo.customModelPathSync()
-        if (customPath.isNullOrBlank()) {
-            // Bundled-model path. Wait up to 30s for extraction to land.
-            val deadline = System.currentTimeMillis() + 30_000L
-            while (app.bundledModelPath() == null && System.currentTimeMillis() < deadline) {
-                kotlinx.coroutines.delay(500L)
-            }
-        }
-        val customPathNow = settingsRepo.customModelPathSync()
-        val bundledFile = app.bundledModelPath()
-        val target = when {
-            !customPathNow.isNullOrBlank() -> {
-                val f = java.io.File(customPathNow)
-                if (f.exists() && f.length() > 0L) f else null
-            }
-            bundledFile != null && bundledFile.exists() && bundledFile.length() > 0L -> bundledFile
-            else -> null
-        }
-        if (target == null) {
-            log.info("fgs.auto_load.skip", "no model to auto-load")
-            return
-        }
-        // Don't double-load if the coordinator is already in Ready state
-        // (e.g. the user bound and unbound, then we come back up).
-        if (coordinator.state.value is com.meshlit.core.inference.CoordinatorState.Ready) {
-            log.info("fgs.auto_load.skip", "coordinator already Ready")
-            return
-        }
-        log.info(
-            "fgs.auto_load.start",
-            "auto-loading model on FGS startup",
-            mapOf("path" to target.absolutePath, "source" to if (customPathNow.isNullOrBlank()) "bundled" else "custom"),
-        )
-        val result = coordinator.loadModel(
-            modelPath = target.absolutePath,
-            contextSize = 4096,
-            gpuLayers = 0,
-            hints = com.meshlit.core.inference.BackendHints.CpuOnly,
-        )
-        if (result is com.meshlit.core.common.MeshlitResult.Success) {
-            log.info("fgs.auto_load.ok", "auto-load ok")
-        } else if (result is com.meshlit.core.common.MeshlitResult.Failure) {
-            log.warn("fgs.auto_load.fail", "auto-load failed: ${result.error.tag}")
-        }
+        // Use the same persisted opt-in/selection and load lock as the main app.
+        // Binding a legacy service must not override startup-off or reload a model.
+        koinInject<com.meshlit.models.ModelLibrary>().loadAtBoot()
     }
 
     override fun onDestroy() {

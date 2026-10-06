@@ -87,3 +87,11 @@ stitch.zip
 # elsewhere as a release artefact.
 app/imported-models/
 vendored/
+
+# Optional source trees and Python companion environments
+vendored/runanywhere-llama/
+vendored/on-device-browser-agent/
+companions/crawler/.venv/
+
+# Kotlin local compiler state
+.kotlin/

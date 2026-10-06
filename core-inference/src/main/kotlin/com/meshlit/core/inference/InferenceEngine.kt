@@ -156,6 +156,8 @@ data class InferenceRequest(
     val seed: Long = -1L,
     val onToken: suspend (String) -> Unit,
     val onComplete: suspend (InferenceResult) -> Unit = {},
+    /** Checked under the coordinator lock to prevent generating with a replaced model. */
+    val expectedModelPath:String?=null,
 )
 
 /** Inference outcome. */

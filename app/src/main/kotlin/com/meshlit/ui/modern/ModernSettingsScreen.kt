@@ -1,0 +1,160 @@
+package com.meshlit.ui.modern
+
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meshlit.di.koinInject
+import com.meshlit.settings.SettingsRepository
+import com.meshlit.ui.theme.*
+import com.meshlit.ui.theme.ChatTokens as T
+import kotlinx.coroutines.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable fun ModernSettingsScreen(initialDestination:String?=null,onExit:(()->Unit)?=null) {
+    var destination by rememberSaveable{mutableStateOf(initialDestination)}
+    var query by rememberSaveable{mutableStateOf("")}
+    val context=LocalContext.current
+    val prefs=remember{context.getSharedPreferences("settings-navigation",0)}
+    var advanced by rememberSaveable{mutableStateOf(prefs.getBoolean("advanced",false))}
+    val repository=koinInject<SettingsRepository>()
+    val back={destination=null}
+    BackHandler(destination!=null){destination=null}
+    if(destination=="behavior"){LocalBehaviorScreen(back,{destination="models"});return}
+    if(destination=="training"){FineTuningScreen(back);return}
+    if(destination=="router"){ModelRouterScreen(back);return}
+    if(destination=="media"){MediaOptionsScreen(back);return}
+    if(destination=="configuration"){ConfigurationScreen(back);return}
+    if(destination=="providers"){OnlineProvidersScreen(back);return}
+    if(destination=="power"){PowerCostsScreen(back);return}
+    if(destination=="external"){ExternalDevicesScreen(back);return}
+    if(destination=="agents"){AgentManagementScreen(back);return}
+    if(destination=="acceleration"){AccelerationScreen(back);return}
+    if(destination=="ssh"){SshConnectionsScreen(back);return}
+    if(destination=="firewall"){FirewallSettingsScreen(back);return}
+    if(destination=="tasks"){TaskManagerScreen(back);return}
+    if(destination=="files"){Column(Modifier.fillMaxSize()){TextButton(onClick=back){Text("Back to settings")};Box(Modifier.weight(1f)){com.meshlit.ui.screens.FilesScreen(onOpenDrawer=back)}};return}
+    if(destination=="termux"){ExistingTermuxSettings(back);return}
+    if(destination=="ide"){com.meshlit.ide.CodeWorkspaceScreen(back);return}
+    if(destination=="permissions"){com.meshlit.permissions.PermissionSetupScreen(back);return}
+    if(destination=="openclaw"){OpenClawScreen(back);return}
+    if(destination=="logs"){ModernLogsScreen(back);return}
+    if(destination=="models"){ModernModelsScreen(back);return}
+    if(destination=="network"){ModernNetworkScreen(back);return}
+    if(destination=="peers"){com.meshlit.ui.screens.settings.ForwardingPeersScreen(back);return}
+    if(destination=="automation"){com.meshlit.ui.screens.cloud.AndroidAutomationSettingsScreen(repository,back);return}
+    if(destination=="hooks"){com.meshlit.ui.screens.settings.HooksScreen(back,{destination="hook:$it"});return}
+    if(destination?.startsWith("hook:")==true){com.meshlit.ui.screens.settings.HookEditorScreen(destination!!.removePrefix("hook:"),{destination="hooks"});return}
+    Scaffold(topBar={TopAppBar(title={Text(SettingsDestinations.all.firstOrNull{it.id==destination}?.title ?: "Settings")},
+        navigationIcon={if(destination!=null || onExit!=null) IconButton(onClick={if(destination!=null) destination=null else onExit?.invoke()}){
+            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")}})}){padding ->
+        when(destination){
+            "appearance" -> AppearanceSettings(Modifier.padding(padding))
+            "device" -> Box(Modifier.padding(padding)){com.meshlit.ui.screens.settings.DeviceScreen(back)}
+            "monitor" -> Box(Modifier.padding(padding)){ModernMonitorScreen()}
+            else -> LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),
+                verticalArrangement=Arrangement.spacedBy(T.medium)) {
+                when(destination){
+                    "runtime" -> item{com.meshlit.ui.screens.cloud.RuntimeDashboardCard()}
+                    "crawler" -> item{com.meshlit.ui.screens.cloud.CrawlerSettingsCard()}
+                    "notifications" -> item{Card{Column(Modifier.padding(T.large)){
+                        Text("Notification settings are managed by Android. Downloads, generation and pipeline sessions use separate channels.")
+                        Button(onClick={context.startActivity(if(Build.VERSION.SDK_INT>=26) Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                            .putExtra(Settings.EXTRA_APP_PACKAGE,context.packageName) else Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            android.net.Uri.parse("package:${context.packageName}")))}){Text("Open notification settings")}
+                    }}}
+                    "about" -> item{Card{Column(Modifier.padding(T.large),verticalArrangement=Arrangement.spacedBy(T.small)){
+                        Text("Meshlit ${com.meshlit.BuildConfig.VERSION_NAME}",style=MaterialTheme.typography.titleLarge)
+                        Text("Local inference: RunAnywhere llama.cpp. Layer execution: optional experimental RPC workers. Linux and Crawl4AI require separately installed companions.")
+                        Text("Legacy settings for account tiers, automatic model download, custom GPU layer counts and transport policy are not connected by this menu. They are not presented as functioning switches.")
+                        Text("Project and third-party notices are maintained in the repository LICENSE and vendored source notices.")
+                    }}}
+                    else -> {
+                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth(),singleLine=true,label={Text("Search settings")},
+                            leadingIcon={Icon(Icons.Default.Search,null)},trailingIcon={if(query.isNotEmpty()) IconButton(onClick={query=""}){Icon(Icons.Default.Close,"Clear search")}},shape=MaterialTheme.shapes.large)}
+                        item {Row(horizontalArrangement=Arrangement.spacedBy(T.small)){
+                            FilterChip(!advanced,{advanced=false;prefs.edit().putBoolean("advanced",false).apply()},label={Text("Basic")})
+                            FilterChip(advanced,{advanced=true;prefs.edit().putBoolean("advanced",true).apply()},label={Text("Advanced")})
+                        }}
+                        val results=SettingsDestinations.search(query,advanced)
+                        if(results.isEmpty()) item{Text("No matching settings. Advanced includes runtime, networking and automation controls.")}
+                        items(results,key={it.id}){entry -> Card(onClick={destination=entry.id},modifier=Modifier.fillMaxWidth(),
+                            colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainerLow)){
+                            Row(Modifier.padding(T.large),verticalAlignment=Alignment.CenterVertically){
+                                Column(Modifier.weight(1f)){Text(entry.title,style=MaterialTheme.typography.titleMedium);Text(entry.description,
+                                    style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+                                Icon(Icons.Default.ChevronRight,null)
+                            }
+                        }}
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable private fun AppearanceSettings(modifier:Modifier) {
+    val settings=koinInject<SettingsRepository>()
+    val config by settings.flow.collectAsStateWithLifecycle(MeshlitThemeConfig.Default)
+    val scope=rememberCoroutineScope()
+    var error by remember{mutableStateOf<String?>(null)}
+    fun write(action:suspend()->Unit){scope.launch{try{action()}catch(e:CancellationException){throw e}catch(e:Exception){error=e.message}}}
+    LazyColumn(modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.medium)){
+        item {Card(colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.primaryContainer)){
+            Column(Modifier.fillMaxWidth().padding(T.section)){Icon(Icons.Default.AutoAwesome,null,tint=MaterialTheme.colorScheme.onPrimaryContainer)
+                Spacer(Modifier.height(T.medium));Text("Make Meshlit yours",style=MaterialTheme.typography.headlineSmall)
+                Text("Your colors update throughout the app.")}
+        }}
+        item {Text("Display mode",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
+            ThemeMode.entries.forEach{mode -> FilterChip(config.themeMode==mode,{write{settings.setThemeMode(mode)}},label={Text(mode.displayName)})}
+        }}
+        item {Row(verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Wallpaper dynamic colors")
+            Text(if(Build.VERSION.SDK_INT>=31) "Use your system palette" else "Available on Android 12 and later",style=MaterialTheme.typography.bodySmall)}
+            Switch(config.dynamicColors,{enabled -> write{settings.setDynamicColors(enabled);if(enabled) settings.setCustomPalette(CustomPalette.None)}},enabled=Build.VERSION.SDK_INT>=31)}}
+        item {Text("Accent color",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
+            AccentHue.entries.forEach{accent -> FilterChip(!config.dynamicColors && config.accentHue==accent,
+                {write{settings.setDynamicColors(false);settings.setCustomPalette(CustomPalette.None);settings.setAccentHue(accent)}},
+                label={Text(accent.displayName)},leadingIcon={Icon(Icons.Default.Circle,null,tint=accent.primary)})}
+        }}
+        item {Text("Base palette",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
+            BasePalette.entries.forEach{base -> FilterChip(config.basePalette==base,{write{settings.setDynamicColors(false);settings.setBasePalette(base)}},label={Text(base.displayName)})}
+        };Text("Light mode uses a light surface; dark palettes apply in dark mode.",style=MaterialTheme.typography.bodySmall)}
+        item {Row(verticalAlignment=Alignment.CenterVertically){Text("Color animations",Modifier.weight(1f));Switch(config.animationsEnabled,{write{settings.setAnimationsEnabled(it)}})}}
+        item {OutlinedButton(onClick={write{settings.setDynamicColors(false);settings.setCustomPalette(CustomPalette.AnimatedGradient(
+            stops=listOf(0xFF6366F1,0xFF14B8A6,0xFFF43F5E),cycleSeconds=18))}}){Text("Use a slowly shifting accent")}}
+        item {Text("Font size: ${"%.0f".format(config.fontScale*100)}%")
+            Slider(config.fontScale,{value -> write{settings.setFontScale(value)}},valueRange=0.85f..1.5f)}
+        error?.let{item{ErrorCard(it){error=null}}}
+    }
+}
+
+/** Reuses the audited legacy integration and its capability registry. */
+@Composable private fun ExistingTermuxSettings(onBack:()->Unit) {
+    val app=koinInject<com.meshlit.MeshlitApplication>()
+    val bridge=koinInject<com.meshlit.network.termux.TermuxBridge>()
+    val capability=com.meshlit.core.cloudmcp.agent.AgentCapability.Termux
+    val scope=rememberCoroutineScope()
+    var enabled by remember{mutableStateOf(app.agentCapabilities.registry.isAllowed(capability))}
+    com.meshlit.ui.screens.integrations.TermuxIntegrationScreen(
+        bridge=bridge,enabled=enabled,onEnableChange={value -> scope.launch {
+            val setup=runCatching{bridge.probe()}.getOrNull()
+            app.agentCapabilities.registry.update(capability,
+                com.meshlit.core.cloudmcp.agent.AgentCapabilityRegistry.CapabilityState(
+                    enabledByUser=value,permissionGranted=setup?.runCommandPermissionGranted==true))
+            enabled=value
+        }},onBack=onBack)
+}

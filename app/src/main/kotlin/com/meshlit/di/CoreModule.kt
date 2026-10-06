@@ -29,7 +29,6 @@ import com.meshlit.core.probe.ThermalProfiler
 import com.meshlit.core.registry.LocalServiceRegistry
 import com.meshlit.core.registry.ServiceRegistry
 import com.meshlit.core.role.RoleManager
-import com.meshlit.registry.AgentRuntimeStub
 import com.meshlit.registry.McpServerStub
 import com.meshlit.core.discovery.DiscoveryCoordinator
 import com.meshlit.core.discovery.NsdDiscoveryTransport
@@ -94,6 +93,7 @@ import com.meshlit.core.common.HookDefinition
 import com.meshlit.core.common.HookTrigger
 import com.meshlit.scripts.ConfigScriptRunner
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -209,7 +209,12 @@ val coreModule = module {
     // -----------------------------------------------------------------
     // Firewall
     // -----------------------------------------------------------------
-    single<MeshlitFirewall> { MeshlitFirewall.Starter }
+    single<MeshlitFirewall> {
+        val firewall=MeshlitFirewall(com.meshlit.core.firewall.FirewallPolicy.Default)
+        val repository=get<SettingsRepository>()
+        get<CoroutineScope>().launch{repository.firewallFlow.collect{firewall.portLayer=it}}
+        firewall
+    }
 
     // -----------------------------------------------------------------
     // Agent capability subscriptions
@@ -260,7 +265,8 @@ val coreModule = module {
     // -----------------------------------------------------------------
     // Inference coordinator
     // -----------------------------------------------------------------
-    single { InferenceCoordinator() }
+    single { com.meshlit.models.LocalBehaviorSettings(androidContext()) }
+    single { val behavior=get<com.meshlit.models.LocalBehaviorSettings>(); InferenceCoordinator(localBehavior={behavior.state.value}) }
 
     // -----------------------------------------------------------------
     // RunAnywhere SDK wrappers
@@ -385,7 +391,6 @@ val coreModule = module {
         flagEnabled = { name -> get<FeatureFlagRegistry>().get(name) },
     ) }
     single { McpServerStub(get()) }
-    single { AgentRuntimeStub() }
     // AgentSession factory — the v2 `AgentViewModel` resolves the
     // session via `koinInject()`. Without this binding, tapping
     // the Agent tab in the bottom bar crashes the app with
@@ -510,7 +515,7 @@ val coreModule = module {
     single { RoleManager(get()) }
 
     // BootstrapCoordinator needs the registry, lifecycle, the
-    // stubs, the profiler, and the role manager. We resolve them
+    // real MCP lifecycle adapter, profiler, and role manager. We resolve them
     // at call time via Koin.
     single {
         BootstrapCoordinator(
@@ -520,7 +525,6 @@ val coreModule = module {
             lifecycle = get(),
             services = listOf(
                 get<McpServerStub>(),
-                get<AgentRuntimeStub>(),
             ),
             profiler = get(),
             roleManager = get(),
@@ -536,7 +540,43 @@ val coreModule = module {
     // -----------------------------------------------------------------
     // MCP (server-side, controllers)
     // -----------------------------------------------------------------
-    single { McpToolRegistry() }
+    single { com.meshlit.control.WebBridgeHost(androidContext(),get(),get(),get()) }
+    single { com.meshlit.core.mcp.control.CodeWorkspace(java.io.File(androidContext().filesDir,"code-workspace")) }
+    single { com.meshlit.core.mcp.control.TaskBoard(object:com.meshlit.core.mcp.control.TaskBoardStore {
+        private val store=com.meshlit.core.trust.EncryptedCredentialStore(androidContext(),"task-board")
+        override suspend fun load():List<com.meshlit.core.mcp.control.ManagedTask> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){store.get("tasks")?.let{kotlinx.serialization.json.Json.decodeFromString(it)} ?: emptyList()}
+        override suspend fun save(tasks:List<com.meshlit.core.mcp.control.ManagedTask>)=kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO){store.put("tasks",kotlinx.serialization.json.Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(com.meshlit.core.mcp.control.ManagedTask.serializer()),tasks));Unit}
+    },get()) }
+    single { com.meshlit.control.AgentBackend(androidContext(),get(),get(),get(),get(),get(),get(),get(),get()) }
+    single { com.meshlit.openclaw.OpenClawHost(androidContext(),get()) }
+    single { com.meshlit.openclaw.OpenClawNode(androidContext(),get(),get(),get()) }
+    single { com.meshlit.openclaw.AndroidControl(androidContext(),get()) }
+    single { com.meshlit.pipeline.PipelineHost(androidContext(), get(), get()) }
+    single { com.meshlit.ssh.SshConnections(androidContext()) }
+    single { com.meshlit.training.TrainingHost(androidContext(),get()) }
+    single { com.meshlit.providers.OnlineProviders(androidContext()) }
+    single { com.meshlit.configuration.ConfigurationTransfer(androidContext(),get(),get(),get()) }
+    single { com.meshlit.media.MediaGeneration(androidContext(),get()) }
+    single { com.meshlit.routing.ModelRoutes(androidContext(),get(),get(),get()) }
+    single { com.meshlit.chat.ChatController(androidContext(), get(), get(),get(),get()) }
+    single { com.meshlit.models.ModelLibrary(androidContext(), get(), get(), get()) }
+    single { com.meshlit.sandbox.RuntimeHost(androidContext()) }
+    single { com.meshlit.sandbox.RuntimeTerminal(androidContext(), get()) }
+    single { com.meshlit.core.mcp.builtin.CrawlSettingsStore(androidContext()) }
+    single {
+        val crawler: com.meshlit.core.mcp.builtin.CrawlSettingsStore = get()
+        McpToolRegistry().apply {
+            registerAll(get<com.meshlit.control.AgentBackend>().specs())
+            registerAll(com.meshlit.control.EnvironmentTools(androidContext(),get(),get(),get()).specs())
+            registerAll(com.meshlit.routing.RouterTools(get(),get()).specs())
+            registerAll(get<com.meshlit.openclaw.AndroidControl>().specs())
+            registerAll(com.meshlit.pipeline.PipelineMcpTools(get(),get()).specs())
+            registerAll(com.meshlit.sandbox.RuntimeMcpTools(get()).specs())
+            registerAll(com.meshlit.core.mcp.builtin.CrawlMcpTools(
+                settings = crawler::load,
+            ).specs())
+        }
+    }
     single { McpClientPool(registry = get(), store = get()) }
     single { UserMcpServerStore(DataStoreUserMcpServerPersistence(androidContext())) }
     single { MeshlitServerController({ get() }, { get() }) }
@@ -556,7 +596,7 @@ val coreModule = module {
     // Application class itself can stay focused on Koin + onCreate.
     // -----------------------------------------------------------------
     single { LocalPeerCapabilitiesResolver(androidContext().filesDir, { get() }) }
-    single { AgentPromptRunner(get(), get(), get(), get(), get()) }
+    single { AgentPromptRunner(get(), get(), get(), get(), get(), get()) }
     single { DeviceInfo() }
 }
 

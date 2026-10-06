@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,6 +8,7 @@ plugins {
 }
 
 android {
+    packaging { jniLibs.useLegacyPackaging = true }
     namespace = "com.meshlit"
     compileSdk = 37
 
@@ -256,20 +258,7 @@ android {
         }
     }
 
-    // OkHttp 4.x ↔ 5.x is not binary compatible. OpenTelemetry's OTLP
-    // sender pulls OkHttp 5.3.2 transitively, but the project pins
-    // OkHttp to 4.12.0 (the last 4.x line — the only line
-    // MockWebServer 4.12.0 understands). Force resolution to 4.12.0
-    // so the unit test runtime classpath is consistent.
-    configurations.all {
-        resolutionStrategy {
-            force("com.squareup.okhttp3:okhttp:4.12.0")
-            force("com.squareup.okhttp3:okhttp-android:4.12.0")
-            force("com.squareup.okhttp3:okhttp-jvm:4.12.0")
-            force("com.squareup.okhttp3:mockwebserver:4.12.0")
-            force("com.squareup.okhttp3:logging-interceptor:4.12.0")
-        }
-    }
+
 }
 
 dependencies {
@@ -291,6 +280,7 @@ dependencies {
     implementation(project(":core-tunnel"))
     implementation(project(":core-users"))
     implementation(project(":core-terminal"))
+    implementation(project(":core-sandbox"))
     implementation(project(":core-bootstrap"))
     implementation(project(":core-registry"))
     implementation(project(":core-lifecycle"))
@@ -307,6 +297,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.material)
@@ -344,6 +335,8 @@ dependencies {
     // supported minSdk (pure-Java), unlike Ktor 3 client which needs
     // DEX 040 bytecode from API 33.
     implementation(libs.okhttp.core)
+    implementation(libs.nanohttpd.core)
+    implementation("org.bouncycastle:bcprov-jdk18on:1.86")
 
     // QR pairing code generation (we render our own Meshlit pairing
     // QR on the Devices screen) + Google Play Services Code Scanner
@@ -404,3 +397,41 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
+// Restricted build environments may choose a writable Robolectric dependency home.
+val meshlitTestHome = providers.gradleProperty("meshlit.testHome")
+tasks.withType<Test>().configureEach {
+    if (meshlitTestHome.isPresent) systemProperty("user.home", meshlitTestHome.get())
+}
+
+val meshlitRobolectricDir=providers.gradleProperty("meshlit.robolectricDir")
+tasks.withType<Test>().configureEach {
+    if(meshlitRobolectricDir.isPresent){
+        systemProperty("robolectric.offline","true")
+        systemProperty("robolectric.dependency.dir",meshlitRobolectricDir.get())
+    }
+}
+
+// A build must not silently omit its real starter model. Preparation is explicit
+// and reproducible, rather than an unpinned download during Gradle configuration.
+abstract class VerifyBundledModel:DefaultTask() {
+    @get:InputFile abstract val manifestFile:RegularFileProperty
+    @get:InputDirectory abstract val assetDirectory:DirectoryProperty
+    @TaskAction fun verify() {
+        val manifest=groovy.json.JsonSlurper().parse(manifestFile.get().asFile) as Map<*,*>
+        val file=assetDirectory.file(manifest["filename"] as String).get().asFile
+        check(file.isFile) { "Missing bundled model. Run python3 scripts/prepare-bundled-model.py from the repository root." }
+        check(file.length()==(manifest["sizeBytes"] as Number).toLong()) { "Bundled model size mismatch. Prepare the model again." }
+        val digest=MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buffer=ByteArray(1024*1024)
+            while(true) { val n=input.read(buffer);if(n<0) break;digest.update(buffer,0,n) }
+        }
+        val hash=digest.digest().joinToString("") { "%02x".format(it) }
+        check(hash==manifest["sha256"]) { "Bundled model checksum mismatch. Prepare the model again." }
+    }
+}
+val verifyBundledModel by tasks.registering(VerifyBundledModel::class) {
+    manifestFile.set(layout.projectDirectory.file("src/main/assets/models/bundled-model.json"))
+    assetDirectory.set(layout.projectDirectory.dir("src/main/assets/models"))
+}
+tasks.named("preBuild") { dependsOn(verifyBundledModel) }
