@@ -135,3 +135,17 @@ both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for accept
 Optional permissions/telemetry remain independent. Preserve the original open-source
 license rights and third-party notices. Production release signing must never fall
 back to a debug certificate; owner keys remain external to source.
+
+## Final beta checkpoint and owner stop (2026-10-07)
+
+Read `docs/SESSION_HANDOFF.md` (repository root relative) and PROGRESS.md. Final
+combined Full/Review APK/AAB build passes; 639 unit tests and one API35 x86_64
+Android audit test pass. Full lint has zero errors (348 warnings/17 hints each),
+Review zero errors (351 warnings/17 hints). CI passes at 2e37dcd. Review static
+manifest/policy/23-library ELF alignment checks pass; Play approval and actual
+16 KiB runtime proof remain open. Final emulator Models shows the starter loaded;
+normal cold startup took 7.406s after Gradle stopped, with two ANRs during lint.
+The owner stopped for sleep, then requested progress saving/local release asset
+preparation. Resume builds or GitHub publication only after their next instruction.
+No beta assets have been uploaded. Keep physical phone sharding/recovery, hosted
+Grafana, vendor SDK telemetry opt-out and optional integrations explicitly open.

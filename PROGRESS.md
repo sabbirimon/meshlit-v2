@@ -14,12 +14,31 @@ emulator observations, host runtime proof and physical-phone proof are separate.
 
 ## Current publication validation (2026-10-07)
 
-Frozen executable source: `db3aaed` (packet bridge/import and unsafe VPN disablement), building
-both Full flavors and Play Review APK/AAB. All 379 targeted unit tests pass (8 audit, 65 cloud, 46 network and 130 app
-per Full flavor). Final Android audit instrumentation passes on API35 x86_64
-(1 test, 9.343 seconds). Final lint is pending; results will be recorded after completion.
-The earlier Play Review APK/AAB assembled, but its last lint run failed during
-source analysis after network source changed. That run is not final evidence.
+Final combined validation **passes** at source `2e37dcd` (Full production code
+unchanged from `db3aaed`; Play Review overlay fix at `53ac70c`). Both Full flavors
+and Play Review APK/AAB build. All **639 targeted unit tests** pass: 8 audit,
+65 cloud, 46 network, 260 inference and 130 app per Full flavor. No failures,
+errors or skipped tests in these suites. Android audit instrumentation passes
+on API35 x86_64 (1 test, 9.343 seconds).
+
+Full lint: **0 fatal/errors, 348 warnings and 17 hints per flavor**. Play Review:
+**0 fatal/errors, 351 warnings and 17 hints**. `abortOnError=true` remains enabled.
+Final log: `../meshlit-validation/release-final-validation.log` (BUILD SUCCESSFUL,
+6m32s). Static Review checks pass for removed permissions/services, policy-copy
+agreement and 23 ARM64 libraries with 16 KiB ELF LOAD alignment. Actual 16 KiB
+runtime/AAB testing and Play approval remain open.
+
+Earlier failure logs are retained: unavailable `android-37` package (fixed to
+`android-37.0`), stale duplicate incremental Review resources (cleared), source-
+analysis interruption, Review overlay telephony lint (fixed explicitly) and
+transient test port bind conflicts (bounded fixture allocation/reuse, TLS/pin/
+authentication assertions preserved). These failed runs are not final evidence.
+
+Final V1 Chat, Models and Monitor were inspected on the emulator; the real bundled
+starter was loaded and the runtime ready. Normal cold launch succeeded in 7.406s
+once Gradle stopped; two launches during concurrent lint had startup ANRs. A visual
+loader-animation capture and physical startup performance remain unverified.
+See `../meshlit-validation/beta-ui-results.json` and `reference-ui/beta-*.png`.
 
 The source includes actual-state boot animation/loader, compact Models/Monitor
 status cards, both-build legal acceptance, encrypted optional audit export and
@@ -44,7 +63,7 @@ docs/observability/. No hosted Grafana account or complete fleet coverage is cla
 Eight core observability tests pass, including actual loopback HTTP/protobuf trace
 and metric receipt, private-text exclusion, retention and committed-write failures.
 The final Android encrypted-journal test passes; see
-`../meshlit-validation/audit-android-final.log`. Full final lint is pending. This is bounded best-effort
+`../meshlit-validation/audit-android-final.log`. Final full lint passes in all three variants. This is bounded best-effort
 observability, not signed/transactional compliance auditing. Native phone sharding,
 replicated recovery and vendor SDK telemetry opt-out remain separate open gates.
 
@@ -53,10 +72,14 @@ live repository badges, IMON credit, contribution forms and llms.txt discovery.
 Source stays Apache-2.0; third-party notices remain. Repository metadata/topics are
 published. Source is pushed to `sabbirimon/meshlit-v2/main`; destination history
 is preserved as an ancestor. The About line and banners say “Many nodes. One mind.”
-Hosted CI SDK setup now passes using the actual `android-37.0` package; hosted
-compile/tests remain in progress. Ranking is not guaranteed;
+Hosted CI passes at `2e37dcd` (run 37536692867), using the actual
+`android-37.0` SDK package. Codex by OpenAI is credited in README/AUTHORS and new
+commit co-author trailers; GitHub sidebar account association is independently
+controlled by GitHub. Ranking is not guaranteed;
 no external promotional posts or invented adoption is claimed. Beta release
-assets are authorized; publication evidence will be recorded below.
+assets are authorized, but no release/assets have been uploaded yet. The owner
+stopped work for sleep and requested local progress saving and asset preparation.
+Read `docs/SESSION_HANDOFF.md` before resuming; no automatic builds or uploads.
 
 ## Agreements and Play review continuation
 

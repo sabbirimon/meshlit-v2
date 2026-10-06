@@ -1,3 +1,13 @@
+# Final beta lint evidence (2026-10-07)
+
+Both Full flavors: **0 fatal/errors, 348 warnings, 17 hints each**.
+Play Review: **0 fatal/errors, 351 warnings, 17 hints**. Fatal/error gating stays
+enabled; no baseline or blanket suppression was introduced. Explicit optional
+telephony in the Review overlay resolves its SMS-removal lint false positive.
+Final evidence: `../meshlit-validation/release-final-validation.log` and generated
+app XML/HTML reports. Earlier records below remain historical. This is static
+analysis evidence, not store approval or physical UX proof.
+
 # Latest lint evidence (2026-10-06)
 
 Final cloud/browser/files/fonts/help continuation passes full lint in both flavors:

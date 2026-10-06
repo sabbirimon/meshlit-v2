@@ -67,6 +67,8 @@ this unavailable state; live companion capture remains unproven.
 Two normal V1 launches on API35 x86_64 emulator-5580 were killed by Android
 with “failed to complete startup” while full Gradle lint ran on the same host.
 The audit instrumentation itself passes (1 test, 9.343 seconds). No cold-start
-fix or causal attribution is established; normal launch must be retried after
-the build becomes idle, and physical startup remains untested. Evidence:
+fix or causal attribution is established. Once Gradle stopped, a normal cold
+launch succeeded in 7.406 seconds and the final Models screen showed the real
+bundled starter loaded. This establishes a successful emulator launch, not
+a physical startup latency target; physical startup remains untested. Evidence:
 `../meshlit-validation/beta-startup-during-build.log`.

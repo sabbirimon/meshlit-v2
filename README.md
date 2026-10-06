@@ -69,8 +69,9 @@ modes, saved fonts and accessibility scaling remain configurable.
 <td><img src="docs/assets/screenshots/settings.png" width="250" alt="Real Meshlit Android searchable settings screen"></td>
 </tr></table>
 
-Screenshots are real API 35 x86_64 emulator captures from the reference UI
-checkpoint. They demonstrate layout, not phone performance or distributed
+Screenshots are real API 35 x86_64 emulator captures. Chat and Models show the
+final beta UI; Settings comes from the earlier reference UI checkpoint. They
+demonstrate layout, not phone performance or distributed
 inference. Retained legacy tools still need individual UX work. Third-party brands,
 OS keyboards and pickers retain their own identities; Google assets are not copied.
 
