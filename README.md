@@ -10,7 +10,7 @@
 
 **A project by IMON** · [@sabbirimon](https://github.com/sabbirimon)
 
-AI-assisted contributor: **Codex by OpenAI**. See [authors and attribution](AUTHORS.md).
+AI-assisted contributor: **Codex by OpenAI, Claude**. See [authors and attribution](AUTHORS.md).
 
 **Run local language models on Android. Connect owner-approved devices. Give humans
 and agents observable tools, durable tasks and explicit controls.** Meshlit is an
