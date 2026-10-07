@@ -558,6 +558,9 @@ val coreModule = module {
     single { com.meshlit.pipeline.PipelineHost(androidContext(), get(), get()) }
     single { com.meshlit.ssh.SshConnections(androidContext(),get()) }
     single { com.meshlit.training.TrainingHost(androidContext(),get()) }
+    single { com.meshlit.security.LabPackages(androidContext(),get()) }
+    single { com.meshlit.security.SecurityLab(androidContext(),get()) }
+    single { com.meshlit.gateway.GatewayHost(androidContext(),get(),get(),get()) }
     single { com.meshlit.providers.OnlineProviders(androidContext(),get()) }
     single { com.meshlit.cloud.CloudManagement(androidContext(),get()) }
     single { com.meshlit.configuration.ConfigurationTransfer(androidContext(),get(),get(),get()) }

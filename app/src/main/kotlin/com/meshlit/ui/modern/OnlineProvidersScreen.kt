@@ -35,7 +35,7 @@ import java.util.UUID
             listOf(Triple("OpenAI","https://api.openai.com/v1",OnlineProtocol.OPENAI),Triple("Claude","https://api.anthropic.com/v1",OnlineProtocol.ANTHROPIC),
                 Triple("DeepSeek","https://api.deepseek.com/v1",OnlineProtocol.OPENAI_COMPATIBLE),Triple("Qwen · US region","https://dashscope-us.aliyuncs.com/compatible-mode/v1",OnlineProtocol.OPENAI_COMPATIBLE),
                 Triple("Gemini","https://generativelanguage.googleapis.com/v1beta",OnlineProtocol.GEMINI),Triple("Hugging Face","https://router.huggingface.co/v1",OnlineProtocol.OPENAI_COMPATIBLE),
-                Triple("Custom compatible","",OnlineProtocol.OPENAI_COMPATIBLE)).forEach{(name,url,protocol)->OutlinedButton(onClick={edit(OnlineProfile(UUID.randomUUID().toString(),name,url,protocol=protocol))}){Text(name)}}}}
+                Triple("Agentgateway / LiteLLM","",OnlineProtocol.OPENAI_COMPATIBLE),Triple("Custom compatible","",OnlineProtocol.OPENAI_COMPATIBLE)).forEach{(name,url,protocol)->OutlinedButton(onClick={edit(OnlineProfile(UUID.randomUUID().toString(),name,url,protocol=protocol))}){Text(name)}}}}
         editing?.let{profile->item{Card{Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
             Text("Configure ${profile.name}",style=MaterialTheme.typography.titleMedium)
             OutlinedTextField(profile.name,{editing=profile.copy(name=it)},label={Text("Profile name")})

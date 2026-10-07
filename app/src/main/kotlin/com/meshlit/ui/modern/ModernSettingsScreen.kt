@@ -46,6 +46,10 @@ import kotlinx.coroutines.*
     if(destination=="router"){ModelRouterScreen(back);return}
     if(destination=="media"){MediaOptionsScreen(back);return}
     if(destination=="configuration"){ConfigurationScreen(back);return}
+    if(destination=="gateway"){GatewayScreen(back);return}
+    if(destination=="commands"){ManualCommandsScreen(back);return}
+    if(destination=="packages"){LabPackagesScreen(back);return}
+    if(destination=="securitylab"){SecurityLabScreen(back);return}
     if(destination=="providers"){OnlineProvidersScreen(back);return}
     if(destination=="power"){PowerCostsScreen(back);return}
     if(destination=="external"){ExternalDevicesScreen(back);return}

@@ -751,6 +751,65 @@
         "docs/BLUE_TEAM_AND_PACKET_ANALYSIS.md",
         "docs/security-tool-sources.json"
       ]
+    },
+    {
+      "id": "embedded-agent-gateway",
+      "title": "Embedded MCP/A2A and buffered model gateway",
+      "status": "implemented",
+      "sources": [
+        "core-mcp/src/main/kotlin/com/meshlit/core/mcp/gateway/EmbeddedGateway.kt",
+        "app/src/main/kotlin/com/meshlit/gateway/GatewayHost.kt"
+      ],
+      "authority": [
+        "MODELS"
+      ],
+      "remaining": [
+        "Rust Android runtime, remote federation, OAuth, streaming/tool loop and physical proof"
+      ]
+    },
+    {
+      "id": "manual-command-input",
+      "title": "Manual commands and instructions",
+      "status": "implemented",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/ui/modern/ManualCommandsScreen.kt"
+      ],
+      "authority": [
+        "HUMAN"
+      ],
+      "remaining": [
+        "Physical process/SSH cancellation and guest acceptance"
+      ]
+    },
+    {
+      "id": "vm-security-assessments",
+      "title": "VM-gated Security Lab assessments and read-only companions",
+      "status": "implemented",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/security/SecurityLab.kt",
+        "companions/cyber/meshlit_cyber.py"
+      ],
+      "authority": [
+        "HUMAN"
+      ],
+      "remaining": [
+        "Earlier cyber tools beyond APK inventory/PCAP summary/tshark remain planned"
+      ]
+    },
+    {
+      "id": "vm-lab-packages",
+      "title": "VM package install/list/uninstall and pip name delegation",
+      "status": "implemented",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/security/LabPackages.kt",
+        "companions/cyber/meshlit_packages.py"
+      ],
+      "authority": [
+        "HUMAN"
+      ],
+      "remaining": [
+        "Physical VM, distro managers, persistent images and storage transfer acceptance"
+      ]
     }
   ],
   "modules": [

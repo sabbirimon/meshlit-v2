@@ -8,7 +8,7 @@ model, SSH and native-support assertions are historical.
 ## Product and runtime
 
 Android Kotlin/Compose/Koin, two build flavors with the shared modern UI. The
-structured inventory has 33 Gradle modules, 61 feature areas and 38 durable typed
+structured inventory has 33 Gradle modules, 65 feature areas and 38 durable typed
 command operations. `../../FEATURE_MAP.md`, `../feature-map.json` and
 `../../PROGRESS.md` are the current navigation/implementation/evidence ledgers.
 No percentage is inferred from feature counts.
@@ -149,3 +149,5 @@ The owner stopped for sleep, then requested progress saving/local release asset
 preparation. Resume builds or GitHub publication only after their next instruction.
 No beta assets have been uploaded. Keep physical phone sharding/recovery, hosted
 Grafana, vendor SDK telemetry opt-out and optional integrations explicitly open.
+
+Gateway continuation: see ../AGENT_GATEWAY_AND_SECURITY_LAB.md. Protocol endpoint implementation is Meshlit Kotlin, distinct from the pinned upstream Rust companion.

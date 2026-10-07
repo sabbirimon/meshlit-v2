@@ -50,6 +50,7 @@ class RuntimeHost(private val context: Context) {
         memoryMb = prefs.getInt("vmMemory", 512), cpus = prefs.getInt("vmCpus", 1),
         sshPort = prefs.getInt("vmSshPort", 2222), vncDisplay = prefs.getInt("vmVncDisplay", 1),
         enableDesktop = prefs.getBoolean("vmDesktop", false),
+        allowOutboundNetwork = prefs.getBoolean("vmOutboundNetwork", false),
     )
 
     fun configureVm(config: VmConfig) {
@@ -59,7 +60,8 @@ class RuntimeHost(private val context: Context) {
             .putString("vmArch", config.architecture.name).putString("vmKernel", config.kernel)
             .putString("vmInitrd", config.initrd).putInt("vmMemory", config.memoryMb)
             .putInt("vmCpus", config.cpus).putInt("vmSshPort", config.sshPort)
-            .putInt("vmVncDisplay", config.vncDisplay).putBoolean("vmDesktop", config.enableDesktop).apply()
+            .putInt("vmVncDisplay", config.vncDisplay).putBoolean("vmDesktop", config.enableDesktop)
+            .putBoolean("vmOutboundNetwork",config.allowOutboundNetwork).apply()
     }
 
     suspend fun execute(argv: List<String>, rootConsent: Boolean): CommandResult {
@@ -69,12 +71,18 @@ class RuntimeHost(private val context: Context) {
         return ProcessRunner().execute(plan)
     }
 
-    suspend fun executeGuest(argv: List<String>): CommandResult {
+    fun labIdentity():String {
+        require(config().mode==RuntimeMode.VM_SSH && vm.state==VmState.SSH_READY) {"Start an SSH-ready VM first"}
+        val source=listOf(vmConfig().disk,vmConfig().architecture.name,sessionStartedAt.toString(),config().sshKnownHosts).joinToString("\n")
+        return java.security.MessageDigest.getInstance("SHA-256").digest(source.toByteArray()).joinToString(""){"%02x".format(it)}
+    }
+
+    suspend fun executeGuest(argv: List<String>, timeoutMs:Long=60000): CommandResult {
         val config = config()
         require(config.mode == RuntimeMode.VM_SSH && vm.state == VmState.SSH_READY) {
             "Guest SSH is not configured and ready"
         }
-        return ProcessRunner().execute(RuntimePlanner(workspace).plan(config, argv))
+        return ProcessRunner().execute(RuntimePlanner(workspace).plan(config, argv),timeoutMs=timeoutMs)
     }
 
     suspend fun startVm(agentRequested: Boolean = false): VmState = lock.withLock {

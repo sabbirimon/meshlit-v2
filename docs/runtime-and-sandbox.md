@@ -114,3 +114,7 @@ features or grant a working vendor GPU/NPU backend. Keep these as planned rather
 than operational controls until actual hardware and cancellation tests pass.
 Play distribution needs an independently reviewed capability/permission surface;
 its narrower manifest alone does not certify every retained runtime integration.
+
+## Explicit guest package networking (2026-10-07)
+
+Guest networking remains restricted by default. Human `vm network on|off` or Lab packages controls can configure outbound user-mode networking only while stopped. Next startup applies it; inbound SSH/VNC forwarding remains loopback. Guest VM isolation is distinct from outbound network policy. Recreate session-bound lab grants after restart.

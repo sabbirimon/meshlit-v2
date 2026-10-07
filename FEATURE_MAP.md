@@ -377,3 +377,14 @@ APK/AAB is a restricted candidate with remaining submission gates. Both include
 versioned first-use policies, an actual-state animated boot loader and compact Models/
 Monitor hero cards. Read docs/PLAY_DISTRIBUTION.md, docs/AI_REPAIR_AND_EVOLUTION.md
 and docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md.
+
+## Gateway and VM Security Lab continuation (2026-10-07)
+
+The inventory now has 65 feature areas; durable AgentOperation DTOs remain at 38.
+New Settings routes expose built-in MCP/A2A/buffered model gateway, manual commands
+and model instructions, VM-gated assessments, and package install/list/uninstall.
+Read docs/AGENT_GATEWAY_AND_SECURITY_LAB.md for implementation subsets and gaps.
+Rooted/non-rooted phones use the same SSH-ready VM gate. Automatic package actions
+are limited to expiring owner-allowlisted pip names with separate VM delegation.
+Official Rust gateway Linux assets are pinned; Android embedding and live Rust
+execution remain unverified. Full red/blue tool adapters remain future acceptance.

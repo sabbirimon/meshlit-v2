@@ -16,6 +16,7 @@ data class VmConfig(
     val kernel: String = "", val initrd: String = "", val memoryMb: Int = 512,
     val cpus: Int = 1, val sshPort: Int = 2222, val vncDisplay: Int = 1,
     val enableDesktop: Boolean = false,
+    val allowOutboundNetwork: Boolean = false,
 ) {
     fun argv(): List<String> {
         require(memoryMb in 256..4096 && cpus in 1..4) { "VM resource limits exceeded" }
@@ -30,7 +31,7 @@ data class VmConfig(
         val args = mutableListOf(binary, "-accel", "tcg", "-m", memoryMb.toString(),
             "-smp", cpus.toString(), "-snapshot", "-no-reboot",
             "-drive", "file=${checked(disk)},if=virtio,format=qcow2",
-            "-netdev", "user,id=net0,restrict=on,hostfwd=tcp:127.0.0.1:$sshPort-:22",
+            "-netdev", "user,id=net0,restrict=${if(allowOutboundNetwork) "off" else "on"},hostfwd=tcp:127.0.0.1:$sshPort-:22",
             "-device", "virtio-net-pci,netdev=net0", "-monitor", "none",
             "-serial", "stdio")
         when (architecture) {

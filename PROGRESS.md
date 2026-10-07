@@ -366,3 +366,22 @@ packages are documented in docs/LINUX_DISTRIBUTIONS_AND_LAB_TOOLS.md. These are
 provisioning requirements, not installed APK assets or verified guest executions.
 Current runtime plans require supplied compatible binaries/rootfs/images, with
 restricted QEMU networking and ephemeral disk snapshots.
+
+
+## Agent gateway and VM-gated lab continuation — 2026-10-07
+
+Implemented an authenticated, manually started loopback gateway with buffered LLM,
+stateless MCP JSON-response and A2A model-task subsets. Four Settings destinations
+provide gateway configuration, manual commands/instructions, security assessments
+and guest package lifecycle operations. Details and explicit outstanding milestones
+are in `docs/AGENT_GATEWAY_AND_SECURITY_LAB.md`.
+
+Security Lab and package actions require an SSH-ready VM on both root/non-root
+phones. Root/PRoot/chroot alone cannot unlock the lab. Assessment grants bind to the
+VM session; agents have separate expiring grants. Original read-only APK/PCAP
+companions and optional tshark are implemented; other cyber tools remain planned.
+Manual guest package managers and limited delegated pip are implemented; guest-root
+is explicitly human approved. Guest internet is opt-in while stopped and applied
+on next boot. No bundled Linux distro, Android Rust gateway or physical-device
+qualification is claimed. Source, APKs and final validation notes belong to the
+2026-10-07 continuation outputs, separate from the frozen earlier beta.

@@ -63,6 +63,11 @@ class RuntimeTerminal(private val context: Context, private val host: RuntimeHos
             host.configureVm(host.vmConfig().copy(memoryMb = args[1].toInt(), cpus = args[2].toInt()))
             listOf("VM resource budget saved")
         }
+        "network" -> {
+            require(args.size==2 && args[1] in listOf("on","off")) {"vm network on|off"}
+            host.configureVm(host.vmConfig().copy(allowOutboundNetwork=args[1]=="on"))
+            listOf("Guest outbound network ${args[1]}; applies at next VM start. Inbound forwarding stays loopback-only")
+        }
         "desktop" -> {
             require(args.size == 2 && args[1] in listOf("on", "off"))
             host.configureVm(host.vmConfig().copy(enableDesktop = args[1] == "on"))
