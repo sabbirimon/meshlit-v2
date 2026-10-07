@@ -1,3 +1,21 @@
+# HyperL — isolated AI compute experiment
+
+This is `codex/hyperl-experimental`, based on Meshlit `77ac214`, with an original
+HyperL CPU reference, elementary source emitters, adapter descriptors and a cluster
+planning policy. It is not merged into the application branch and does not bundle
+CUDA/ROCm/NPU drivers or privileged backends.
+
+Start with [HyperL](HYPERL.md), [detailed owner plan](docs/hyperl/REQUESTS_AND_PLAN.md),
+[language/API boundaries](docs/hyperl/LANGUAGE_V1.md) and
+[research and licensing](docs/hyperl/RESEARCH_2026_10_08.md). The goal is AI compute
+across hosts and clusters, with phones as one client. Native performance, hardware
+and cross-platform installers remain qualification work.
+
+The Meshlit documentation below describes the historical application base; current
+application/gateway/control continuation is developed on its separate branch.
+
+---
+
 <p align="center"><picture>
 <source media="(prefers-color-scheme: light)" srcset="docs/assets/meshlit-v2-hero-light.svg">
 <source media="(prefers-color-scheme: dark)" srcset="docs/assets/meshlit-v2-hero.svg">
