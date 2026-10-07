@@ -1,13 +1,13 @@
 # Meshlit progress and evidence
 
-Updated 2026-10-07 (Asia/Dhaka; validation ran 2026-10-06 UTC). Baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
+Updated 2026-10-08. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
 Branch: `codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
 to `sabbirimon/meshlit-v2` on 2026-10-07, followed by GitHub beta APK release assets
 and a separate Play review build. No force push or Play submission is authorized.
 Historical upstream records in `docs/history/` are not current test evidence.
 
-`FEATURE_MAP.md` and `docs/feature-map.json` inventory **61 feature areas,
+`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **74 feature areas,
 38 durable command operations and 33 modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
@@ -398,3 +398,59 @@ Imports never execute/unpack content. Tool process output/deadline failure contr
 and staging corruption/truncation/cancellation are tested separately from actual
 phone/guest/provider acceptance, which remains open. Final build evidence is in the
 2026-10-07 remaining-build outputs; do not claim the full protocol/cyber roadmap done.
+
+## Continuation source and scope — 2026-10-08
+
+Source is based on `77ac214`; physical-device testing remains paused and no live
+cloud/provider/SSH account profile exists. Remaining areas 2–8 have additional local
+implementation and explicit acceptance boundaries in `docs/CONTINUATION_2026_10_08.md`.
+New work includes fixed signed crash-fault replica journal/manual metadata, authenticated
+JSON MCP/A2A connectors and unified route dispatch, persisted managed stop/capacity
+controls, original cyber metadata adapters, optional Terraform/storage/DSP companions,
+SDK/topology observations and platform/driver/kernel qualification contracts.
+
+Meshlit is intended as dynamic AI software across hosts/environments; phones are one
+client. Current Android APKs remain Android applications. Hardware/OS installers,
+privileged backends, GPU/NPU/FPGA execution and native transport integration require
+actual implementation and qualification. HyperL is isolated on
+`codex/hyperl-experimental` based on `77ac214`; it is not integrated into these APKs.
+
+Real CPU native-host comparison uses the existing pinned binaries and a 19,077,344-byte
+model (SHA-256 `66967fbece6dbe97886593fdbb73589584927e29119ec31f08090732d1861739`).
+CPU baseline and two actual RPC worker buffers produced identical output. This is
+same-host loopback evidence: no TLS, oversized model, independent-node or phone proof.
+
+The optional node companion supports HTTP keep-alive and TCP_NODELAY. A real
+authenticated same-host loopback benchmark on macOS/x86-64 used 20 warmups and 200
+samples: p50 **425.779 µs**, p95 **520.665 µs**, p99 **643.717 µs**, maximum
+**960.535 µs**, population deviation **61.015 µs**. This includes application/auth/JSON
+and actual OS/storage probe work. No physical NIC, one-way, load, TLS, RDMA, hardware
+timestamp or HFT performance is qualified. See `scripts/benchmark-node-network.py`.
+
+Original Python suites: **30 pass** (13 cyber, 5 node, 3 actual installed Terraform
+local plan/apply tests, 9 crawler). Terraform tests exercise only disposable local
+`terraform_data`; no cloud account or infrastructure deployment is implied.
+
+Final namespace/protocol revalidation **passes in 26m03s**. It rejects ambiguous
+trailing-underscore route IDs and classifies by enrolled protocol. Both Full APK
+flavors and Review APK/AAB build. Across the targeted Android suites, **869 pass,
+one opt-in SSH fixture test skips, zero failures/errors** (870 total cases). The
+MCP suite has 120 cases; both app flavors have 130 each. The preceding combined
+check covered unchanged common/GPU/federation/SSH/cloud/sandbox/network/inference
+suites; the final check rebuilt/retested MCP and both app flavors and all artifacts.
+
+Full lint: **0 fatal/errors, 350 warnings and 17 hints per flavor**. Review lint:
+**0 fatal/errors, 353 warnings and 17 hints**. The two new KTX style suggestions
+concern preference writes whose commit result is explicitly checked for durable
+policy saves. Fatal lint remains enabled. Final Review static checks pass for
+permission/service removals, legal asset/source agreement and native ELF 16 KiB
+alignment; runtime/device/AAB/Play acceptance remains open. Older APK/lint evidence
+above is historical and must not be assigned to this source revision. Live SSH's opt-in fixture check remains explicitly skipped
+without `MESHLIT_LIVE_SSH_DIR`. No physical or live-provider acceptance is inferred.
+
+Final check logs: `continuation-current-final-build2.log` (combined pre-fix source)
+and `federated-protocol-final-build2.log` (final affected source). Failed/interrupted
+attempts remain in the local work directory and are not success evidence. Final
+source did not change after validation except documentation. The separate HyperL
+branch `cdb06b6` passed 27 core-gpu checks, including actual host Clang execution;
+this is not GPU/NPU/RISC-V/kernel hardware qualification or a merge into Meshlit.

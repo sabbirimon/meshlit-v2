@@ -51,6 +51,7 @@ import kotlin.coroutines.coroutineContext
  *    updates (load started, model loaded, token, completion).
  */
 class InferenceCoordinator(
+    private val operationGate: com.meshlit.core.common.control.OperationGate? = null,
     private val dispatcher: kotlinx.coroutines.CoroutineDispatcher = Dispatchers.Default,
     private val localBehavior: () -> com.meshlit.core.inference.models.LocalModelBehavior = { com.meshlit.core.inference.models.LocalModelBehavior() },
 ) {
@@ -403,6 +404,7 @@ class InferenceCoordinator(
         layerStart: Int, layerEnd: Int,
         manifest: com.meshlit.core.inference.net.ShardManifest?,
     ): MeshlitResult<ModelInfo> {
+        operationGate?.requireAllowed(com.meshlit.core.common.control.ManagedFeature.INFERENCE)
         // Phase 2 — resolve the runtime for this file path. We do
         // this *before* flipping the state to Loading so a bad
         // extension results in a clean Error state instead of a
@@ -489,6 +491,7 @@ class InferenceCoordinator(
      * Once selected, a failed external runtime never silently falls back locally. */
     suspend fun loadExternalEngine(path: String, contextSize: Int,
         factory: suspend () -> InferenceEngine): MeshlitResult<ModelInfo> = inferMutex.withLock {
+        operationGate?.requireAllowed(com.meshlit.core.common.control.ManagedFeature.INFERENCE)
         _state.value = CoordinatorState.Loading(path)
         try {
             externalEngine?.unloadModel(); externalEngine = null
@@ -552,6 +555,9 @@ class InferenceCoordinator(
      * stream via [InferenceRequest.onToken].
      */
     suspend fun infer(request: InferenceRequest): MeshlitResult<InferenceResult> =
+        operationGate?.run(com.meshlit.core.common.control.ManagedFeature.INFERENCE) { inferManaged(request) } ?: inferManaged(request)
+
+    private suspend fun inferManaged(request: InferenceRequest): MeshlitResult<InferenceResult> =
         inferMutex.withLock {
             if(request.expectedModelPath!=null && loadedModel()?.modelPath!=request.expectedModelPath)
                 return@withLock MeshlitResult.Failure(com.meshlit.core.common.MeshlitError.Invalid("model_changed: expected model is no longer loaded"))

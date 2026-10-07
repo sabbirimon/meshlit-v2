@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 @Serializable data class DeviceDirectorySnapshot(val devices:List<EnrolledDevice> = emptyList(),val groups:List<DeviceGroup> = emptyList())
 interface DeviceDirectoryStore { fun load():DeviceDirectorySnapshot;fun save(snapshot:DeviceDirectorySnapshot) }
 /** Owner approval is separate from claimed capabilities. Groups are local metadata. */
-class DeviceDirectory(private val store:DeviceDirectoryStore) {
+class DeviceDirectory(private val store:DeviceDirectoryStore, private val deviceLimit:()->Int = { 10000 }) {
     private var snapshot=store.load()
     @Synchronized fun read()=snapshot
     private fun persist(next:DeviceDirectorySnapshot){store.save(next);snapshot=next}
@@ -28,7 +28,7 @@ class DeviceDirectory(private val store:DeviceDirectoryStore) {
             return existing
         }
         require(snapshot.devices.none{it.credentialHash==hash}){"Credential already belongs to another identity"}
-        require(snapshot.devices.size<64){"Device directory is full"}
+        require(deviceLimit() in 1..10000 && snapshot.devices.size<deviceLimit()){"Device directory is full"}
         val entry=EnrolledDevice(id,name,kind,hash,requestedRoles=roles)
         persist(snapshot.copy(devices=snapshot.devices+entry));return entry
     }

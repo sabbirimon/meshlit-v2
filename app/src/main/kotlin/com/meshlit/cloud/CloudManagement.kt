@@ -16,6 +16,7 @@ data class CloudState(val profiles:List<CloudProfile> = emptyList(),val environm
 
 /** No secret values in state flows, agent descriptions, audit, exported configuration or cloud URLs. */
 class CloudManagement(context:Context,scope:CoroutineScope) {
+    private val operations=com.meshlit.operations.OperationsControl.get(context).gate
     private val store by lazy{EncryptedCredentialStore(context,"cloud-management-v1")}
     private val mutex=Mutex();private val json=Json{ignoreUnknownKeys=false};private var snapshot=CloudSnapshot()
     private val mutable=MutableStateFlow(CloudState());val state=mutable.asStateFlow()
@@ -56,7 +57,7 @@ class CloudManagement(context:Context,scope:CoroutineScope) {
         require(actor!=CloudActor.AGENT || env.agentAllowed) { "Agent use of this credential environment is disabled" }
         env.variables.toMap()
     }}
-    suspend fun execute(id:String,action:String,actor:CloudActor,page:Int=1):CloudObservation {
+    suspend fun execute(id:String,action:String,actor:CloudActor,page:Int=1):CloudObservation = operations.run(com.meshlit.core.common.control.ManagedFeature.CLOUD,actor==CloudActor.AGENT) {
         ready.await();val (profile,environment)=withContext(Dispatchers.IO){mutex.withLock{
             val p=snapshot.profiles.single{it.id==id};val env=snapshot.environments.single{it.id==p.environmentId};val now=System.currentTimeMillis()
             p.authorize(actor,action,env,now)
@@ -65,7 +66,7 @@ class CloudManagement(context:Context,scope:CoroutineScope) {
             p to env
         }}
         val result=client.execute(profile,environment,actor,action,page)
-        return withContext(Dispatchers.IO){mutex.withLock{
+        withContext(Dispatchers.IO){mutex.withLock{
             val latest=snapshot.profiles.single{it.id==id};val env=snapshot.environments.single{it.id==latest.environmentId}
             latest.authorize(actor,action,env,System.currentTimeMillis())
             require(latest==profile && env==environment) { "Cloud configuration changed during request; refresh explicitly" }

@@ -255,6 +255,8 @@ dependencies {
     implementation(project(":core-discovery"))
     implementation(project(":core-inference"))
     implementation(project(":core-mcp"))
+    implementation(project(":core-federation"))
+    implementation(project(":core-gpu"))
     implementation(project(":core-cloud-mcp"))
     implementation(project(":core-training"))
     implementation(project(":core-files"))

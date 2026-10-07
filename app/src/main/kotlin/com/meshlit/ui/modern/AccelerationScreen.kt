@@ -26,6 +26,8 @@ import com.meshlit.core.inference.models.*
             Text("Existing models retain their own Models → Runtime options. RunAnywhere GPU layer selection is not exposed by the pinned SDK.")
             Text("Native CPU thread cap: $threads; effective now ${preferences.effectiveThreads()}");Slider(threads.toFloat(),{threads=it.toInt();preferences.setThreadLimit(threads)},valueRange=1f..4f,steps=2)
             Text("Applied when starting the next native local or pipeline coordinator process. Device pressure can lower the effective limit.")}
+        item{AcceleratorNodePanel()}
+        items(com.meshlit.core.gpu.AcceleratorCatalog.integrations){integration->Card{Column(Modifier.padding(16.dp)){Text(integration.families,style=MaterialTheme.typography.titleMedium);Text("${integration.sdk} · ${integration.profiler}");Text("Runtime adapter qualified: ${integration.adapterReady}")}}}
         items(listOf(
             "Vulkan / OpenCL" to "No GPU inference plugin is installed. Requires a compatible native build, driver and device generation test.",
             "OpenGL ES" to "Used by the Android graphics stack. No OpenGL LLM compute adapter is implemented.",

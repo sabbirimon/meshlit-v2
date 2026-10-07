@@ -39,6 +39,7 @@ class OpenClawHost(private val context:Context,private val inference:InferenceCo
         store.put("gateway",parsed.toString().trimEnd('/'));store.put("gateway-token",token);store.put("agent",target)
     }
     @Synchronized fun startSharing(){
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.AUTOMATION)
         if(server!=null) return
         try {
             // Loopback only. Remote access requires an owner-configured authenticated TLS tunnel.
@@ -51,6 +52,7 @@ class OpenClawHost(private val context:Context,private val inference:InferenceCo
     @Synchronized fun stopSharing(){sharingGeneration=null;server?.stop();server=null;mutable.value=OpenClawState();context.stopService(Intent(context,OpenClawService::class.java))}
     @Synchronized fun stopIfGeneration(id:String?){if(id!=null && sharingGeneration==id) stopSharing()}
     suspend fun send(text:String,session:String):String=withContext(Dispatchers.IO){
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.AUTOMATION)
         require(text.isNotBlank() && text.length<=32_000)
         val base=gateway();check(base.isNotBlank()){ "Configure an OpenClaw gateway first" }
         val client=OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)

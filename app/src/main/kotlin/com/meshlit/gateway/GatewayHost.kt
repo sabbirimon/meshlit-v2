@@ -15,7 +15,10 @@ import java.util.UUID
 @Serializable data class GatewaySettings(val port:Int=18893,val modelId:String="",val policy:GatewayPolicy=GatewayPolicy())
 /** Configuration edits are human-only; restart/rekey revokes the old listener and running request handlers. */
 class GatewayHost(context:Context,private val backend:AgentBackend,private val lab:com.meshlit.security.SecurityLab,private val packages:com.meshlit.security.LabPackages) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val store=EncryptedCredentialStore(context,"agent-gateway")
+    val remoteRoutes=RemoteRoutes(context)
+    val routing=UnifiedRouting(context,backend,remoteRoutes,{settings.value.policy})
     private val json=Json {ignoreUnknownKeys=true}
     private val _settings=MutableStateFlow(store.get("settings")?.let {runCatching {json.decodeFromString<GatewaySettings>(it)}.getOrNull()} ?: GatewaySettings())
     val settings=_settings.asStateFlow()
@@ -27,12 +30,13 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
     @Synchronized fun save(value:GatewaySettings) {require(value.port in 1024..65535);require(value.modelId.length<=160);value.policy.validate();stop();store.putCommitted("settings",json.encodeToString(value));_settings.value=value}
     @Synchronized fun rotate() {stop();store.putCommitted("token",UUID.randomUUID().toString()+UUID.randomUUID())}
     @Synchronized fun start() {
+        operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.GATEWAY)
         check(!com.meshlit.BuildConfig.PLAY_REVIEW) {"Inbound gateway is not enabled in Play Review"}
         stop();val config=settings.value
         val next=EmbeddedGateway(config.port,token(),{settings.value.policy},::tools,::invoke,::models,::chat,::send,::get,::cancel)
         try {next.start(15000,false);server=next;_running.value=true} catch(e:Exception) {next.stop();throw e}
     }
-    @Synchronized fun stop() {epoch.incrementAndGet();server?.stop();server=null;_running.value=false;val ids=owned.toList();owned.clear();cleanupScope.launch {backend.controller.ready.await();ids.forEach {id->backend.controller.jobs.value.firstOrNull {it.command.requestId==id && !it.terminal}?.let {backend.controller.cancel(id)}}}}
+    @Synchronized fun stop() {remoteRoutes.resetSession();epoch.incrementAndGet();server?.stop();server=null;_running.value=false;val ids=owned.toList();owned.clear();cleanupScope.launch {backend.controller.ready.await();ids.forEach {id->backend.controller.jobs.value.firstOrNull {it.command.requestId==id && !it.terminal}?.let {backend.controller.cancel(id)}}}}
     private fun tools()=buildJsonArray {
         fun tool(name:String,description:String,schema:JsonObject)=add(buildJsonObject {put("name",name);put("description",description);put("inputSchema",schema)})
         tool("meshlit_command_submit","Submit a durable command; saved agent permissions remain required",AgentCommandSchema.describe())
@@ -41,11 +45,18 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
         tool("meshlit_job_cancel","Cancel a job submitted by this gateway",idSchema)
         tool("lab_package_action","List/install/uninstall owner-allowlisted pip packages inside ready VM",buildJsonObject {put("type","object");put("required",buildJsonArray {add("action")});put("properties",buildJsonObject {put("action",buildJsonObject {put("type","string");put("enum",buildJsonArray {add("list");add("install");add("uninstall")})});put("package",buildJsonObject {put("type","string");put("maxLength",100)})})})
         tool("security_assessments_list","List assessments explicitly delegated to agents",buildJsonObject {put("type","object");put("properties",buildJsonObject {})})
-        tool("security_assessment_run","Run an approved read-only tool inside an SSH-ready VM",buildJsonObject {put("type","object");put("required",buildJsonArray {add("id");add("tool")});put("properties",buildJsonObject {put("id",buildJsonObject {put("type","string")});put("tool",buildJsonObject {put("type","string");put("enum",buildJsonArray {add("apk_inventory");add("pcap_summary");add("tshark")})})})})
+        tool("security_assessment_run","Run an approved read-only tool inside an SSH-ready VM",buildJsonObject {put("type","object");put("required",buildJsonArray {add("id");add("tool")});put("properties",buildJsonObject {put("id",buildJsonObject {put("type","string")});put("tool",buildJsonObject {put("type","string");put("enum",buildJsonArray {add("apk_inventory");add("pcap_summary");add("tshark");add("sleuthkit");add("elf_inventory");add("sqlite_metadata")})})})})
+        tool("gateway_routes_list","List enabled unified routes without credentials",buildJsonObject{put("type","object")})
+        tool("gateway_route_execute","Execute an owner-delegated unified LLM/MCP/A2A route once",buildJsonObject{put("type","object");put("required",buildJsonArray{add("routeId");add("arguments")});put("properties",buildJsonObject{put("routeId",buildJsonObject{put("type","string")});put("arguments",buildJsonObject{put("type","object")})})})
+        remoteRoutes.tools().forEach {add(it)}
     }
     private val owned=java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
-    private suspend fun invoke(name:String,args:JsonObject):JsonObject {
+    private suspend fun invoke(name:String,args:JsonObject):JsonObject = operations.run(com.meshlit.core.common.control.ManagedFeature.GATEWAY,true) { invokeManaged(name,args) }
+    private suspend fun invokeManaged(name:String,args:JsonObject):JsonObject {
+        if(name.startsWith("remote_")) return remoteRoutes.invoke(name,args)
         val result=when(name) {
+            "gateway_routes_list"->json.encodeToJsonElement(routing.routes.value.filter{it.enabled && it.agentAllowed})
+            "gateway_route_execute"->routing.execute(args["routeId"]!!.jsonPrimitive.content,args["arguments"]!!.jsonObject,true)
             "lab_package_action"->packages.run(args["action"]!!.jsonPrimitive.content,"pip","repo",args["package"]?.jsonPrimitive?.content.orEmpty(),"",agent=true)
             "security_assessments_list"->buildJsonObject {put("assessments",buildJsonArray {lab.assessments.value.filter {it.agentAllowed && it.expiresAtMs>System.currentTimeMillis()}.forEach {assessment->add(buildJsonObject {put("id",assessment.id);put("sha256",assessment.sha256);put("tools",buildJsonArray {assessment.tools.forEach {add(it)}})})}})}
             "security_assessment_run"->lab.run(args["id"]!!.jsonPrimitive.content,args["tool"]!!.jsonPrimitive.content,agent=true)
@@ -58,11 +69,12 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
             }
             "meshlit_job_status"->safeJob(ownedJob(args["id"]!!.jsonPrimitive.content) ?: throw NoSuchElementException())
             "meshlit_job_cancel"->{val id=args["id"]!!.jsonPrimitive.content;require(id in owned);safeJob(backend.controller.cancel(id) ?: throw NoSuchElementException())}
-            else->throw UnsupportedOperationException()
+            else->{require(name.startsWith("remote_"));remoteRoutes.invoke(name,args)}
         }
         return buildJsonObject {put("content",buildJsonArray {add(buildJsonObject {put("type","text");put("text",result.toString())})});put("isError",false)}
     }
     private suspend fun admit(command:AgentCommand):AgentJob {
+        operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.GATEWAY,true)
         val started=epoch.get();check(running.value) {"Gateway is stopped"}
         owned.add(command.requestId)
         try {
@@ -75,9 +87,19 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
     private fun safeJob(job:AgentJob)=buildJsonObject {put("id",job.command.requestId);put("phase",job.phase.name);job.result?.let {settings.value.policy.check(it.toString(),true);put("result",it)};job.errorCode?.let {put("errorCode",it)}}
     private suspend fun models():JsonArray {
         val value=backend.executeHuman(AgentCommand(UUID.randomUUID().toString(),AgentOperation.MODELS_LIST))
-        return buildJsonArray {(value.jsonObject["models"] as? JsonArray).orEmpty().filter {it.jsonObject["installed"]?.jsonPrimitive?.booleanOrNull==true || it.jsonObject["enabled"]?.jsonPrimitive?.booleanOrNull==true}.forEach {add(buildJsonObject {put("id",it.jsonObject["modelId"]!!);put("object","model");put("owned_by","meshlit")})}}
+        return buildJsonArray {(value.jsonObject["models"] as? JsonArray).orEmpty().filter {it.jsonObject["installed"]?.jsonPrimitive?.booleanOrNull==true || it.jsonObject["enabled"]?.jsonPrimitive?.booleanOrNull==true}.forEach {add(buildJsonObject {put("id",it.jsonObject["modelId"]!!);put("object","model");put("owned_by","meshlit")})}
+            routing.routes.value.filter{it.enabled && it.agentAllowed && it.protocol==RouteProtocol.LLM}.forEach{route->add(buildJsonObject{put("id","route:${route.id}");put("object","model");put("owned_by","meshlit-routes")})}
+        }
     }
     private suspend fun chat(input:JsonObject):JsonObject {
+        val alias=input["model"]?.jsonPrimitive?.content.orEmpty()
+        if(alias.startsWith("route:")){
+            val messages=input["messages"]!!.jsonArray;require(messages.size in 1..40)
+            val prompt=messages.joinToString("\n\n"){val entry=it.jsonObject;val role=entry["role"]!!.jsonPrimitive.content;require(role in setOf("user","assistant","system"));role+": "+entry["content"]!!.jsonPrimitive.also{require(it.isString)}.content}
+            val route=routing.routes.value.single{it.id==alias.removePrefix("route:")};require(route.protocol==RouteProtocol.LLM)
+            val value=routing.execute(route.id,buildJsonObject{put("prompt",prompt);put("maxTokens",(input["max_completion_tokens"] ?: input["max_tokens"])?.jsonPrimitive?.int ?: 256)},true)
+            return buildJsonObject{put("id","chatcmpl-${UUID.randomUUID()}");put("object","chat.completion");put("created",System.currentTimeMillis()/1000);put("model",alias);put("choices",buildJsonArray{add(buildJsonObject{put("index",0);put("finish_reason","stop");put("message",buildJsonObject{put("role","assistant");put("content",value["result"]!!.jsonObject["text"]!!.jsonPrimitive.content)})})})}
+        }
         require(input["model"]?.jsonPrimitive?.content==settings.value.modelId && settings.value.modelId.isNotBlank()) {"Use owner-selected gateway model"}
         val messages=input["messages"] as? JsonArray ?: throw IllegalArgumentException()
         require(messages.size in 1..40)

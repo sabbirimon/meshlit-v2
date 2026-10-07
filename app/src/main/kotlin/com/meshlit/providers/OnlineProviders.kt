@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 
 /** Profile configuration and keys use encrypted app storage. Keys never enter chat history or tool results. */
 class OnlineProviders(context:Context,private val vault:com.meshlit.cloud.CloudManagement) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val store=EncryptedCredentialStore(context,"online-provider-profiles")
     private val json=Json{ignoreUnknownKeys=true}
     private val _profiles=MutableStateFlow(runCatching{store.get("profiles")?.let{json.decodeFromString<List<OnlineProfile>>(it)}}.getOrNull().orEmpty())
@@ -32,7 +33,8 @@ class OnlineProviders(context:Context,private val vault:com.meshlit.cloud.CloudM
         store.put("profiles",json.encodeToString(updated));_profiles.value=updated
     }
     @Synchronized fun remove(id:String) { val updated=_profiles.value.filterNot{it.id==id};store.put("profiles",json.encodeToString(updated));store.remove("key-$id");_profiles.value=updated }
-    suspend fun generate(id:String,messages:List<OnlineMessage>,system:String="",maxTokens:Int=1024,temperature:Float=0.7f,agent:Boolean=false):Pair<OnlineProfile,OnlineReply> {
+    suspend fun generate(id:String,messages:List<OnlineMessage>,system:String="",maxTokens:Int=1024,temperature:Float=0.7f,agent:Boolean=false):Pair<OnlineProfile,OnlineReply> = operations.run(com.meshlit.core.common.control.ManagedFeature.CLOUD,agent) { generateManaged(id,messages,system,maxTokens,temperature,agent) }
+    private suspend fun generateManaged(id:String,messages:List<OnlineMessage>,system:String="",maxTokens:Int=1024,temperature:Float=0.7f,agent:Boolean=false):Pair<OnlineProfile,OnlineReply> {
         val profile=_profiles.value.firstOrNull{it.id==id} ?: error("Online profile no longer exists")
         require(!agent || profile.agentAllowed) { "This profile does not allow agent cloud requests" }
         return profile to client.generate(profile,resolveToken(profile,agent),messages,system,maxTokens,temperature)

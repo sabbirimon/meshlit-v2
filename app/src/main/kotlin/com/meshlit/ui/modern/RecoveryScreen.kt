@@ -34,9 +34,10 @@ import kotlinx.coroutines.*
                 Text("Native CPU prompt-cache checkpoints",style=MaterialTheme.typography.titleMedium)
                 Text("Load a model with the native CPU backend and generate first. Save its completed prompt cache, then reload the identical model and settings before restoring.")
                 Text("Snapshots are encrypted on this device, at most 128 MiB each, 16 snapshots and 256 MiB total. Native chat reuses matching prompt prefixes. A cache is not conversation history or a task result.")
-                Text("Replicated task/session memory, automatic coordinator failover and cross-device/RPC KV restoration are still unavailable.")
+                Text("The manual replicated journal below is separate from native KV snapshots. Automatic coordinator failover and cross-device/RPC KV restoration remain unavailable.")
                 Button(enabled=state.local && !state.starting && !busy,onClick={run{val saved=host.saveCheckpoint();result="Saved ${saved.tokens} cached tokens (${saved.bytes} bytes)"}}){Text("Save completed native cache")}
             }}}
+            item { ReplicaRecoveryPanel() }
             if(busy) item{LinearProgressIndicator(Modifier.fillMaxWidth())}
             result?.let{item{Text(it)}}
             error?.let{item{ErrorCard(it){error=null}}}

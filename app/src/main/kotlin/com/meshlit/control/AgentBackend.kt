@@ -21,6 +21,7 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
     private val inference:InferenceCoordinator,private val cluster:PipelineHost,private val scope:CoroutineScope,
     val taskBoard:TaskBoard,private val workspace:CodeWorkspace,private val online:com.meshlit.providers.OnlineProviders,private val cloud:com.meshlit.cloud.CloudManagement,private val browser:com.meshlit.browser.BrowserSessionBroker) {
     enum class Scope { SETTINGS, MODELS, CLUSTER, RECOVERY, TASKS, WORKSPACE, SSH, CLOUD, BROWSER }
+    private val operations=com.meshlit.operations.OperationsControl.get(context).gate
     private val policy=context.getSharedPreferences("typed-agent-scopes",0)
     private val json=Json{ignoreUnknownKeys=false}
     private val credentials by lazy{EncryptedCredentialStore(context,"agent-job-journal")}
@@ -40,6 +41,15 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         check(policy.edit().putBoolean(permission.name,enabled).commit()){ "Delegation could not be saved" }
         audit?.invoke(com.meshlit.core.observability.AuditRecord(source=com.meshlit.core.observability.AuditSource.SETTINGS,action="agent.delegation.updated",actor=com.meshlit.core.observability.AuditActor.HUMAN,outcome=com.meshlit.core.observability.AuditOutcome.SUCCEEDED))
         if(!enabled) scope.launch{controller.ready.await();controller.jobs.value.filter{!it.terminal && required(it.command)==permission}.forEach{controller.cancel(it.command.requestId)}}
+    }
+    private fun commandFeature(command:AgentCommand):com.meshlit.core.common.control.ManagedFeature = when(required(command)) {
+        Scope.MODELS -> if(command.operation in setOf(AgentOperation.MODEL_DOWNLOAD,AgentOperation.MODEL_ADD_URL,AgentOperation.MODEL_IMPORT)) com.meshlit.core.common.control.ManagedFeature.MODEL_TRANSFERS else com.meshlit.core.common.control.ManagedFeature.INFERENCE
+        Scope.CLUSTER -> com.meshlit.core.common.control.ManagedFeature.CLUSTER
+        Scope.RECOVERY -> com.meshlit.core.common.control.ManagedFeature.RECOVERY
+        Scope.CLOUD -> com.meshlit.core.common.control.ManagedFeature.CLOUD
+        Scope.BROWSER -> com.meshlit.core.common.control.ManagedFeature.BROWSER
+        Scope.WORKSPACE -> com.meshlit.core.common.control.ManagedFeature.FILES
+        else -> com.meshlit.core.common.control.ManagedFeature.AUTOMATION
     }
     private fun required(command:AgentCommand):Scope?=when(command.operation){
         AgentOperation.BROWSER_STATUS,AgentOperation.BROWSER_AUTONOMOUS_RUN,AgentOperation.BROWSER_STOP->Scope.BROWSER
@@ -64,7 +74,8 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         catch(e:Exception){report(if(e is AgentCommandFailure && e.code=="permission_denied")com.meshlit.core.observability.AuditOutcome.DENIED else com.meshlit.core.observability.AuditOutcome.FAILED);throw e}
     }
     var remoteAuthorizer:(suspend(AgentCommand)->Unit)?=null
-    private suspend fun executeAgent(command:AgentCommand):JsonElement = audited(command,com.meshlit.core.observability.AuditActor.AGENT) {
+    private suspend fun executeAgent(command:AgentCommand):JsonElement = operations.run(commandFeature(command),true) { executeAgentManaged(command) }
+    private suspend fun executeAgentManaged(command:AgentCommand):JsonElement = audited(command,com.meshlit.core.observability.AuditActor.AGENT) {
         remoteAuthorizer?.invoke(command)
         required(command)?.let{if(!delegated(it)) throw AgentCommandFailure("permission_denied","Enable saved ${it.name.lowercase()} delegation first")}
         if(command.operation==AgentOperation.MODEL_GENERATE && command.modelId?.startsWith("cloud:")==true) {
@@ -73,7 +84,8 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
         if(command.operation in setOf(AgentOperation.CLOUD_PROFILES,AgentOperation.ENVIRONMENT_PROFILES,AgentOperation.CLOUD_EXECUTE)) return@audited executeCloud(command,com.meshlit.core.cloudmcp.management.CloudActor.AGENT)
         executeCommand(command,true)
     }
-    suspend fun executeHuman(command:AgentCommand):JsonElement=audited(command,com.meshlit.core.observability.AuditActor.HUMAN){executeCommand(command,false)}
+    suspend fun executeHuman(command:AgentCommand):JsonElement = if(command.operation in setOf(AgentOperation.CLUSTER_STOP,AgentOperation.BROWSER_STOP,AgentOperation.MODEL_UNLOAD)) executeHumanManaged(command) else operations.run(commandFeature(command)) { executeHumanManaged(command) }
+    private suspend fun executeHumanManaged(command:AgentCommand):JsonElement=audited(command,com.meshlit.core.observability.AuditActor.HUMAN){executeCommand(command,false)}
     private suspend fun executeCommand(command:AgentCommand,agent:Boolean):JsonElement {
         command.validate();library.ready.await()
         return when(command.operation){
@@ -170,7 +182,7 @@ class AgentBackend(private val context:Context,private val settings:SettingsRepo
             AgentOperation.CHECKPOINT_DELETE->{cluster.deleteCheckpoint(command.checkpointId!!);buildJsonObject{put("deleted",true)}}
             AgentOperation.RECOVERY_STATUS -> buildJsonObject{
                 put("localJobJournal",true);put("replayPolicy","explicit-new-id-after-live-state-check")
-                put("replicatedTaskJournal",false);put("automaticCoordinatorFailover",false);put("nativeLocalKvCheckpoints",true);put("checkpointManagement","CHECKPOINT_LIST/SAVE/RESTORE/DELETE; saved recovery delegation required");put("portableKvRecovery",false)
+                put("replicatedTaskJournal",false);put("manualReplicaJournalAvailable",true);put("automaticTaskReplication",false);put("automaticCoordinatorFailover",false);put("nativeLocalKvCheckpoints",true);put("checkpointManagement","CHECKPOINT_LIST/SAVE/RESTORE/DELETE; saved recovery delegation required");put("portableKvRecovery",false)
             }
         }
     }

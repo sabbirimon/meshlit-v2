@@ -17,12 +17,14 @@ import kotlinx.serialization.json.*
  * Distro root operations and arbitrary source edits remain human-only.
  */
 class LabPackages(private val context:Context,private val runtime:RuntimeHost) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val store=EncryptedCredentialStore(context,"lab-package-grants")
     private val json=Json {ignoreUnknownKeys=true}
     fun delegation():PackageDelegation=store.get("delegation")?.let {runCatching {json.decodeFromString<PackageDelegation>(it)}.getOrNull()} ?: PackageDelegation()
     @Synchronized fun delegate(names:List<String>) {require(names.size<=16 && names.all {it.matches(Regex("[A-Za-z0-9][A-Za-z0-9_.+-]{0,99}"))});store.putCommitted("delegation",json.encodeToString(PackageDelegation(names,System.currentTimeMillis()+3600000,if(names.isEmpty()) "" else runtime.labIdentity())))}
     /** Human-only setup; this method is deliberately absent from agent/MCP tools. */
     suspend fun provisionCompanions(guestRootConsent:Boolean):String = withTimeout(120000) {
+        operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.CYBER)
         require(guestRootConsent) { "Approve guest-root setup first" }
         LabGate.requireReady(runtime.config().mode.name,runtime.vm.state.name)
         val session=runtime.labIdentity()
@@ -56,7 +58,8 @@ class LabPackages(private val context:Context,private val runtime:RuntimeHost) {
         require(marker.exitCode==0 && !marker.timedOut && session==runtime.labIdentity())
         "Bundled companion bytes verified and installed in the owned guest. Python/venv/timeout/base64/tool dependencies must already be available."
     }
-    suspend fun run(action:String,manager:String,kind:String,source:String,sha256:String,guestRoot:Boolean=false,agent:Boolean=false):JsonObject {
+    suspend fun run(action:String,manager:String,kind:String,source:String,sha256:String,guestRoot:Boolean=false,agent:Boolean=false):JsonObject = operations.run(com.meshlit.core.common.control.ManagedFeature.CYBER,agent) { runManaged(action,manager,kind,source,sha256,guestRoot,agent) }
+    private suspend fun runManaged(action:String,manager:String,kind:String,source:String,sha256:String,guestRoot:Boolean=false,agent:Boolean=false):JsonObject {
         LabGate.requireReady(runtime.config().mode.name,runtime.vm.state.name,agent,runtime.allowAgentVm())
         require(action in setOf("list","install","uninstall") && manager in setOf("pip","apt","apk","dnf","pacman") && kind in setOf("repo","file","web"))
         require(source.length<=2000 && sha256.length<=64 && source.none {it=='\u0000' || it=='\n' || it=='\r'})

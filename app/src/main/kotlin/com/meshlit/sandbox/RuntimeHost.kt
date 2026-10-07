@@ -15,6 +15,7 @@ import java.io.File
 
 /** Optional tooling runtime; independent from RunAnywhere inference. */
 class RuntimeHost(private val context: Context) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val prefs = context.getSharedPreferences("meshlit_optional_runtime", Context.MODE_PRIVATE)
     val workspace = File(context.filesDir, "runtime/workspace").apply { mkdirs() }
     val artifacts = ArtifactStore(File(context.filesDir, "runtime/artifacts"))
@@ -67,6 +68,7 @@ class RuntimeHost(private val context: Context) {
     }
 
     suspend fun execute(argv: List<String>, rootConsent: Boolean): CommandResult {
+        operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM)
         val config = config()
         if (config.mode == RuntimeMode.VM_SSH) require(vm.state == VmState.SSH_READY) { "Start the VM and wait for SSH first" }
         val plan = RuntimePlanner(workspace).plan(config, argv, rootConsent)
@@ -85,7 +87,8 @@ class RuntimeHost(private val context: Context) {
         return java.security.MessageDigest.getInstance("SHA-256").digest(source.toByteArray()).joinToString(""){"%02x".format(it)}
     }
 
-    suspend fun executeGuest(argv: List<String>, timeoutMs:Long=60000): CommandResult {
+    suspend fun executeGuest(argv: List<String>, timeoutMs:Long=60000): CommandResult = operations.run(com.meshlit.core.common.control.ManagedFeature.VM) { executeGuestManaged(argv,timeoutMs) }
+    private suspend fun executeGuestManaged(argv: List<String>, timeoutMs:Long=60000): CommandResult {
         val config = config()
         require(config.mode == RuntimeMode.VM_SSH && vm.state == VmState.SSH_READY) {
             "Guest SSH is not configured and ready"
@@ -95,6 +98,7 @@ class RuntimeHost(private val context: Context) {
     }
 
     suspend fun startVm(agentRequested: Boolean = false): VmState = lock.withLock {
+        operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM,agentRequested)
         require(!agentRequested || allowAgentVm()) { "User has not enabled agent VM activation" }
         if (vm.state == VmState.RUNNING || vm.state == VmState.SSH_READY) return@withLock vm.state
         val config = vmConfig()

@@ -74,6 +74,7 @@ class AgentPromptRunner(
     private val httpClient: OkHttpClient,
     private val cloudCoordinator: CloudMcpCoordinator,
     private val localTools: com.meshlit.core.mcp.McpToolRegistry,
+    private val operations: com.meshlit.core.common.control.OperationGate,
 ) {
     fun run(providerId: String?, prompt: String) {
         val owner = providerId ?: "user-llm"
@@ -89,6 +90,8 @@ class AgentPromptRunner(
             }
         appScope.launch {
             try {
+                operations.run(com.meshlit.core.common.control.ManagedFeature.AUTOMATION,true) {
+                operations.run(com.meshlit.core.common.control.ManagedFeature.CLOUD,true) {
                 val client = resolveLlmEndpoint().buildClient(httpClient = httpClient)
                 // Bounded continuation lets the agent react to start/wait/exec results.
                 for (round in 0 until 6) {
@@ -130,6 +133,8 @@ class AgentPromptRunner(
                     if (round == 5) cloudCoordinator.tryEmit(com.meshlit.core.cloudmcp.McpEvent.Error(owner, "Local tool loop reached its six-round limit"))
                 }
                 cloudCoordinator.tryEmit(com.meshlit.core.cloudmcp.McpEvent.Done(owner))
+                }
+                }
             } catch (cancelled: kotlinx.coroutines.CancellationException) {
                 throw cancelled
             } catch (error: Exception) {

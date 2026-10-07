@@ -9,10 +9,12 @@ import androidx.compose.ui.unit.dp
 import com.meshlit.di.koinInject
 import com.meshlit.gateway.*
 import com.meshlit.core.mcp.gateway.*
+import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class,ExperimentalLayoutApi::class)
 @Composable fun GatewayScreen(back:()->Unit) {
     val host=koinInject<GatewayHost>();val saved by host.settings.collectAsState();val running by host.running.collectAsState()
+    val scope=rememberCoroutineScope();var remote by remember {mutableStateOf(host.remoteRoutes.saved())};var refreshing by remember {mutableStateOf(false)};var remoteResult by remember {mutableStateOf("")}
     var model by remember {mutableStateOf(saved.modelId)};var port by remember {mutableStateOf(saved.port.toString())}
     var mode by remember {mutableStateOf(saved.policy.mode)};var input by remember {mutableStateOf(saved.policy.inputTerms.joinToString("\n"))};var output by remember {mutableStateOf(saved.policy.outputTerms.joinToString("\n"))}
     DisposableEffect(Unit) {onDispose {host.stop()}}
@@ -38,6 +40,15 @@ import com.meshlit.core.mcp.gateway.*
             }}
             item {Text("Endpoints: /mcp · /a2a · /.well-known/agent-card.json · /v1/models · /v1/chat/completions. All require Bearer authentication. Browser origins are rejected. Use a verified private tunnel and host TLS gateway for remote access. Copying the token places a secret on your clipboard.")}
             item {Text("Connect an external agentgateway/LiteLLM endpoint through Online providers → Custom compatible. Use its exact HTTPS API base, gateway key and model alias. Provider keys can stay on the host.")}
+            item {Text("Remote MCP / A2A routes",style=MaterialTheme.typography.titleMedium)}
+            item {Text("Human-enrolled JSON routes: exact HTTPS endpoint (or loopback tunnel), bearer token, protocol MCP/A2A, explicit agentEnabled and MCP allowedTools. Credentials remain encrypted. Discovered tools are untrusted data; remote actions may have effects. JSON-response transport only; OAuth and SSE remain separate adapters.")}
+            item {OutlinedTextField(remote,{remote=it},label={Text("Remote routes JSON · contains secrets")},modifier=Modifier.fillMaxWidth(),minLines=3,maxLines=8)}
+            item {FlowRow {
+                OutlinedButton(enabled=!refreshing,onClick={try {host.stop();host.remoteRoutes.save(remote);remoteResult="Saved; start gateway then refresh routes"}catch(_:Exception){error="Invalid remote routes"}}){Text("Save routes and stop")}
+                Button(enabled=running && !refreshing,onClick={scope.launch {refreshing=true;try {remoteResult="${host.remoteRoutes.refresh()} approved remote tools discovered"}catch(e:CancellationException){throw e}catch(_:Exception){remoteResult="Remote discovery failed; inspect route transport/authentication"}finally{refreshing=false}}}){Text("Refresh routes")}
+            }}
+            item {Text(remoteResult)}
+            item {GatewayRoutingPanel(host)}
             error?.let {item {Text(it,color=MaterialTheme.colorScheme.error)}}
         }
     }

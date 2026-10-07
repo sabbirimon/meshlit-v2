@@ -20,6 +20,8 @@ object CyberTools {
     val all=listOf(
         CyberTool("apk_inventory","APK inventory","Read-only original ZIP/DEX inventory",true),
         CyberTool("pcap_summary","PCAP summary","Bounded classic-PCAP parser",true),
+        CyberTool("elf_inventory","Linux ELF inventory","Read-only architecture/header metadata",true),
+        CyberTool("sqlite_metadata","SQLite metadata","Immutable schema/page metadata; no row export",true),
         CyberTool("tshark","Wireshark / tshark","Host packet metadata",true),
         CyberTool("androguard","Androguard","Static APK/DEX analysis"),CyberTool("quark","Quark","APK rules"),
         CyberTool("objection","Objection / Frida","Owned-app runtime inspection"),CyberTool("drozer","Drozer","Android IPC assessment"),

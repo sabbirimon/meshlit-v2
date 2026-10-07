@@ -266,7 +266,7 @@ val coreModule = module {
     // Inference coordinator
     // -----------------------------------------------------------------
     single { com.meshlit.models.LocalBehaviorSettings(androidContext()) }
-    single { val behavior=get<com.meshlit.models.LocalBehaviorSettings>(); InferenceCoordinator(localBehavior={behavior.state.value}) }
+    single { val behavior=get<com.meshlit.models.LocalBehaviorSettings>(); InferenceCoordinator(operationGate=com.meshlit.operations.OperationsControl.get(androidContext()).gate, localBehavior={behavior.state.value}) }
 
     // -----------------------------------------------------------------
     // RunAnywhere SDK wrappers
@@ -561,6 +561,11 @@ val coreModule = module {
     single { com.meshlit.security.LabPackages(androidContext(),get()) }
     single { com.meshlit.security.SecurityLab(androidContext(),get()) }
     single { com.meshlit.gateway.GatewayHost(androidContext(),get(),get(),get()) }
+    single { com.meshlit.recovery.ReplicaHost(androidContext()) }
+    single { com.meshlit.operations.OperationsControl.get(androidContext()) }
+    single { com.meshlit.operations.ClusterControls.get(androidContext()) }
+    single { com.meshlit.operations.StopCoordinator(androidContext()) }
+    single { com.meshlit.operations.OperationTools(get(),get(),get(),get()) }
     single { com.meshlit.providers.OnlineProviders(androidContext(),get()) }
     single { com.meshlit.cloud.CloudManagement(androidContext(),get()) }
     single { com.meshlit.configuration.ConfigurationTransfer(androidContext(),get(),get(),get()) }
@@ -573,7 +578,9 @@ val coreModule = module {
     single { com.meshlit.core.mcp.builtin.CrawlSettingsStore(androidContext()) }
     single {
         val crawler: com.meshlit.core.mcp.builtin.CrawlSettingsStore = get()
-        McpToolRegistry().apply {
+        McpToolRegistry(com.meshlit.operations.OperationsControl.get(androidContext()).gate).apply {
+            registerAll(get<com.meshlit.operations.OperationTools>().specs())
+            registerAll(com.meshlit.gateway.GatewayRoutingTools { get<com.meshlit.gateway.GatewayHost>() }.specs())
             registerAll(get<com.meshlit.control.AgentBackend>().specs())
             registerAll(com.meshlit.control.EnvironmentTools(androidContext(),get(),get(),get()).specs())
             registerAll(com.meshlit.routing.RouterTools(get(),get()).specs())
@@ -604,7 +611,7 @@ val coreModule = module {
     // Application class itself can stay focused on Koin + onCreate.
     // -----------------------------------------------------------------
     single { LocalPeerCapabilitiesResolver(androidContext().filesDir, { get() }) }
-    single { AgentPromptRunner(get(), get(), get(), get(), get(), get()) }
+    single { AgentPromptRunner(get(), get(), get(), get(), get(), get(), get<com.meshlit.operations.OperationsControl>().gate) }
     single { DeviceInfo() }
 }
 

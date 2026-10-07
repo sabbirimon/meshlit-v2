@@ -46,6 +46,7 @@ import kotlinx.coroutines.*
     if(destination=="router"){ModelRouterScreen(back);return}
     if(destination=="media"){MediaOptionsScreen(back);return}
     if(destination=="configuration"){ConfigurationScreen(back);return}
+    if(destination=="operations"){OperationsScreen(back);return}
     if(destination=="gateway"){GatewayScreen(back);return}
     if(destination=="commands"){ManualCommandsScreen(back);return}
     if(destination=="packages"){LabPackagesScreen(back);return}

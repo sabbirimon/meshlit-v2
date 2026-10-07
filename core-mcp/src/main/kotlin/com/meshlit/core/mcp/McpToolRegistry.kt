@@ -21,7 +21,7 @@ import kotlinx.serialization.json.JsonPrimitive
  * The two paths use the same [register] entry point so dispatch is
  * uniform.
  */
-class McpToolRegistry {
+class McpToolRegistry(private val operationGate: com.meshlit.core.common.control.OperationGate? = null) {
 
     private val log = logger("McpToolRegistry")
 
@@ -38,6 +38,7 @@ class McpToolRegistry {
      *  (the registry is single-source-of-truth; no two tools share a
      *  name). */
     @Synchronized fun register(spec: McpToolSpec) {
+        require(spec.origin == McpToolSpec.Origin.BuiltIn || spec.name !in setOf("operations_emergency_stop", "operations_status")) { "Stop-control tool names are reserved" }
         val prior = tools.put(spec.name, spec)
         if (prior != null && prior.origin == McpToolSpec.Origin.UserAdded
             && spec.origin == McpToolSpec.Origin.BuiltIn
@@ -85,7 +86,9 @@ class McpToolRegistry {
             )
         }
         return try {
-            tool.handler(request.arguments)
+            if (request.name in setOf("operations_emergency_stop", "operations_status")) tool.handler(request.arguments)
+            else operationGate?.run(if(request.name.startsWith("crawl_")) com.meshlit.core.common.control.ManagedFeature.CRAWLER else com.meshlit.core.common.control.ManagedFeature.AUTOMATION, true) { tool.handler(request.arguments) } ?: tool.handler(request.arguments)
+        } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled
         } catch (t: Throwable) {
             log.warn(
                 "mcp.invoke.fail",

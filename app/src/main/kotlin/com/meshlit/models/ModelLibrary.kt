@@ -161,6 +161,7 @@ class ModelLibrary(private val context: Context, private val coordinator: Infere
     }
 
     fun download(id: String,backend:ModelDownloadBackend=ModelDownloadBackend.VERIFIED_HTTP):Job? {
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.MODEL_TRANSFERS)
         if(jobs.containsKey(id)) return null
         val job = appScope.launch(start=CoroutineStart.LAZY) {
             ready.await()
@@ -226,6 +227,7 @@ class ModelLibrary(private val context: Context, private val coordinator: Infere
     fun pauseDownloads() { _models.value.filter{it.url.startsWith("https://")}.forEach{jobs[it.id]?.cancel()} }
 
     fun importFiles(uris: List<Uri>):List<String> {
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.MODEL_TRANSFERS)
         val imported=mutableListOf<String>()
         require(uris.size <= 32) { "Import at most 32 files at a time" }
         for(uri in uris) {
@@ -286,6 +288,7 @@ class ModelLibrary(private val context: Context, private val coordinator: Infere
     }
 
     suspend fun load(id: String,onlyIfIdle:Boolean=false) = loadLock.withLock {
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.INFERENCE)
         com.meshlit.power.PowerRepository(context).loadBlockReason()?.let{error(it)}
         if(onlyIfIdle && inferenceBusy()) return@withLock
         ready.await()

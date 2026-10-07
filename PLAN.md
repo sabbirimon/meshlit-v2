@@ -156,3 +156,26 @@ lab tools. Implement verified artifact provisioning, architecture/resource probe
 explicit disk persistence and approved networking before promising one-click
 installation. Current QEMU snapshots discard guest changes and restricted networking
 prevents general package downloads. Physical guest/tool execution remains unverified.
+
+## Owner direction — 2026-10-08
+
+Meshlit targets dynamic AI software across different environments: servers,
+workstations, clusters, cloud, embedded and edge systems. Phones are one deployment
+and human control client. Security, vision, auth, networking and lab tooling serve
+AI-related workflows. Current APKs and lifecycle services remain Android-specific.
+
+Follow `docs/CONTINUATION_2026_10_08.md` for local implementation and remaining areas
+2–8, and `docs/PLATFORM_ADAPTER_PLAN.md` for qualified platform/SDK/memory/native
+networking work. Direct hardware/driver/kernel/bare-metal execution requires a
+trusted installed backend, exact OS/ABI/artifact proof, owner privilege grants,
+isolation and cancellation. HFT-inspired latency is a measurement target for AI
+communication; no physical NIC, RDMA, hardware timestamp or HFT qualification is
+claimed from same-host HTTP RTT. Mixed devices prioritize stability; compatible
+islands need measured total benefit before turbo activation.
+
+HyperL stays isolated on `codex/hyperl-experimental`, based on `77ac214`.
+Original CPU/reference/source-emitter research comes first; open-source/free-to-use
+components take priority. Vendor/runtime licenses remain distinct. Merge follows
+actual conformance/runtime/performance evidence and explicit owner acceptance.
+Physical-device tests are still paused. Live cloud/provider/SSH account tests
+remain pending; local contract/MockWebServer results do not satisfy those gates.

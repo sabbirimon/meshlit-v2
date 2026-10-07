@@ -19,7 +19,7 @@ class WebBridgeHost(private val context:Context,private val backend:AgentBackend
     val directory=DeviceDirectory(object:DeviceDirectoryStore{
         override fun load()=credentials.get("directory")?.let{Json.decodeFromString<DeviceDirectorySnapshot>(it)} ?: DeviceDirectorySnapshot()
         override fun save(snapshot:DeviceDirectorySnapshot){credentials.put("directory",Json.encodeToString(snapshot))}
-    })
+    }, {com.meshlit.operations.ClusterControls.get(context).state.value.deviceLimit})
     private var server:ControlBridgeServer?=null
     private var generation:String?=null
     private var invitation:String?=null;private var invitationUntil=0L
@@ -36,6 +36,7 @@ class WebBridgeHost(private val context:Context,private val backend:AgentBackend
     fun fingerprint()=tls.fingerprint()
     fun ownAddress()=(context.applicationContext as com.meshlit.MeshlitApplication).localIpAddress
     suspend fun start()=withContext(Dispatchers.IO){synchronized(this@WebBridgeHost){
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.AUTOMATION)
         if(server!=null) return@withContext
         val instance=ControlBridgeServer("0.0.0.0",port,context.assets.open("control/index.html").bufferedReader().use{it.readText()},::handle)
         instance.networkAllowed={remote->(context.applicationContext as com.meshlit.MeshlitApplication).meshlitFirewall.decide(remote,null,null,port).allowed}

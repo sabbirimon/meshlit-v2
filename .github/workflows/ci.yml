@@ -43,7 +43,12 @@ jobs:
       - name: Assemble, unit checks and fatal lint
         env:
           FLAVOR: ${{ matrix.flavor }}
-        run: ./gradlew ":app:assemble${FLAVOR}Debug" ":app:test${FLAVOR}DebugUnitTest" ":app:lint${FLAVOR}Debug" :core-observability:testDebugUnitTest :core-inference:testDebugUnitTest :core-mcp:testDebugUnitTest :core-cloud-mcp:testDebugUnitTest :core-net:testDebugUnitTest --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
+        run: ./gradlew ":app:assemble${FLAVOR}Debug" ":app:test${FLAVOR}DebugUnitTest" ":app:lint${FLAVOR}Debug" :core-common:testDebugUnitTest :core-gpu:testDebugUnitTest :core-observability:testDebugUnitTest :core-inference:testDebugUnitTest :core-mcp:testDebugUnitTest :core-cloud-mcp:testDebugUnitTest :core-net:testDebugUnitTest :core-federation:testDebugUnitTest :core-sandbox:testDebugUnitTest --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
+      - name: Original companion tests
+        run: |
+          python3 -m unittest discover -s companions/cyber/tests -v
+          python3 -m unittest discover -s companions/node/tests -v
+          python3 -m unittest discover -s companions/deployment/tests -v
       - name: Preserve reports
         if: always()
         uses: actions/upload-artifact@v7.0.1
@@ -53,4 +58,5 @@ jobs:
             app/build/reports/
             core-observability/build/reports/tests/
             core-net/build/reports/tests/
+            core-federation/build/reports/tests/
           if-no-files-found: warn

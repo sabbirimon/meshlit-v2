@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-07",
+  "updated": "2026-10-08",
   "operations": [
     "SETTINGS_READ",
     "SETTINGS_PATCH",
@@ -809,6 +809,114 @@
       ],
       "remaining": [
         "Physical VM, distro managers, persistent images and storage transfer acceptance"
+      ]
+    },
+    {
+      "id": "manual-replica-journal",
+      "title": "Manual signed fixed-membership recovery journal",
+      "status": "implemented; acceptance boundaries in CONTINUATION_2026_10_08.md",
+      "sources": [
+        "core-federation/src/main/kotlin/com/meshlit/core/federation/recovery/ReplicaJournal.kt",
+        "app/src/main/kotlin/com/meshlit/recovery/ReplicaHost.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/ReplicaRecoveryPanel.kt"
+      ],
+      "authority": [
+        "human setup; independent opt-ins"
+      ]
+    },
+    {
+      "id": "remote-agent-routes",
+      "title": "Owner-enrolled JSON-response MCP/A2A routes",
+      "status": "implemented; acceptance boundaries in CONTINUATION_2026_10_08.md",
+      "sources": [
+        "core-mcp/src/main/kotlin/com/meshlit/core/mcp/gateway/RemoteAgentClient.kt",
+        "app/src/main/kotlin/com/meshlit/gateway/RemoteRoutes.kt"
+      ],
+      "authority": [
+        "human setup; independent opt-ins"
+      ]
+    },
+    {
+      "id": "terraform-saved-plan",
+      "title": "Optional human-only Terraform saved-plan companion",
+      "status": "implemented; acceptance boundaries in CONTINUATION_2026_10_08.md",
+      "sources": [
+        "companions/deployment/meshlit_terraform.py"
+      ],
+      "authority": [
+        "human setup; independent opt-ins"
+      ]
+    },
+    {
+      "id": "storage-dsp-companion",
+      "title": "Optional content-addressed storage and offline IQ FFT",
+      "status": "implemented; acceptance boundaries in CONTINUATION_2026_10_08.md",
+      "sources": [
+        "companions/node/meshlit_node.py"
+      ],
+      "authority": [
+        "human setup; independent opt-ins"
+      ]
+    },
+    {
+      "id": "operations-dashboard",
+      "title": "Persisted local stop controls and bounded cluster inventory policy",
+      "status": "implemented for managed local paths; distributed and independent-service stop acceptance open",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/operations/StopCoordinator.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/OperationsScreen.kt"
+      ],
+      "authority": [
+        "human setup; saved agent delegation remains separate"
+      ]
+    },
+    {
+      "id": "unified-ai-routes",
+      "title": "Owner-configured LLM/MCP/A2A routing with human and delegated agent input",
+      "status": "implemented; streaming/OAuth/spend enforcement and runtime qualification open",
+      "sources": [
+        "core-mcp/src/main/kotlin/com/meshlit/core/mcp/gateway/UnifiedRoute.kt",
+        "app/src/main/kotlin/com/meshlit/gateway/UnifiedRouting.kt"
+      ],
+      "authority": [
+        "human setup; saved agent delegation remains separate"
+      ]
+    },
+    {
+      "id": "accelerator-node-probe",
+      "title": "Encrypted owner-enrolled read-only host SDK and topology probes",
+      "status": "implemented observation only; actual accelerator inference unavailable",
+      "sources": [
+        "companions/node/accelerators.py",
+        "companions/node/topology.py",
+        "app/src/main/kotlin/com/meshlit/gateway/AcceleratorHosts.kt"
+      ],
+      "authority": [
+        "human setup; saved agent delegation remains separate"
+      ]
+    },
+    {
+      "id": "platform-native-contracts",
+      "title": "Cross-platform OS/fabric and native driver/kernel qualification contracts",
+      "status": "contracts implemented; installers and privileged execution backends planned",
+      "sources": [
+        "core-common/src/main/kotlin/com/meshlit/core/common/platform/PlatformContract.kt",
+        "core-common/src/main/kotlin/com/meshlit/core/common/platform/NativeBackendContract.kt"
+      ],
+      "authority": [
+        "human setup; saved agent delegation remains separate"
+      ]
+    },
+    {
+      "id": "node-network-baseline",
+      "title": "Persistent HTTP and authenticated application RTT benchmark",
+      "status": "implemented local baseline; native/RDMA/kernel transports planned",
+      "sources": [
+        "companions/node/meshlit_node.py",
+        "scripts/benchmark-node-network.py"
+      ],
+      "authority": [
+        "human setup; saved agent delegation remains separate"
       ]
     }
   ],

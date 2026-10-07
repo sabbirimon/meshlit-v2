@@ -4,9 +4,10 @@
 <img src="docs/assets/meshlit-v2-hero.svg" alt="Meshlit by IMON — Android local AI, agent tools and experimental phone LLM clusters" width="100%">
 </picture></p>
 
-# Meshlit v2 — Android local AI and experimental phone LLM clusters
+# Meshlit v2 — adaptive AI workspace and experimental distributed compute
 
-**Many nodes. One mind.** On-device AI runtime + federated inference cluster for Android.
+**Many nodes. One mind.** AI runtime, agent gateway and distributed-compute research.
+Current installable application: Android. Optional source companions: operator-owned hosts.
 
 **A project by IMON** · [@sabbirimon](https://github.com/sabbirimon)
 
@@ -14,10 +15,11 @@ AI-assisted contributor: **Codex by OpenAI, Claude**. See [authors and attributi
 
 **Run local language models on Android. Connect owner-approved devices. Give humans
 and agents observable tools, durable tasks and explicit controls.** Meshlit is an
-open-source Android-first AI workspace built with Kotlin, Jetpack Compose,
-RunAnywhere and llama.cpp. Its central research goal is **layer/pipeline model
-sharding across a phone cluster**, so several devices can contribute to models
-that exceed one device's memory.
+open-source AI workspace whose current application uses Kotlin, Jetpack Compose,
+RunAnywhere and llama.cpp. The broader goal is dynamic AI software for workstations,
+servers, clusters, cloud, embedded and edge environments, with phones as one client.
+Layer/pipeline sharding, native hardware backends and adaptive networking are research
+areas; unsupported platforms and accelerators are not advertised as ready.
 
 <p>
 <a href="LICENSE"><img alt="Apache 2.0 license" src="https://img.shields.io/badge/License-Apache_2.0-36b5bc?style=flat-square"></a>
@@ -269,3 +271,16 @@ APK analysis, PCAPdroid/Wireshark, forensic tools and their evidence/licensing b
 The Full build has a corrected consent-based external PCAPdroid handoff and bounded
 classic-PCAP preview; it does not embed the full Wireshark engine. Live companion
 capture/host analysis still need testing.
+
+## Adaptive platform and HyperL experiment
+
+The [platform/native networking plan](docs/PLATFORM_ADAPTER_PLAN.md) records the
+owner's cross-platform AI goal, direct hardware/driver/kernel backends, chip SDKs,
+HBM/NUMA/storage tiers, human controls and HFT-inspired latency qualification.
+The [continuation notes](docs/CONTINUATION_2026_10_08.md) separate implemented local
+paths from deferred hardware, cloud and production acceptance.
+
+[HyperL experimental branch](https://github.com/sabbirimon/meshlit-v2/tree/codex/hyperl-experimental)
+is isolated for original portable AI-language/reference/compiler research. It is
+not merged into this application branch. Current CPU/source-emitter experiments
+do not establish a CUDA replacement, privileged execution or universal performance.

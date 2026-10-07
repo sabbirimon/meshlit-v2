@@ -20,6 +20,8 @@ import java.util.UUID
 data class MediaResult(val file:File?=null,val mime:String?=null,val text:String?=null)
 
 class MediaGeneration(private val context:Context,private val providers:OnlineProviders) {
+    private val operations=com.meshlit.operations.OperationsControl.get(context).gate
+    private suspend fun <T> managed(work:suspend()->T):T = operations.run(com.meshlit.core.common.control.ManagedFeature.MEDIA) { operations.run(com.meshlit.core.common.control.ManagedFeature.CLOUD) { lock.withLock { work() } } }
     val client=OnlineMediaClient()
     private val directory=File(context.filesDir,"generated-media").apply{mkdirs()}
     private val store=EncryptedCredentialStore(context,"media-video-jobs")
@@ -33,7 +35,7 @@ class MediaGeneration(private val context:Context,private val providers:OnlinePr
         return File(directory,"${UUID.randomUUID()}.$extension")
     }
     private fun save(items:List<SavedVideo>){store.put("videos",Json.encodeToString(items));_videos.value=items}
-    suspend fun generate(profileId:String,kind:String,model:String,prompt:String,voice:String="coral",image:Uri?=null):MediaResult=lock.withLock {
+    suspend fun generate(profileId:String,kind:String,model:String,prompt:String,voice:String="coral",image:Uri?=null):MediaResult=managed {
         val p=profile(profileId);val key=providers.resolveToken(p)
         when(kind){
             "image"->MediaResult(client.image(p,key,model,prompt,target("png")),"image/png")
@@ -43,12 +45,12 @@ class MediaGeneration(private val context:Context,private val providers:OnlinePr
             else->error("Unsupported media operation")
         }
     }
-    suspend fun refresh(video:SavedVideo)=lock.withLock {
+    suspend fun refresh(video:SavedVideo)=managed {
         val p=profile(video.profileId);require(p.endpoint==video.endpoint){"Profile endpoint changed; refusing to send the old job reference"}
         val updated=video.copy(job=client.videoStatus(p,providers.resolveToken(p),video.job.id))
         save(_videos.value.map{if(it.profileId==video.profileId && it.job.id==video.job.id) updated else it})
     }
-    suspend fun download(video:SavedVideo):MediaResult=lock.withLock {
+    suspend fun download(video:SavedVideo):MediaResult=managed {
         require(video.job.status=="completed"){"Video is not complete"}
         val p=profile(video.profileId);require(p.endpoint==video.endpoint)
         MediaResult(client.videoContent(p,providers.resolveToken(p),video.job.id,target("mp4")),"video/mp4")

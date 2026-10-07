@@ -80,3 +80,12 @@ both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for accept
 Optional permissions/telemetry remain independent. Preserve the original open-source
 license rights and third-party notices. Production release signing must never fall
 back to a debug certificate; owner keys remain external to source.
+
+## Owner scope additions — 2026-10-08
+
+Meshlit is intended for dynamic AI deployments across different hosts/environments.
+Phones are one client; current Android artifacts remain Android-only. See
+`docs/PLATFORM_ADAPTER_PLAN.md` for hardware/driver/kernel, SDK, memory-tier and
+HFT-inspired AI-networking milestones and their qualification gates. HyperL remains
+an isolated experimental branch; merge follows conformance, genuine runtime and
+benchmark evidence plus explicit owner acceptance. Physical-device tests remain paused.

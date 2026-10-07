@@ -14,6 +14,7 @@ object SettingsDestinations {
         SettingsDestination("training","Fine-tuning","Real Soup LoRA/QLoRA jobs on a paired training host",keywords="train adapter dataset quantization stream layers compact GPU"),
         SettingsDestination("router","Model router","Scenario rules, model chains and answer comparisons",keywords="multi model tasks coding reasoning routing pipeline ensemble"),
         SettingsDestination("cloud","Cloud and credentials","Vendor resources, costs, environments and separate human/agent controls",keywords="AWS Azure DigitalOcean OpenRouter GCP custom API login SSH vault tokens auth functions cloud dashboard"),
+        SettingsDestination("operations","Operations dashboard","Emergency stop, per-function switches and cluster capacity",keywords="kill switch stop all cluster limit human agent automation"),
         SettingsDestination("gateway","Agent Gateway","Built-in MCP, A2A and model endpoints; content policy",keywords="agentgateway proxy llm guardrail censored uncensored federation"),
         SettingsDestination("commands","Commands and instructions","Manual runtime/SSH commands and model tasks",keywords="terminal input execute stop instruction"),
         SettingsDestination("packages","Lab packages","Install, list and uninstall packages inside a ready VM",keywords="Kali Parrot Linux apt pip apk dnf pacman local web storage"),

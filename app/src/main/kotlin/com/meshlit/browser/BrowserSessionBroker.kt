@@ -47,6 +47,7 @@ object BrowserPolicyRules {
 
 /** Visible activity owns WebView. Commands cannot launch a hidden browser or grant permissions. */
 class BrowserSessionBroker(context:Context) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val prefs=context.getSharedPreferences("browser-origin-policy",0)
     private val json=Json
     private var handler:(suspend(String,Int,Boolean,suspend()->Unit)->JsonElement)?=null
@@ -71,7 +72,8 @@ class BrowserSessionBroker(context:Context) {
         origin?.invoke()?.let{put("origin",it);put("policy",json.encodeToJsonElement(policy(it)))}
         put("implementation","visible-android-webview-local-model");put("externalChromeViaThisSession",false)
     }}
-    suspend fun run(task:String,steps:Int,agent:Boolean,authorize:suspend()->Unit={}):JsonElement=withContext(Dispatchers.Main.immediate){
+    suspend fun run(task:String,steps:Int,agent:Boolean,authorize:suspend()->Unit={}):JsonElement = operations.run(com.meshlit.core.common.control.ManagedFeature.BROWSER,agent) { runManaged(task,steps,agent,authorize) }
+    private suspend fun runManaged(task:String,steps:Int,agent:Boolean,authorize:suspend()->Unit={}):JsonElement=withContext(Dispatchers.Main.immediate){
         require(task.isNotBlank() && task.length<=4000 && steps in 1..20)
         require(foreground){"Browser must remain in foreground"}
         require(running?.isActive!=true){"Browser already running"}

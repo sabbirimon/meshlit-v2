@@ -68,7 +68,7 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
     fun setAgentControlAllowed(allowed:Boolean){context.getSharedPreferences("pipeline-policy",0).edit().putBoolean("agent-control",allowed).apply()}
     fun peers():List<PipelinePeer> = credentials.get("peers")?.let { runCatching{Json.decodeFromString<List<PipelinePeer>>(it)}.getOrNull() }.orEmpty()
     fun savePeers(peers:List<PipelinePeer>) {
-        require(peers.size<=8)
+        require(peers.size<=com.meshlit.operations.ClusterControls.get(context).state.value.pipelineWorkerLimit)
         peers.forEach {
             require(it.host.isNotBlank() && it.host.length<=253 && it.host.none(Char::isWhitespace))
             require(it.port in 1024..65535 && it.weight in 1..100)
@@ -129,6 +129,7 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
     }
     fun serviceDestroyed(){synchronized(serviceState){serviceRequested=false}}
     suspend fun startWorker()=lock.withLock { withContext(Dispatchers.IO) {
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.CLUSTER)
         if(worker!=null) return@withContext
         _status.update{it.copy(starting=true,error=null)}
         try {
@@ -164,6 +165,7 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
         ModelRuntimeOptions(LocalModelBackend.NATIVE_LOCAL,contextSize,keyCacheType).validate(metadata.maxContext)
         val kv=metadata.kvBytes(contextSize,keyCacheType) ?: error("KV memory cannot be estimated for this architecture; cluster admission is unavailable")
         val hash=ModelFiles.sha256(file)
+        require(peers().size<=com.meshlit.operations.ClusterControls.get(context).state.value.pipelineWorkerLimit){"Lowered worker capacity; edit the paired workers first"}
         val peerOffers=peers().map { peer -> peer to wireJson.decodeFromString<NodeOffer>(
             RpcTunnel.queryCapabilities(peer.host,peer.port,peer.fingerprint,peer.token)).copy(observedAtMs=System.currentTimeMillis()) }
         val local=offer().copy(coordinatorAllowed=true,coordinatorModelSha256=hash,workerAllowed=false)
@@ -174,6 +176,7 @@ class PipelineHost(private val context:Context,private val inference:InferenceCo
         negotiatedPeers
     }
     suspend fun startPipeline(path:String,contextSize:Int=2048,keyCacheType:String="f16") {
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.CLUSTER)
         val paired=negotiate(path,contextSize,keyCacheType)
         require(paired.size>=2){"Pair at least two approved workers"}
         startNative(path,ModelRuntimeOptions(LocalModelBackend.NATIVE_LOCAL,contextSize,keyCacheType),paired)

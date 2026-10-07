@@ -30,7 +30,7 @@ object TrainingCommand {
         return argv.joinToString(" "){quote(it)}.also{require(it.length<=8000){"Training command exceeds the SSH limit"}}
     }
 }
-class TrainingHost(context:Context,private val ssh:SshConnections) {
+class TrainingHost(private val context:Context,private val ssh:SshConnections) {
     private val store=EncryptedCredentialStore(context,"training-host")
     private val json=Json{ignoreUnknownKeys=true}
     private val lock=Mutex()
@@ -50,6 +50,7 @@ class TrainingHost(context:Context,private val ssh:SshConnections) {
     }
     suspend fun doctor()=lock.withLock{val host=_config.value;host.validate();request(host,"doctor")}
     suspend fun start(spec:TrainingSpec)=lock.withLock {
+        com.meshlit.operations.OperationsControl.get(context).gate.requireAllowed(com.meshlit.core.common.control.ManagedFeature.TRAINING)
         spec.validate();val host=_config.value;host.validate()
         val ref=TrainingJobReference(spec.jobId,host,signature(host.connectionId))
         // Keep the ID before sending, so a lost reply does not require a duplicate job.

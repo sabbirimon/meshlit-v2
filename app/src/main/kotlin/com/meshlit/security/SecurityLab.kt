@@ -12,13 +12,15 @@ import kotlinx.serialization.json.*
 
 /** Human-created assessment grants; fixed read-only companion operations, no arbitrary shell template. */
 class SecurityLab(context:Context,private val runtime:RuntimeHost) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val store=EncryptedCredentialStore(context,"security-lab")
     private val json=Json {ignoreUnknownKeys=true}
     private val _assessments=MutableStateFlow(store.get("assessments")?.let {runCatching {json.decodeFromString<List<SecurityAssessment>>(it)}.getOrNull()}.orEmpty())
     val assessments=_assessments.asStateFlow()
     @Synchronized fun save(value:SecurityAssessment) {value.validate();require(value.environmentId==runtime.labIdentity());require(_assessments.value.size<50 || _assessments.value.any {it.id==value.id});val next=_assessments.value.filterNot {it.id==value.id}+value;store.putCommitted("assessments",json.encodeToString(next));_assessments.value=next}
     @Synchronized fun remove(id:String) {val next=_assessments.value.filterNot {it.id==id};store.putCommitted("assessments",json.encodeToString(next));_assessments.value=next}
-    suspend fun run(id:String,tool:String,agent:Boolean=false):JsonObject {
+    suspend fun run(id:String,tool:String,agent:Boolean=false):JsonObject = operations.run(com.meshlit.core.common.control.ManagedFeature.CYBER,agent) { runManaged(id,tool,agent) }
+    private suspend fun runManaged(id:String,tool:String,agent:Boolean=false):JsonObject {
         val assessment=_assessments.value.firstOrNull {it.id==id} ?: error("Assessment missing")
         assessment.authorize(tool,assessment.sshHostId,assessment.sha256,System.currentTimeMillis(),agent)
         require(CyberTools.all.first {it.id==tool}.implemented) {"Adapter is not implemented"}

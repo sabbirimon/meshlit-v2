@@ -7,12 +7,14 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 class SshConnections(context:Context,private val vault:com.meshlit.cloud.CloudManagement) {
+    private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val store=EncryptedCredentialStore(context,"ssh-connections")
     private val json=Json{ignoreUnknownKeys=true};private val _connections=MutableStateFlow(runCatching{store.get("connections")?.let{json.decodeFromString<List<SshConnection>>(it)}}.getOrNull().orEmpty())
     val connections=_connections.asStateFlow()
     @Synchronized fun save(connection:SshConnection,password:String?=null,key:String?=null){connection.validate();require(_connections.value.size<32 || _connections.value.any{it.id==connection.id});password?.let{require(it.length<=4096);store.put("password-${connection.id}",it);store.remove("key-${connection.id}")};key?.let{require(it.length<=65536);store.put("key-${connection.id}",it);store.remove("password-${connection.id}")};val updated=_connections.value.filterNot{it.id==connection.id}+connection;store.put("connections",json.encodeToString(updated));_connections.value=updated}
     @Synchronized fun remove(id:String){val updated=_connections.value.filterNot{it.id==id};store.put("connections",json.encodeToString(updated));store.remove("password-$id");store.remove("key-$id");_connections.value=updated}
-    suspend fun execute(id:String,command:String,agent:Boolean=false):SshCommandResult {
+    suspend fun execute(id:String,command:String,agent:Boolean=false):SshCommandResult = operations.run(com.meshlit.core.common.control.ManagedFeature.SSH,agent) { executeManaged(id,command,agent) }
+    private suspend fun executeManaged(id:String,command:String,agent:Boolean=false):SshCommandResult {
         val config=_connections.value.firstOrNull{it.id==id} ?: error("SSH connection not found")
         require(!agent || config.agentAllowed){"Agent SSH access is not enabled for this host"}
         val log=logger("SshConnections");log.info("ssh.command.started","Owner-approved SSH command started",mapOf("connectionId" to id))

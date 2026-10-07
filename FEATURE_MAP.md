@@ -1,6 +1,6 @@
 # Meshlit structured feature and architecture map
 
-Updated 2026-10-07. This is the map of the separate Codex implementation, not the
+Updated 2026-10-08. This is the map of the separate Codex implementation, not the
 old Android checkout. `PROGRESS.md` records evidence; `PLAN.md` records unfinished
 acceptance. Machine-readable companion: `docs/feature-map.json`.
 
@@ -388,3 +388,16 @@ Rooted/non-rooted phones use the same SSH-ready VM gate. Automatic package actio
 are limited to expiring owner-allowlisted pip names with separate VM delegation.
 Official Rust gateway Linux assets are pinned; Android embedding and live Rust
 execution remain unverified. Full red/blue tool adapters remain future acceptance.
+
+## 2026-10-08 continuation
+
+Current inventory: **74 feature areas, 38 durable operations, 33 modules**.
+Counts describe source/plans, not completion. New areas include manual replica
+metadata, MCP/A2A connectors, Terraform saved-plan and storage/DSP companions,
+managed stop/capacity dashboard, unified routing, SDK/topology probes, platform/native
+contracts and authenticated network measurements. See
+[continuation](docs/CONTINUATION_2026_10_08.md) and
+[platform plan](docs/PLATFORM_ADAPTER_PLAN.md) for explicit acceptance boundaries.
+HyperL remains on the separate `codex/hyperl-experimental` branch; no HyperL runtime
+is integrated into this application build. Meshlit's intended scope is AI software
+across hosts and clusters; current APK installation remains Android-only.
