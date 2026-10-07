@@ -119,7 +119,10 @@ silently or expose their loopback endpoints directly to the internet.
 Meshlit is intended for dynamic AI deployments across hosts and clusters; phones are
 one supported surface. See [PLATFORM_ADAPTER_PLAN.md](PLATFORM_ADAPTER_PLAN.md) for
 chip/SDK, memory, cross-platform, direct/kernel and HFT-inspired networking plans.
-HyperL is isolated on `codex/hyperl-experimental` and is not merged here.
+The owner merged HyperL experimental source into `main` through PR #1 at
+`851576b`. The `core-gpu` CPU library/source emitter is included in merged builds;
+no app workflow, native accelerator loader or hardware qualification follows
+from that merge. The earlier `cecd2d9` artifact set predates HyperL inclusion.
 
 The Operations dashboard saves a stop latch, per-function human/agent restrictions,
 inventory ceiling (1–10,000), separate bounded agent capacity policy and native worker
@@ -150,3 +153,28 @@ is advertised as qualified by a version probe.
 
 Protocol routing uses the enrolled route metadata, never an A2A-like tool-name prefix.
 Tests cover valid MCP tool names that resemble A2A and namespace alias rejection.
+
+## Owner-merged HyperL revalidation and standalone delivery — 2026-10-08
+
+Merged source `851576bdd0c9daaea71f32f5daac8720671c6453` passes the combined
+local JVM/APK/AAB/lint check in **1h 2m 52s**. Across 11 targeted suites:
+**878 cases, 877 pass, one SSH fixture skip, zero failures/errors**. Core-gpu now
+has 32 cases including the eight HyperL foundation checks; the actual host Clang
+check passes without a skip. Both Full variants and Review APK/AAB build. Full
+lint remains zero errors, 350 warnings/17 hints each; Review zero errors,
+353 warnings/17 hints. Final static Review manifest/legal/ELF checks pass.
+
+The fresh artifact set identifies source `851576b` and includes the merged HyperL
+CPU library without an Android app workflow or accelerator loader. The earlier
+`cecd2d9` counts/artifacts above are historical. GitHub merge CI run 37691300013
+also passes; the owner's earlier pending PR status is not a final failure.
+
+Standalone [HyperL](https://github.com/sabbirimon/HyperL) is separate, with a
+published CLI/GUI alpha, memory-aware CPU admission and encrypted streaming
+datasets. Its source `0203267` passes local 24 JVM, one C CTest and two installer
+checks, skipping one actual GPU check because the host has no available OpenCL
+GPU. Standalone CI run 37697211217 passes Ubuntu, Windows and macOS build/test
+jobs. The owner requested a more polished UI and built-in developer tools; those
+workbench/editor changes and detailed IDE plan evolve in the standalone repo.
+Full SDK, real native mobile/accelerator, profiler/debugger, tensor/model and
+distributed/telecom execution remain later gates. Physical-device tests stay paused.

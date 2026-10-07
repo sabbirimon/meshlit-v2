@@ -30,4 +30,6 @@ is qualified. Source generation does not compile or launch vendor kernels. There
 no measured speedup, tiny-RSS guarantee, automatic turbo, tensor LLM engine,
 cryptographic provider or funded LTS support duration. Standalone packaging,
 compiler/runtime backends, source provenance, conformance and actual platform
-benchmarks are next milestones. No merge into the Meshlit application was performed.
+benchmarks are next milestones. This validation preceded the owner's merge of PR #1 into `main` at `851576b`.
+Merged-source validation is recorded separately in `../CONTINUATION_2026_10_08.md`;
+merging source does not qualify native accelerators or add an app workflow.

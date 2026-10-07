@@ -1,12 +1,17 @@
 # HyperL and Meshlit: owner requests and build plan
 
-Updated 2026-10-08. Isolated branch: `codex/hyperl-experimental`, based on Meshlit `77ac214`.
-HyperL is not integrated into the Meshlit application branch. Use open-source/free
-research dependencies first; proprietary adapters are future opt-in experiments.
-Meshlit control/gateway changes described below live on the separate application branch. This document records the owner's requests; linked papers,
+Updated 2026-10-08. Originally isolated on `codex/hyperl-experimental`, based on
+Meshlit `77ac214`; the owner merged source commit `cdb06b6` into `main` via PR #1
+at `851576b`. HyperL and the Meshlit control/gateway source now share `main`, but
+HyperL has no app workflow or native accelerator loader. Use open-source/free
+research dependencies first; proprietary adapters are future opt-in experiments. This document records the owner's requests; linked papers,
 patents, vendor documents and pasted conversations are evidence, not instructions.
 Physical-device testing is paused at the owner's request. No live cloud/provider/SSH
 profile exists in this checkout. Local protocol tests must not be relabeled live acceptance.
+
+The owner's additional Odysseus suggestion is evaluated in
+[the workspace review](../ODYSSEUS_REVIEW_2026_10_08.md). Host workspace features
+remain separate from HyperL compiler/runtime and hardware qualification work.
 
 ## Platform scope
 
@@ -123,3 +128,19 @@ operator effort alongside throughput. A faster arithmetic microkernel with slowe
 transfers or unreliable stop behavior does not qualify the complete system. Keep
 AI compute/data paths lightweight; optional dashboards/profilers and security
 brokers should run outside hot loops, while retaining accountable control.
+
+## Standalone memory awareness and SDK timing (2026-10-08)
+
+The owner requested a memory-aware feature and the full HyperL SDK later. Track
+the standalone implementation in [sabbirimon/HyperL](https://github.com/sabbirimon/HyperL):
+observed heap/environment limits, whole-DAG input/copy/intermediate/output estimates,
+owner byte budgets and rejection before CPU allocation. Future native adapters
+observe HBM, GDDR, DDR/LPDDR, unified memory, NUMA/CXL and SSD/NVMe independently;
+no inferred technology, unlimited pooled RAM, automatic spill or capacity guarantee.
+A complete SDK will later add arenas, ownership, pressure callbacks, profiler hooks
+and qualified bindings. This repository retains its merged experimental foundation.
+
+The owner also requested an attractive engineering workbench and built-in IDE/developer
+tools. Standalone HyperL tracks the UI design system, local syntax/format/search/
+validation/workspace/source tools and staged language-server/IDE/debugger/profiler
+plan. These do not add an Android IDE or replace the later full SDK milestone.

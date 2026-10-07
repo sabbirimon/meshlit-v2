@@ -412,8 +412,11 @@ SDK/topology observations and platform/driver/kernel qualification contracts.
 Meshlit is intended as dynamic AI software across hosts/environments; phones are one
 client. Current Android APKs remain Android applications. Hardware/OS installers,
 privileged backends, GPU/NPU/FPGA execution and native transport integration require
-actual implementation and qualification. HyperL is isolated on
-`codex/hyperl-experimental` based on `77ac214`; it is not integrated into these APKs.
+actual implementation and qualification. HyperL originally lived on
+`codex/hyperl-experimental` based on `77ac214`. The owner merged its experimental
+source into `main` through PR #1 at `851576b`. The earlier `cecd2d9` APKs predate
+that merge; subsequent merged-source artifacts include the CPU library in
+`core-gpu`, without an app workflow or native accelerator loader.
 
 Real CPU native-host comparison uses the existing pinned binaries and a 19,077,344-byte
 model (SHA-256 `66967fbece6dbe97886593fdbb73589584927e29119ec31f08090732d1861739`).
@@ -453,4 +456,30 @@ and `federated-protocol-final-build2.log` (final affected source). Failed/interr
 attempts remain in the local work directory and are not success evidence. Final
 source did not change after validation except documentation. The separate HyperL
 branch `cdb06b6` passed 27 core-gpu checks, including actual host Clang execution;
-this is not GPU/NPU/RISC-V/kernel hardware qualification or a merge into Meshlit.
+that pre-merge validation does not qualify GPU/NPU/RISC-V/kernel hardware. The
+owner subsequently merged its source into `main` through PR #1 at `851576b`.
+
+## Owner-merged HyperL revalidation and standalone delivery — 2026-10-08
+
+Merged source `851576bdd0c9daaea71f32f5daac8720671c6453` passes the combined
+local JVM/APK/AAB/lint check in **1h 2m 52s**. Across 11 targeted suites:
+**878 cases, 877 pass, one SSH fixture skip, zero failures/errors**. Core-gpu now
+has 32 cases including the eight HyperL foundation checks; the actual host Clang
+check passes without a skip. Both Full variants and Review APK/AAB build. Full
+lint remains zero errors, 350 warnings/17 hints each; Review zero errors,
+353 warnings/17 hints. Final static Review manifest/legal/ELF checks pass.
+
+The fresh artifact set identifies source `851576b` and includes the merged HyperL
+CPU library without an Android app workflow or accelerator loader. The earlier
+`cecd2d9` counts/artifacts above are historical. GitHub merge CI run 37691300013
+also passes; the owner's earlier pending PR status is not a final failure.
+
+Standalone [HyperL](https://github.com/sabbirimon/HyperL) is separate, with a
+published CLI/GUI alpha, memory-aware CPU admission and encrypted streaming
+datasets. Its source `0203267` passes local 24 JVM, one C CTest and two installer
+checks, skipping one actual GPU check because the host has no available OpenCL
+GPU. Standalone CI run 37697211217 passes Ubuntu, Windows and macOS build/test
+jobs. The owner requested a more polished UI and built-in developer tools; those
+workbench/editor changes and detailed IDE plan evolve in the standalone repo.
+Full SDK, real native mobile/accelerator, profiler/debugger, tensor/model and
+distributed/telecom execution remain later gates. Physical-device tests stay paused.

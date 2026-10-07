@@ -1,21 +1,3 @@
-# HyperL — isolated AI compute experiment
-
-This is `codex/hyperl-experimental`, based on Meshlit `77ac214`, with an original
-HyperL CPU reference, elementary source emitters, adapter descriptors and a cluster
-planning policy. It is not merged into the application branch and does not bundle
-CUDA/ROCm/NPU drivers or privileged backends.
-
-Start with [HyperL](HYPERL.md), [detailed owner plan](docs/hyperl/REQUESTS_AND_PLAN.md),
-[language/API boundaries](docs/hyperl/LANGUAGE_V1.md) and
-[research and licensing](docs/hyperl/RESEARCH_2026_10_08.md). The goal is AI compute
-across hosts and clusters, with phones as one client. Native performance, hardware
-and cross-platform installers remain qualification work.
-
-The Meshlit documentation below describes the historical application base; current
-application/gateway/control continuation is developed on its separate branch.
-
----
-
 <p align="center"><picture>
 <source media="(prefers-color-scheme: light)" srcset="docs/assets/meshlit-v2-hero-light.svg">
 <source media="(prefers-color-scheme: dark)" srcset="docs/assets/meshlit-v2-hero.svg">
@@ -298,7 +280,13 @@ HBM/NUMA/storage tiers, human controls and HFT-inspired latency qualification.
 The [continuation notes](docs/CONTINUATION_2026_10_08.md) separate implemented local
 paths from deferred hardware, cloud and production acceptance.
 
-[HyperL experimental branch](https://github.com/sabbirimon/meshlit-v2/tree/codex/hyperl-experimental)
-is isolated for original portable AI-language/reference/compiler research. It is
-not merged into this application branch. Current CPU/source-emitter experiments
-do not establish a CUDA replacement, privileged execution or universal performance.
+[HyperL](HYPERL.md) is original portable AI-language/reference/compiler research.
+The owner merged its experimental source into `main` through [PR #1](https://github.com/sabbirimon/meshlit-v2/pull/1)
+on 2026-10-08. It remains a bounded CPU library and source emitter, without an app
+workflow, native accelerator loader, privileged execution or universal performance proof.
+See the [Odysseus workspace review](docs/ODYSSEUS_REVIEW_2026_10_08.md) for optional
+self-hosted workspace integration research.
+
+The owner's [standalone HyperL repository](https://github.com/sabbirimon/HyperL)
+holds independent CLI/GUI, native SDK foundation and platform research work;
+new standalone changes are not automatically integrated into Meshlit's application.

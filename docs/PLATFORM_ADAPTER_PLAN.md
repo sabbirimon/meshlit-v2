@@ -103,10 +103,15 @@ AGI and superintelligence are future interoperability requirements, not present 
 
 ## Separation and delivery order
 
-HyperL remains on `codex/hyperl-experimental`; it is not merged into this application
-branch. First stabilize the tested CPU/reference semantics and source emitters there.
+The owner merged HyperL experimental source from `codex/hyperl-experimental` into
+`main` via PR #1 at `851576b`. Keep its CPU/reference and source-emitter boundary
+explicit; native accelerator execution and an app workflow remain unimplemented.
 Next implement native compiler/runtime qualification, then local GPU/NPU backends,
 then native low-latency transports and distributed resource leases. Cross-platform
 installers follow actual service/keystore/permission adapters. Production signing,
 independent review, telemetry opt-out and load/hardware acceptance remain release gates.
 Physical-device tests remain paused; no live cloud/SSH accounts are available.
+
+The [Odysseus workspace review](ODYSSEUS_REVIEW_2026_10_08.md) evaluates optional
+host UI, model Cookbook, research, comparison, documents, email and calendar
+integration. It adds a plan only; no upstream service or AGPL source is bundled.

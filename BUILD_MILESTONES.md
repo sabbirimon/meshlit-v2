@@ -86,6 +86,7 @@ back to a debug certificate; owner keys remain external to source.
 Meshlit is intended for dynamic AI deployments across different hosts/environments.
 Phones are one client; current Android artifacts remain Android-only. See
 `docs/PLATFORM_ADAPTER_PLAN.md` for hardware/driver/kernel, SDK, memory-tier and
-HFT-inspired AI-networking milestones and their qualification gates. HyperL remains
-an isolated experimental branch; merge follows conformance, genuine runtime and
-benchmark evidence plus explicit owner acceptance. Physical-device tests remain paused.
+HFT-inspired AI-networking milestones and their qualification gates. The owner
+merged HyperL experimental source via PR #1 at `851576b`; CPU/reference and source
+emitter code now lives in `main`. Native runtime integration, conformance, hardware
+and benchmark qualification remain open. Physical-device tests remain paused.
