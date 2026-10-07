@@ -51,6 +51,7 @@ class RuntimeHost(private val context: Context) {
         sshPort = prefs.getInt("vmSshPort", 2222), vncDisplay = prefs.getInt("vmVncDisplay", 1),
         enableDesktop = prefs.getBoolean("vmDesktop", false),
         allowOutboundNetwork = prefs.getBoolean("vmOutboundNetwork", false),
+        persistDisk = prefs.getBoolean("vmPersistDisk", false),
     )
 
     fun configureVm(config: VmConfig) {
@@ -61,7 +62,8 @@ class RuntimeHost(private val context: Context) {
             .putString("vmInitrd", config.initrd).putInt("vmMemory", config.memoryMb)
             .putInt("vmCpus", config.cpus).putInt("vmSshPort", config.sshPort)
             .putInt("vmVncDisplay", config.vncDisplay).putBoolean("vmDesktop", config.enableDesktop)
-            .putBoolean("vmOutboundNetwork",config.allowOutboundNetwork).apply()
+            .putBoolean("vmOutboundNetwork",config.allowOutboundNetwork)
+            .putBoolean("vmPersistDisk",config.persistDisk).apply()
     }
 
     suspend fun execute(argv: List<String>, rootConsent: Boolean): CommandResult {
@@ -73,7 +75,13 @@ class RuntimeHost(private val context: Context) {
 
     fun labIdentity():String {
         require(config().mode==RuntimeMode.VM_SSH && vm.state==VmState.SSH_READY) {"Start an SSH-ready VM first"}
-        val source=listOf(vmConfig().disk,vmConfig().architecture.name,sessionStartedAt.toString(),config().sshKnownHosts).joinToString("\n")
+        val selected=config()
+        selected.requireGuestBinding(vmConfig().sshPort)
+        val pins=File(selected.sshKnownHosts)
+        require(pins.isFile && pins.length() in 1..65536) {"Guest host-key pins missing or too large"}
+        val source=listOf(vmConfig().disk,vmConfig().architecture.name,sessionStartedAt.toString(),
+            selected.executable,selected.sshPort.toString(),selected.sshUser,selected.sshIdentity,
+            selected.sshKnownHosts,pins.readText()).joinToString("\n")
         return java.security.MessageDigest.getInstance("SHA-256").digest(source.toByteArray()).joinToString(""){"%02x".format(it)}
     }
 
@@ -82,6 +90,7 @@ class RuntimeHost(private val context: Context) {
         require(config.mode == RuntimeMode.VM_SSH && vm.state == VmState.SSH_READY) {
             "Guest SSH is not configured and ready"
         }
+        config.requireGuestBinding(vmConfig().sshPort)
         return ProcessRunner().execute(RuntimePlanner(workspace).plan(config, argv),timeoutMs=timeoutMs)
     }
 

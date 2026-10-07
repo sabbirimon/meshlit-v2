@@ -25,7 +25,7 @@ object CyberTools {
         CyberTool("objection","Objection / Frida","Owned-app runtime inspection"),CyberTool("drozer","Drozer","Android IPC assessment"),
         CyberTool("metasploit","Metasploit","Approved Linux lab"),CyberTool("havoc","Havoc","Isolated lab report/session import"),
         CyberTool("magisk","Magisk","User-managed root broker"),CyberTool("atomic","Atomic Red Team","Selected detection tests"),
-        CyberTool("autopsy","Autopsy","Desktop forensic reports"),CyberTool("sleuthkit","Sleuth Kit","Filesystem evidence"),
+        CyberTool("autopsy","Autopsy","Desktop forensic reports"),CyberTool("sleuthkit","Sleuth Kit","Read-only fsstat filesystem metadata",true),
         CyberTool("sandbox","Qualified sandbox","Guest isolation/reset acceptance"),CyberTool("pcapdroid","PCAPdroid","Separate Android capture companion")
     )
     val ids=all.map {it.id}.toSet()

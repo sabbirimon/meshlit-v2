@@ -419,3 +419,27 @@ val verifyBundledModel by tasks.registering(VerifyBundledModel::class) {
     assetDirectory.set(layout.projectDirectory.dir("src/main/assets/models"))
 }
 tasks.named("preBuild") { dependsOn(verifyBundledModel) }
+
+
+// Original lab companions shipped as data; installation requires an explicit human VM action.
+abstract class GenerateLabAssets:DefaultTask() {
+    @get:InputFile abstract val cyber:RegularFileProperty
+    @get:InputFile abstract val packages:RegularFileProperty
+    @get:OutputDirectory abstract val outputDirectory:DirectoryProperty
+    @TaskAction fun generate() {
+        val lab=outputDirectory.dir("lab").get().asFile
+        check(lab.isDirectory || lab.mkdirs())
+        listOf(cyber.get().asFile,packages.get().asFile).forEach { source ->
+            check(source.length() in 1..131072) { "Invalid bundled lab companion size" }
+            source.copyTo(File(lab,source.name),overwrite=true)
+        }
+    }
+}
+val generateLabAssets by tasks.registering(GenerateLabAssets::class) {
+    cyber.set(rootProject.layout.projectDirectory.file("companions/cyber/meshlit_cyber.py"))
+    packages.set(rootProject.layout.projectDirectory.file("companions/cyber/meshlit_packages.py"))
+    outputDirectory.set(layout.buildDirectory.dir("generated/labAssets"))
+}
+androidComponents.onVariants { variant ->
+    variant.sources.assets?.addGeneratedSourceDirectory(generateLabAssets,GenerateLabAssets::outputDirectory)
+}

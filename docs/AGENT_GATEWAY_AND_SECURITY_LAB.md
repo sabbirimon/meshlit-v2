@@ -55,9 +55,9 @@ configured, and phone native-runtime/guest acceptance remains open.
 
 Assessment records are encrypted, digest/path/tool/expiry scoped with independent
 agent permission. Implemented adapters: original APK inventory, classic-PCAP summary,
-optional installed tshark. Prior requested tools remain catalogued as planned:
+optional installed tshark and Sleuth Kit fsstat (raw filesystem-image metadata only). Prior requested tools remain catalogued as planned:
 Androguard, Quark, Objection/Frida, Drozer, Metasploit, Havoc reports, Magisk,
-Atomic Red Team, Autopsy/Sleuth Kit, qualified dynamic sandbox and PCAPdroid.
+Atomic Red Team, Autopsy UI/advanced Sleuth Kit recovery, qualified dynamic sandbox and PCAPdroid.
 
 Package operations run only in the ready VM using an explicitly provisioned guest
 marker. Manual pip/apt/apk/dnf/pacman list/install/uninstall; managers must be installed
@@ -69,8 +69,20 @@ computes a digest. Dependency trust is inherited from guest repositories/indexes
 Agent package operations additionally require saved VM activation plus a one-hour
 owner allowlist of pip names. Root distro operations/arbitrary file or web installs
 are not delegated. Uninstall leaves possible configs/dependencies/evidence/staged files.
-Guest networking defaults restricted, with a human-only outbound opt-in configured while stopped and applied at next VM start. Current QEMU snapshots discard guest changes on stop. Persistence and one-click
+Guest networking defaults restricted, with a human-only outbound opt-in configured while stopped and applied at next VM start. QEMU snapshots discard guest changes on stop by default; explicit human persistent mode writes changes to the supplied qcow2 disk. One-click
 Alpine/Kali/Parrot/Ubuntu/RHEL provisioning remain open.
+
+## Verified VM setup artifacts
+
+Lab packages can import opaque VM artifacts from Android storage or exact HTTPS.
+Owner supplies publisher SHA-256 and exact byte size (up to 8 GiB); copies are bounded
+and cancellable, checksum-verified and atomically committed. No redirects, URL
+credentials/query/fragment, extraction or execution. Failed/aborted staging is removed.
+Thirty-minute import deadline and storage headroom apply. Configure the saved artifact
+path through Runtime; this is not a distro image catalogue or an Android QEMU installer.
+Disk mode changes are human-only while stopped: `vm storage ephemeral|persistent`.
+Persistent mode retains writes, including package state; default ephemeral mode
+discards boot-session changes. Neither mode proves phone/VM qualification.
 
 ## Upstream and remaining full-plan work
 
@@ -81,3 +93,15 @@ Bionic cross-compilation and native packaging, not a Linux binary copy.
 Remote MCP/OAuth/session/SSE federation, remote A2A delegation, streaming LLM tool loop,
 Responses, enforceable cross-client cost budgets, moderation-service adapters and
 physical-device/provider proof remain acceptance milestones.
+
+
+The APK now includes the original Python companions as data assets. Lab packages
+has a human-only Install/update action: requires explicit guest-root approval,
+an already ready VM, pinned SSH configured for its root account, base64/sha256sum
+and /usr/local/bin. Bytes are hash-checked before same-directory rename. No sudo,
+agent setup delegation or execution of downloaded installers. Marker is created
+only after both copies complete; failures can leave partial updates and are reported.
+Runtime guest actions require the active VM forwarding port. Grants now include
+SSH account/identity selection and host-key pin contents; changing them invalidates
+the grant. Persistent Stop is not a clean guest shutdown or a rollback; shut down
+inside the guest and preserve backups when consistency matters.

@@ -17,6 +17,11 @@ data class RuntimeConfig(
     val sshKnownHosts: String = "",
 )
 
+/** Guest actions must use the forwarding port of the currently configured VM. */
+fun RuntimeConfig.requireGuestBinding(vmPort:Int) {
+    require(mode==RuntimeMode.VM_SSH && sshPort==vmPort) {"SSH configuration does not match the active VM forwarding port"}
+}
+
 data class RuntimePlan(
     val argv: List<String>,
     val workingDirectory: File,

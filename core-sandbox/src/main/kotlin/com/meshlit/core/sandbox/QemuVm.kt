@@ -17,6 +17,7 @@ data class VmConfig(
     val cpus: Int = 1, val sshPort: Int = 2222, val vncDisplay: Int = 1,
     val enableDesktop: Boolean = false,
     val allowOutboundNetwork: Boolean = false,
+    val persistDisk: Boolean = false,
 ) {
     fun argv(): List<String> {
         require(memoryMb in 256..4096 && cpus in 1..4) { "VM resource limits exceeded" }
@@ -29,11 +30,12 @@ data class VmConfig(
         // Executable is an argv item rather than a QEMU option value.
         val binary = checked(executable, true).replace(",,", ",")
         val args = mutableListOf(binary, "-accel", "tcg", "-m", memoryMb.toString(),
-            "-smp", cpus.toString(), "-snapshot", "-no-reboot",
+            "-smp", cpus.toString(), "-no-reboot",
             "-drive", "file=${checked(disk)},if=virtio,format=qcow2",
             "-netdev", "user,id=net0,restrict=${if(allowOutboundNetwork) "off" else "on"},hostfwd=tcp:127.0.0.1:$sshPort-:22",
             "-device", "virtio-net-pci,netdev=net0", "-monitor", "none",
             "-serial", "stdio")
+        if (!persistDisk) args += "-snapshot"
         when (architecture) {
             GuestArchitecture.X86_64 -> args += listOf("-machine", "q35")
             GuestArchitecture.AARCH64 -> {

@@ -385,3 +385,16 @@ is explicitly human approved. Guest internet is opt-in while stopped and applied
 on next boot. No bundled Linux distro, Android Rust gateway or physical-device
 qualification is claimed. Source, APKs and final validation notes belong to the
 2026-10-07 continuation outputs, separate from the frozen earlier beta.
+
+
+## Remaining-build continuation and GitHub push — 2026-10-07
+
+The initial gateway/lab source was published to sabbirimon/meshlit-v2 main at
+65eedca, preserving the newer contributor README commit. This next increment adds
+explicit persistent qcow2 writes (ephemeral remains default), checksum/size-verified
+VM setup artifact import from storage/HTTPS, a human-only bundled-companion setup
+action, strict VM SSH port/session binding, and a bounded read-only fsstat adapter.
+Imports never execute/unpack content. Tool process output/deadline failure contracts
+and staging corruption/truncation/cancellation are tested separately from actual
+phone/guest/provider acceptance, which remains open. Final build evidence is in the
+2026-10-07 remaining-build outputs; do not claim the full protocol/cyber roadmap done.

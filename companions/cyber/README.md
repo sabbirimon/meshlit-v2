@@ -29,11 +29,14 @@ returns APK ZIP/DEX metadata, not a malware verdict/signature/manifest decoder.
 `pcap_summary` validates bounded classic-PCAP records; PCAPNG is unavailable.
 `tshark` requires independently installed Wireshark CLI and returns count-only
 metadata for at most 10,000 packets. No payload export or automatic capture.
+`sleuthkit` requires installed `fsstat` and reports bounded raw filesystem-image
+metadata only. No offset selection, recovery or Autopsy GUI integration. External
+processes have output/deadline bounds and group cleanup on failure.
 Input hashes are verified before/after analysis. App assessment grants additionally
 restrict exact artifact, expiry, operation and agent permission.
 
 Other earlier tools (Androguard, Quark, Objection/Frida, Drozer, Metasploit,
-Havoc, Magisk, Atomic Red Team, Autopsy/Sleuth Kit and a qualified dynamic sandbox)
+Havoc, Magisk, Atomic Red Team, Autopsy/advanced Sleuth Kit recovery and a qualified dynamic sandbox)
 remain explicitly planned adapters, not functioning integrations.
 
 ## Packages
@@ -52,7 +55,7 @@ No signature bypass flags. Dependencies use guest repository/index configuration
 review that configuration before install. Web artifact redirects are rejected.
 128 MiB transfer/artifact limit. Uninstall takes the installed package name and does
 not promise removal of configuration, dependencies, evidence or staged imports.
-Clean staged files manually; ephemeral QEMU changes disappear on stop.
+Clean staged files manually; ephemeral QEMU changes disappear on stop; explicit persistent mode retains disk writes.
 
 Package scripts execute inside guest. VM must be qualified before hostile packages;
 network isolation and CPU/RAM budgets come from the existing runtime configuration.
@@ -62,3 +65,12 @@ is not proof every descendant or package transaction is rolled back. Inspect gue
 state before retry. Automatic agent package installation remains unimplemented.
 
 Tests: `python3 -m unittest discover -s companions/cyber/tests -v`.
+
+Sleuth Kit CLI reference: https://sleuthkit.org/sleuthkit/man/fsstat.html
+
+The APK ships these original scripts as data. Lab packages can install/update them
+through an explicit human guest-root action in an already ready VM (requires pinned
+root SSH, sha256sum/base64 and /usr/local/bin). No sudo or agent setup delegation.
+A failure may leave partial updates. Python/venv/timeout/third-party tools are still
+separate guest dependencies. Persistent mode retains writes; abrupt Stop may need
+guest filesystem recovery, so shut down inside the guest before stopping when needed.

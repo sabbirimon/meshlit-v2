@@ -1,17 +1,41 @@
 #!/usr/bin/env python3
 """Original read-only assessment companion. No third-party tools bundled."""
-import argparse, hashlib, json, os, shutil, struct, subprocess, sys, zipfile
+import argparse, hashlib, json, os, shutil, struct, subprocess, sys, zipfile, selectors, signal, time
 from pathlib import Path
 MAX_INPUT=512*1024*1024
-TOOLS={'androguard':'androguard','quark':'quark','tshark':'tshark','objection':'objection','frida':'frida','drozer':'drozer','metasploit':'msfconsole','sleuthkit':'fls','autopsy':'autopsy'}
+TOOLS={'androguard':'androguard','quark':'quark','tshark':'tshark','objection':'objection','frida':'frida','drozer':'drozer','metasploit':'msfconsole','sleuthkit':'fsstat','autopsy':'autopsy'}
 def digest(path):
     h=hashlib.sha256()
     with path.open('rb') as stream:
         for chunk in iter(lambda:stream.read(1024*1024),b''): h.update(chunk)
     return h.hexdigest()
+def bounded_process(argv,limit=8192,timeout=40):
+    """Capture bounded metadata; kill the isolated process group on every failure."""
+    proc=subprocess.Popen(argv,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,start_new_session=True)
+    deadline=time.monotonic()+timeout
+    data=bytearray()
+    try:
+        with selectors.DefaultSelector() as selector:
+            selector.register(proc.stdout,selectors.EVENT_READ)
+            while selector.get_map():
+                remaining=deadline-time.monotonic()
+                if remaining<=0: raise TimeoutError('Tool deadline exceeded')
+                for key,_ in selector.select(min(remaining,1)):
+                    chunk=os.read(key.fileobj.fileno(),65536)
+                    if not chunk: selector.unregister(key.fileobj);continue
+                    data.extend(chunk)
+                    if len(data)>limit: raise ValueError('Tool output budget exceeded')
+        if proc.wait(timeout=max(0.001,deadline-time.monotonic()))!=0: raise ValueError('Tool failed')
+        return bytes(data)
+    except BaseException:
+        try: os.killpg(proc.pid,signal.SIGKILL)
+        except ProcessLookupError: pass
+        proc.wait();raise
+    finally: proc.stdout.close()
+
 def analyze(tool,path,expected):
     path=Path(path)
-    if not path.is_file() or path.stat().st_size>MAX_INPUT: raise ValueError('Input missing or exceeds 512 MiB')
+    if not path.is_absolute() or not path.is_file() or path.stat().st_size>MAX_INPUT: raise ValueError('Input missing or exceeds 512 MiB')
     actual=digest(path)
     if actual.lower()!=expected.lower(): raise ValueError('Input digest mismatch')
     if tool=='apk_inventory':
@@ -45,25 +69,23 @@ def analyze(tool,path,expected):
     elif tool=='tshark':
         binary=shutil.which('tshark')
         if not binary: raise ValueError('tshark is not installed')
-        # Count-only analysis: raw packet payloads never enter the report.
-        with __import__('tempfile').TemporaryFile() as output:
-            proc=subprocess.Popen([binary,'-n','-r',str(path),'-c','10000','-T','fields','-e','frame.number','-e','frame.len'],stdout=output,stderr=subprocess.DEVNULL,start_new_session=True)
-            try: code=proc.wait(timeout=40)
-            except BaseException:
-                os.killpg(proc.pid,__import__('signal').SIGKILL);proc.wait();raise
-            if code!=0: raise ValueError('tshark analysis failed')
-            output.seek(0);data=output.read(1024*1024+1)
-            if len(data)>1024*1024: raise ValueError('Output limit exceeded')
-            lines=data.decode().splitlines();findings={'packets_inspected':len(lines),'packet_limit':10000};coverage='Bounded count-only tshark analysis; capture may contain more packets'
+        data=bounded_process([binary,'-n','-r',str(path),'-c','10000','-T','fields','-e','frame.number','-e','frame.len'],limit=1024*1024)
+        lines=data.decode().splitlines();findings={'packets_inspected':len(lines),'packet_limit':10000};coverage='Bounded count-only tshark analysis; capture may contain more packets'
+    elif tool=='sleuthkit':
+        binary=shutil.which('fsstat')
+        if not binary: raise ValueError('Sleuth Kit fsstat is not installed')
+        data=bounded_process([binary,'-i','raw',str(path)])
+        findings={'filesystem_metadata':data.decode('utf-8',errors='replace')}
+        coverage='Read-only fsstat raw filesystem-image metadata only; no partition offset selection, file recovery or Autopsy integration'
     else: raise ValueError('Adapter not implemented')
     if digest(path)!=actual: raise ValueError('Input changed during analysis')
     return {'schema':1,'tool':tool,'status':'completed','input_sha256':actual,'findings':findings,'coverage':coverage}
 def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='action',required=True)
-    sub.add_parser('probe');run=sub.add_parser('run');run.add_argument('--tool',choices=['apk_inventory','pcap_summary','tshark'],required=True);run.add_argument('--input',required=True);run.add_argument('--sha256',required=True)
+    sub.add_parser('probe');run=sub.add_parser('run');run.add_argument('--tool',choices=['apk_inventory','pcap_summary','tshark','sleuthkit'],required=True);run.add_argument('--input',required=True);run.add_argument('--sha256',required=True)
     args=parser.parse_args()
     try:
-        value={'tools':{name:{'installed':shutil.which(binary) is not None,'adapter_implemented':name=='tshark'} for name,binary in TOOLS.items()}} if args.action=='probe' else analyze(args.tool,args.input,args.sha256)
+        value={'tools':{name:{'installed':shutil.which(binary) is not None,'adapter_implemented':name in {'tshark','sleuthkit'}} for name,binary in TOOLS.items()}} if args.action=='probe' else analyze(args.tool,args.input,args.sha256)
         print(json.dumps(value));return 0
     except Exception:
         print(json.dumps({'status':'failed','error':'Input, digest, installed tool or bounded analysis check failed'}));return 1

@@ -118,3 +118,19 @@ its narrower manifest alone does not certify every retained runtime integration.
 ## Explicit guest package networking (2026-10-07)
 
 Guest networking remains restricted by default. Human `vm network on|off` or Lab packages controls can configure outbound user-mode networking only while stopped. Next startup applies it; inbound SSH/VNC forwarding remains loopback. Guest VM isolation is distinct from outbound network policy. Recreate session-bound lab grants after restart.
+
+
+## Persistent disks and verified setup import (2026-10-07 continuation)
+
+`vm storage ephemeral|persistent` changes mode while stopped. Default ephemeral
+mode includes QEMU `-snapshot`; persistent mode omits it and writes to the supplied
+qcow2. Lab packages exposes the same explicit human controls. Root access is still
+independent, and agent activation cannot change disk policy. Stop is not a rollback
+for persistent writes; keep an owned disposable image/backup.
+
+Lab packages also imports opaque disk/kernel/initrd artifacts from storage or exact
+HTTPS with supplied SHA-256 and exact size. Maximum 8 GiB, thirty-minute deadline,
+64 MiB storage headroom, no redirects/credentials/query URLs, no unpack or execution.
+Imports are serialized, atomic and remove incomplete staging. Compatible Android
+QEMU/native packaging, trusted distro catalogues and actual guest acceptance remain
+separate work. Imported Linux executables are not automatically Android-compatible.

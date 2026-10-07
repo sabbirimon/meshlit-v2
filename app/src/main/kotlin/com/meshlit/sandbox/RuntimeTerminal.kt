@@ -56,12 +56,17 @@ class RuntimeTerminal(private val context: Context, private val host: RuntimeHos
             host.configureVm(host.vmConfig().copy(executable = args[1], disk = args[2],
                 architecture = GuestArchitecture.valueOf(args[3].uppercase()),
                 kernel = args.getOrElse(4) { "" }, initrd = args.getOrElse(5) { "" }))
-            listOf("VM configured; starts on demand only, with an ephemeral disk overlay")
+            listOf("VM configured; starts on demand only. Disk persistence: ${host.vmConfig().persistDisk}")
         }
         "resources" -> {
             require(args.size == 3) { "vm resources <memory-MiB> <cpus>" }
             host.configureVm(host.vmConfig().copy(memoryMb = args[1].toInt(), cpus = args[2].toInt()))
             listOf("VM resource budget saved")
+        }
+        "storage" -> {
+            require(args.size==2 && args[1] in listOf("ephemeral","persistent")) {"vm storage ephemeral|persistent"}
+            host.configureVm(host.vmConfig().copy(persistDisk=args[1]=="persistent"))
+            listOf("Disk mode ${args[1]}: persistent mode writes guest changes to the supplied qcow2 disk")
         }
         "network" -> {
             require(args.size==2 && args[1] in listOf("on","off")) {"vm network on|off"}
@@ -80,7 +85,7 @@ class RuntimeTerminal(private val context: Context, private val host: RuntimeHos
         }
         "start" -> listOf("VM: ${host.startVm()}; use vm wait to check guest SSH readiness")
         "wait" -> listOf("Guest SSH ready: ${host.vm.waitForSsh()}")
-        "stop" -> { host.stopVm(); listOf("VM stopped; ephemeral guest changes discarded") }
+        "stop" -> { host.stopVm(); listOf(if(host.vmConfig().persistDisk) "VM stopped; persistent disk writes retained" else "VM stopped; ephemeral guest changes discarded") }
         "status" -> listOf("VM: ${host.vm.state}", "Last failure: ${host.lastError ?: "none"}")
         "console" -> withContext(Dispatchers.IO) { host.vm.consoleTail().lineSequence().takeLastLines(100) }
         "vnc" -> {
@@ -143,6 +148,7 @@ class RuntimeTerminal(private val context: Context, private val host: RuntimeHos
         "runtime ssh <ssh-binary> <guest-user> <identity> <verified-known_hosts> [port]",
         "vm configure <qemu-binary> <qcow2> x86_64|aarch64 [kernel] [initrd]",
         "vm resources <memory-MiB> <cpus> | vm desktop on|off | vm agent on|off",
+        "vm storage ephemeral|persistent | vm network on|off",
         "vm start | vm wait | vm status | vm console | vm vnc | vm stop",
         "net interfaces | net dns <host> | net tcp <host> <port,port> --authorized",
         "artifact import <source> <name> <sha256> [--replace] | artifact verify <file> <sha256>",
