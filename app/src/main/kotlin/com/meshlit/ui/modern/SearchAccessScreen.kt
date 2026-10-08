@@ -36,9 +36,10 @@ import kotlinx.coroutines.*
             item{
                 Text("Local search",style=MaterialTheme.typography.titleLarge)
                 Text("Human search works offline. It searches connected app pages, options, model names, saved conversations, imported articles and approved device access records. It does not scan arbitrary files, keys or credentials.")
-                Row{Text("Allow agents to search local content",Modifier.weight(1f));Switch(access.agentLocal,{value->action{service.access.saveHuman(service.access.state.value.copy(agentLocal=value))}},enabled=!busy,modifier=Modifier.testTag("search-agent-local"))}
+                Row{Text("Allow agents to search local content",Modifier.weight(1f));Switch(access.agentLocal,{value->action{service.access.saveHuman(service.access.state.value.copy(agentLocal=value))}},enabled=!busy && !com.meshlit.BuildProfile.coreCandidate,modifier=Modifier.testTag("search-agent-local"))}
                 Text("This grant exposes matching snippets from your saved chats and imported articles to an agent. Per-chat “Local search tools” is also required when chatting with an on-device model.")
                 HorizontalDivider(Modifier.padding(vertical=12.dp))
+                if(!com.meshlit.BuildProfile.coreCandidate) {
                 Text("Internet search",style=MaterialTheme.typography.titleLarge)
                 Row{Text("Internet search",Modifier.weight(1f));Switch(access.webEnabled,{value->action{service.access.saveHuman(service.access.state.value.copy(webEnabled=value))}},enabled=!busy,modifier=Modifier.testTag("search-web-access"))}
                 Text("Off by default. Queries go to api.search.brave.com when you tap Search web or an authorized agent invokes web_search. Your whole chat is not uploaded by this adapter. Results contain source URLs and snippets; opening a page or using the separate crawler may send data to that host.")
@@ -51,6 +52,7 @@ import kotlinx.coroutines.*
                     TextButton(enabled=!busy && hasKey,onClick={action{service.deleteKeyHuman();message="API key deleted"}}){Text("Delete key")}}
                 Text("A provider account/API key is required and may incur charges. No account is created or bundled. Keys are encrypted on this device, used only with the fixed Brave API origin and excluded from search results and exports.")
                 HorizontalDivider(Modifier.padding(vertical=12.dp))
+                } else Text("Core candidate uses offline human search. Internet and agent tools remain in Experimental.")
                 Text("Articles",style=MaterialTheme.typography.titleLarge)
                 Text("Import up to 20 UTF-8 text or Markdown articles, at most 128 KiB each and 4 MiB for the encoded index. Files are copied locally; no automatic storage scan, PDF parser or web fetch. Retrieved and imported content is untrusted evidence.")
                 OutlinedButton(enabled=!busy && articles.size<20,onClick={picker.launch(arrayOf("text/plain","text/markdown"))}){Text("Import article")}

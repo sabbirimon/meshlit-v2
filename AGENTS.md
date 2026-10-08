@@ -176,3 +176,14 @@ to sabbirimon/meshlit-v2 with Apache-2.0 root LICENSE and repository metadata; p
 history and third-party notices. The owner subsequently authorized GitHub beta release assets and a separate Play
 review build. No force push, Play Store submission or external promotion posts
 are authorized. Read docs/PLAY_DISTRIBUTION.md and docs/PRIVACY_POLICY.md.
+
+## HyperL alpha.6 integration (2026-10-09)
+
+The user authorized integration of newly covered HyperL alpha.6 features.
+`core-hyperl` retains its separate Community and Enterprise licence plus earlier
+Apache grants; do not relabel it Apache or copy its additions into an Apache-only
+module. Application wrappers remain independent Meshlit code. Keep optional terms
+explicit, keys in no-backup storage and datasets/CPU execution human-only. Run
+`scripts/check-hyperl-alpha6.py`, changed core/app tests and both builds/lints.
+Read docs/hyperl/ANDROID_ALPHA6.md and the supplied architectural evaluation review.
+Native JNI preprocessing is separate from the chat/LLM SDK and GPU qualification.

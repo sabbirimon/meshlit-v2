@@ -26,12 +26,12 @@ object SettingsDestinations {
         SettingsDestination("external","External devices and OTG","USB discovery, permissions and removable storage",keywords="gpu USB hardware peripherals drives NAS keyboard camera"),
         SettingsDestination("acceleration","Acceleration","Actual backend availability, CPU limits and platform roadmap",keywords="CUDA Vulkan OpenCL OpenGL Metal ROCm QNN CANN Intel NVIDIA AMD Huawei"),
         SettingsDestination("agents","Agent management","Delegated permissions, real jobs and registered tools",keywords="autonomous scopes tasks MCP"),
-        SettingsDestination("ssh","SSH connections","Pinned host-key remote commands to owner-approved devices",keywords="server NAS terminal external inter device"),
+        SettingsDestination("ssh","SSH nodes and connections","Key-authenticated inbound node commands and pinned outbound connections",keywords="server LAN internet VM sandbox agent SSH NAS terminal external inter device"),
         SettingsDestination("firewall","Network rules","Persisted Meshlit listener firewall and network status",keywords="ports security IP allow deny"),
         SettingsDestination("device","Device","Device profile, name and hardware capabilities",keywords="role chipset gpu peripherals"),
         SettingsDestination("tasks","Task manager","Plan tasks, track real jobs, bulk finish and stop operations",keywords="todo priorities tags due subtasks queue retry cancel agent"),
         SettingsDestination("ide","Code workspace","Offline source editor, files, syntax highlighting and search",keywords="IDE VS Code programming Kotlin Python JavaScript JSON develop"),
-        SettingsDestination("hyperl","HyperL libraries","Local AI preprocessing recipes, memory validation and kernel source",keywords="hyperl compute library vector affine dot relu CPU GPU Metal Vulkan programming"),
+        SettingsDestination("hyperl","HyperL libraries","Native CPU recipes, precise sums, encrypted datasets and kernel source",keywords="hyperl compute library vector affine dot relu CPU native precision encrypted dataset key rotation Metal Vulkan programming"),
         SettingsDestination("permissions","App permissions","Optional setup, runtime grants and Android accessibility",keywords="first launch camera microphone location nearby Bluetooth security"),
         SettingsDestination("files","Files and storage","Browse, preview AI assets and stream ZIP creation/extraction",keywords="SAF copy move share export folders zip unzip archive GGUF safetensors ONNX JSONL datasets tokenizer"),
         SettingsDestination("termux","Termux integration","Probe an installed shell, manage delegation and view its audit",true,"terminal commands Linux tools networking"),
@@ -49,7 +49,7 @@ object SettingsDestinations {
         SettingsDestination("help","Guide and tutorial","Offline walkthrough, configuration recipes and illustrated feature guide",keywords="help setup learn tutorial docs manual guide troubleshooting"),
         SettingsDestination("legal","Terms and privacy","Offline policies, accepted version and data controls",keywords="agreement consent privacy terms data delete IMON"),
         SettingsDestination("about","About and availability","Build information and feature implementation status",keywords="licenses version help")
-    ).filterNot { com.meshlit.BuildConfig.PLAY_REVIEW && it.id in setOf("automation", "termux") }
+    ).filter { com.meshlit.BuildProfile.routeAllowed(it.id) }.filterNot { com.meshlit.BuildConfig.PLAY_REVIEW && it.id in setOf("automation", "termux") }
     fun search(query:String,advanced:Boolean)=all.filter{ (advanced || !it.advanced) &&
         query.trim().split(Regex("\\s+")).filter{it.isNotBlank()}.all { word ->
             "${it.title} ${it.description} ${it.keywords}".contains(word,true)

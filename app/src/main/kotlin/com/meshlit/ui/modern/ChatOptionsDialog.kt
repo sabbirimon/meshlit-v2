@@ -37,32 +37,34 @@ import androidx.compose.ui.semantics.contentDescription
     Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).testTag("chat-settings"),verticalArrangement=Arrangement.spacedBy(10.dp)){
         Text("Model and routing",style=MaterialTheme.typography.titleMedium)
         FilterChip(options.onlineProfileId==null && options.routeId==null,{options=options.copy(onlineProfileId=null,routeId=null)},label={Text("Local · currently loaded model")})
-        profiles.filter{it.enabled}.forEach{profile->FilterChip(options.onlineProfileId==profile.id && options.routeId==null,{options=options.copy(onlineProfileId=profile.id,routeId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false)},label={Text("Online · ${profile.name} / ${profile.model}")})}
-        if(routes.any{it.enabled}) {
-            FilterChip(options.routeId=="__auto__",{options=options.copy(routeId="__auto__",onlineProfileId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Model router · automatic rules")})
-            routes.filter{it.enabled}.forEach{route->FilterChip(options.routeId==route.id,{options=options.copy(routeId=route.id,onlineProfileId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Route · ${route.name} / ${route.mode}")})}
+        profiles.filter{it.enabled && !com.meshlit.BuildProfile.coreCandidate}.forEach{profile->FilterChip(options.onlineProfileId==profile.id && options.routeId==null,{options=options.copy(onlineProfileId=profile.id,routeId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false)},label={Text("Online · ${profile.name} / ${profile.model}")})}
+        if(!com.meshlit.BuildProfile.coreCandidate && routes.any{it.enabled}) {
+            FilterChip(options.routeId=="__auto__",{options=options.copy(routeId="__auto__",onlineProfileId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Model router · automatic rules")})
+            routes.filter{it.enabled}.forEach{route->FilterChip(options.routeId==route.id,{options=options.copy(routeId=route.id,onlineProfileId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Route · ${route.name} / ${route.mode}")})}
             if(options.routeId!=null) OutlinedTextField(options.routeScenario,{options=options.copy(routeScenario=it.lowercase())},label={Text("Route scenario")})
         }
         Text("Configure API profiles in Settings → Online providers. Online sends this conversation to the selected endpoint and may incur charges. Replies are buffered; local replies stream.")
-        if(options.onlineProfileId==null && options.routeId==null) {
+        if(!com.meshlit.BuildProfile.coreCandidate && options.onlineProfileId==null && options.routeId==null) {
             HorizontalDivider()
             Text("Permissions and tools",style=MaterialTheme.typography.titleMedium)
             Row{Text("Personal memory tools",Modifier.weight(1f));Switch(options.memoryTools,{options=options.copy(memoryTools=it)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
             Text("Requires saved agent management in Memory and personality. Agents can manage switches and facts; recall is applied only to on-device chat.")
             Row{Text("Local search tools",Modifier.weight(1f));Switch(options.localSearchTools,{options=options.copy(localSearchTools=it)},Modifier.testTag("chat-local-search-tools"))}
             Text("The on-device model can search saved app content only after your separate local-content agent grant. No Internet is needed.")
-            Row{Text("Allow web search and page tools",Modifier.weight(1f));Switch(options.webTools,{options=options.copy(webTools=it)})}
+            Row{Text("Allow web search and page tools",Modifier.weight(1f));Switch(options.webTools,{options=options.copy(webTools=it,nodeTools=if(it) false else options.nodeTools)})}
             Text("The local model can request web_search using your configured Brave API key, Internet switch and agent grant. Queries go to Brave. crawl_url also requires the HTTPS Crawl4AI companion and approved domains; URLs and fetched content go to that host. Neither service is silently enabled.")
             TextButton(onClick=onSearchSettings){Text("Manage search access and articles")}
-            Row{Text("Allow phone tools",Modifier.weight(1f));Switch(options.phoneTools,{options=options.copy(phoneTools=it)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
+            Row{Text("Allow phone tools",Modifier.weight(1f));Switch(options.phoneTools,{options=options.copy(phoneTools=it,nodeTools=if(it) false else options.nodeTools)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
             Text("Requires saved autonomy, app scope and Android Accessibility in Settings → OpenClaw and autonomy. Install/remove/permission requests use Android human confirmation; no silent OS grant. Wireless ADB and root adapters are not connected to this chat.")
+            Row{Text("Allow VM and SSH node tools",Modifier.weight(1f));Switch(options.nodeTools,{options=options.copy(nodeTools=it,webTools=if(it) false else options.webTools,phoneTools=if(it) false else options.phoneTools)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
+            Text("Uses only saved node actions and the configured guest, with separate per-key/host and VM agent grants. No agent app/root shell or permission changes. Choose these separately from web/phone tools to keep the tool list bounded. VM/QEMU and remote nodes must actually be available.")
             Text("Experimental local tool protocol: three calls, 180-second deadline and Stop. A model trained for JSON/tool use is required; invalid output dispatches no action for that step. The starter model is not qualified for reliable autonomy.")
         }
         HorizontalDivider()
         Text("Token management",style=MaterialTheme.typography.titleMedium)
         FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
             FilterChip(options.outputBudgetMode==OutputBudgetMode.MANUAL,{options=options.copy(outputBudgetMode=OutputBudgetMode.MANUAL)},label={Text("Manual")},modifier=Modifier.testTag("chat-budget-manual"))
-            FilterChip(options.outputBudgetMode==OutputBudgetMode.AUTOMATIC,{options=options.copy(outputBudgetMode=OutputBudgetMode.AUTOMATIC)},label={Text("Automatic cluster")},modifier=Modifier.testTag("chat-budget-automatic"))
+            if(!com.meshlit.BuildProfile.coreCandidate) FilterChip(options.outputBudgetMode==OutputBudgetMode.AUTOMATIC,{options=options.copy(outputBudgetMode=OutputBudgetMode.AUTOMATIC)},label={Text("Automatic cluster")},modifier=Modifier.testTag("chat-budget-automatic"))
         }
         if(options.outputBudgetMode==OutputBudgetMode.AUTOMATIC) {
             Text("Target output duration: ${options.outputTargetSeconds}s")

@@ -403,3 +403,9 @@ a human-only Settings workbench, twelve CPU recipes, memory admission and contro
 source generation. [Workflow/provenance](docs/hyperl/APP_AND_LIBRARY.md) records its
 boundaries; mobile GPU/model execution is not implemented by this screen. Meshlit's intended scope is AI software
 across hosts and clusters; current APK installation remains Android-only.
+
+## Android alpha.6 integration
+
+The shared workbench now uses the separately licensed `core-hyperl` module for
+Kotlin/native C99 execution, precise sums and encrypted dataset operations. The
+old Apache `core-gpu` port is preserved. Read the [alpha.6 integration guide](docs/hyperl/ANDROID_ALPHA6.md) for licence opt-in, Android/API limits, safety boundaries and validation.

@@ -558,6 +558,7 @@ val coreModule = module {
     single { com.meshlit.openclaw.PhoneAdministration(androidContext(),get(),get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate) }
     single { com.meshlit.pipeline.PipelineHost(androidContext(), get(), get()) }
     single { com.meshlit.ssh.SshConnections(androidContext(),get()) }
+    if(android.os.Build.VERSION.SDK_INT>=26) single { com.meshlit.ssh.NodeSshHost(androidContext(),get(),get()) }
     single { com.meshlit.training.TrainingHost(androidContext(),get()) }
     single { com.meshlit.security.LabPackages(androidContext(),get()) }
     single { com.meshlit.security.SecurityLab(androidContext(),get()) }
@@ -595,6 +596,7 @@ val coreModule = module {
             registerAll(get<com.meshlit.openclaw.PhoneAdministration>().specs())
             registerAll(com.meshlit.pipeline.PipelineMcpTools(get(),get()).specs())
             registerAll(com.meshlit.sandbox.RuntimeMcpTools(get()).specs())
+            registerAll(com.meshlit.ssh.SshMcpTools(get()).specs())
             registerAll(com.meshlit.core.mcp.builtin.CrawlMcpTools(
                 settings = crawler::load,
             ).specs())

@@ -90,3 +90,9 @@ This ADB-shell experiment does not run through this screen or prove an app-UID
 JNI adapter, model inference or mobile production readiness. Two-phone cluster
 acceptance remains paused. Signing, lifecycle/thermal tests and security review
 remain production gates. The six-file source port is unchanged.
+
+## Android alpha.6 integration
+
+The shared workbench now uses the separately licensed `core-hyperl` module for
+Kotlin/native C99 execution, precise sums and encrypted dataset operations. The
+old Apache `core-gpu` port is preserved. Read the [alpha.6 integration guide](ANDROID_ALPHA6.md) for licence opt-in, Android/API limits, safety boundaries and validation.

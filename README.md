@@ -52,7 +52,7 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 | Client hub | Scoped expiring client keys for buffered model/MCP/A2A endpoints | Loopback, screen-bound; remote encrypted transport and web companion require operator setup. [Client guide](docs/CLIENT_HUB.md) |
 | Devices and integrations | Pairing/enrollment, QR/manual verification, SSH host pins, OpenClaw adapter, scoped Android automation, browser sessions | Live host/device integration gates remain. A web/SSH member is not automatically a transformer worker |
 | Cloud and credentials | AWS, Azure, GCP, DigitalOcean, OpenRouter and custom **read** adapters; resource/cost views; reusable encrypted environments | Full vendor administration, automatic IaC deployments and authenticated account validation are not complete |
-| HyperL libraries | Twelve offline CPU preprocessing recipes; editable JSON, memory admission, Stop and Metal/Vulkan source export | Human-only Settings workflow; source generation is separate from GPU execution. [Guide and limits](docs/hyperl/APP_AND_LIBRARY.md) |
+| HyperL libraries | Twelve recipes, explicit Kotlin/native C99 CPU, precise sums, bounded AES-GCM datasets and key rotation | Human-only opt-in; separate HyperL licence, API 26+ datasets; GPU/full-model execution remains unavailable. [Alpha.6 guide](docs/hyperl/ANDROID_ALPHA6.md) |
 | Files and coding | Granted-storage files, AI text inspection, streaming ZIP/unzip and offline CodeMirror workspace | A source editor is not a complete compiler/debugger; large provider-file tests remain |
 | Audit monitoring | Encrypted bounded metadata history, device sampling, actor/outcome filters, JSONL/CSV export and optional OTLP/HTTP traces/metrics | Opt-in. Not a tamper-proof compliance ledger. External Grafana account ingestion needs operator testing |
 | Optional companions | Scoped Crawl4AI bridge, SSH, terminal and optional rootless/Linux VM paths | Separate hosts/binaries/consent required; VM defaults off and root stays human-controlled |
@@ -249,7 +249,10 @@ managed IaC, full compiler/debugger support and other OS apps remain future work
 
 ## License and upstream credit
 
-Meshlit's source retains its existing [Apache-2.0 license](LICENSE). Third-party
+Meshlit's application source retains its existing [Apache-2.0 license](LICENSE).
+The separate [core-hyperl](core-hyperl/LICENSE) alpha.6 module contains newly covered
+HyperL Community and Enterprise licensed code, with earlier Apache grants preserved.
+See [its scope and modifications](core-hyperl/MODIFICATIONS.md). Third-party
 components keep their own licenses and notices. RunAnywhere, llama.cpp, Compose,
 OpenTelemetry, JSch, CodeMirror and the optional Crawl4AI/Soup/OpenClaw integrations
 are credited in their module/source documentation. Optional source revisions and
@@ -293,8 +296,9 @@ paths from deferred hardware, cloud and production acceptance.
 
 [HyperL](HYPERL.md) is original portable AI-language/reference/compiler research.
 The owner merged its experimental source into `main` through [PR #1](https://github.com/sabbirimon/meshlit-v2/pull/1)
-on 2026-10-08. It remains a bounded CPU library and source emitter, without an app
-workflow, native accelerator loader, privileged execution or universal performance proof.
+on 2026-10-08. The alpha.6 app workbench now includes a separately licensed native CPU module,
+precise sums and bounded encrypted datasets; it remains separate from LLM inference,
+native accelerator loading and distributed-model proof.
 See the [Odysseus workspace review](docs/ODYSSEUS_REVIEW_2026_10_08.md) for optional
 self-hosted workspace integration research.
 
@@ -306,3 +310,7 @@ Global/current-chat search, opt-in web articles, approved remote settings reads
 and Manual/Automatic cluster output controls are documented in the
 [search and cluster output guide](docs/SEARCH_AND_CLUSTER_OUTPUT.md). Actual
 provider and multi-phone evidence remains separate from UI/policy validation.
+
+## Core candidate and experimental node tools
+
+The owner-requested [Core candidate](docs/architecture/PRODUCTION_CHANNELS.md) is a separate package/data channel for local chat, model transfers and files, with immutable runtime restrictions. It is not yet production-qualified. The Experimental build retains HyperL, research layer execution and optional [bidirectional SSH node commands](docs/SSH_NODE.md), VM/sandbox tools and scoped agents. Inbound SSH is API 26+ and public-key-only; real installed VM artifacts remain required. Build/test evidence and physical qualification are recorded separately.

@@ -14,6 +14,9 @@ val meshlitSigningFile = providers.gradleProperty("meshlit.signingProperties").o
 
 android {
     signingConfigs {
+        getByName("debug") {
+            providers.gradleProperty("meshlit.debugKeystore").orNull?.let { storeFile = rootProject.file(it) }
+        }
         create("release") {
             if (meshlitSigningFile.exists()) {
                 val props = Properties().apply { meshlitSigningFile.inputStream().use { load(it) } }
@@ -31,6 +34,7 @@ android {
     defaultConfig {
         applicationId = "com.meshlit"
         buildConfigField("boolean", "PLAY_REVIEW", "false")
+        buildConfigField("boolean", "CORE_CANDIDATE", "false")
         // Floor = API 24 (Android 7.0). The RunAnywhere SDK 0.20.12
         // ships `libllama.so` with API 24+ symbol requirements (and
         // uses java.time on cold paths); `:core-inference` already
@@ -45,8 +49,8 @@ android {
         // /v1/health `version` field distinguishes the cluster
         // build from the pre-cluster baseline, and the GitHub
         // dev release gets a fresh version tag.
-        versionCode = 3
-        versionName = "0.2.3"
+        versionCode = 38
+        versionName = "0.2.4-hyperl-alpha6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -87,8 +91,8 @@ android {
             applicationIdSuffix = ".v2"
             // Build no. 1 of the new UI. Bump versionCode by 1
             // so Play Store and F-Droid see a fresh artifact.
-            versionName = "2.0.0-v2build1"
-            versionCode = (defaultConfig.versionCode ?: 1) + 1
+            versionName = "2.0.0-v2build38"
+            versionCode = 38
             buildConfigField("boolean", "USE_NEW_UI", "true")
             resValue("string", "app_name", "Meshlit v2")
         }
@@ -141,6 +145,15 @@ android {
         isDebuggable = false
         signingConfig = signingConfigs.getByName("debug")
         buildConfigField("boolean", "PLAY_REVIEW", "true")
+    }
+
+    // Separate package and app data; not a claim of production qualification.
+    buildTypes.create("productionCandidate") {
+        initWith(buildTypes.getByName("playReview"))
+        matchingFallbacks += listOf("debug")
+        applicationIdSuffix = ".production"
+        versionNameSuffix = "-core-candidate"
+        buildConfigField("boolean", "CORE_CANDIDATE", "true")
     }
 
     // Phase 1.0 — Lean APK (debug only). The Debug variant ships
@@ -239,6 +252,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Preserve both SSH modules' metadata, alongside their offline licence assets.
+            merges += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/NOTICE")
         }
     }
 
@@ -257,6 +272,7 @@ dependencies {
     implementation(project(":core-mcp"))
     implementation(project(":core-federation"))
     implementation(project(":core-gpu"))
+    implementation(project(":core-hyperl"))
     implementation(project(":core-cloud-mcp"))
     implementation(project(":core-training"))
     implementation(project(":core-files"))
@@ -447,4 +463,7 @@ val generateLabAssets by tasks.registering(GenerateLabAssets::class) {
 }
 androidComponents.onVariants { variant ->
     variant.sources.assets?.addGeneratedSourceDirectory(generateLabAssets,GenerateLabAssets::outputDirectory)
+}
+androidComponents.beforeVariants(androidComponents.selector().withBuildType("productionCandidate")) { variant ->
+    checkNotNull(variant.hostTests[com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE]).enable = true
 }

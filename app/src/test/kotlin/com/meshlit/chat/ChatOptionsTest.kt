@@ -16,4 +16,11 @@ class ChatOptionsTest {
         assertThrows(IllegalArgumentException::class.java){options.copy(onlineProfileId="provider").validate()}
         assertThrows(IllegalArgumentException::class.java){options.copy(routeId="route").validate()}
     }
+    @Test fun nodeToolsAreDefaultOffLocalOnlyAndBoundedSeparatelyFromExternalTools() {
+        assertFalse(ChatOptions().nodeTools)
+        ChatOptions(nodeTools=true,memoryTools=true,localSearchTools=true).validate()
+        for(options in listOf(ChatOptions(nodeTools=true,webTools=true),ChatOptions(nodeTools=true,phoneTools=true),ChatOptions(nodeTools=true,onlineProfileId="remote"))) {
+            assertThrows(IllegalArgumentException::class.java) { options.validate() }
+        }
+    }
 }

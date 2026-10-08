@@ -84,7 +84,7 @@ class RuntimeTerminal(private val context: Context, private val host: RuntimeHos
             listOf("Agent VM activation ${args[1]}; root access is separate")
         }
         "start" -> listOf("VM: ${host.startVm()}; use vm wait to check guest SSH readiness")
-        "wait" -> listOf("Guest SSH ready: ${host.vm.waitForSsh()}")
+        "wait" -> listOf("Guest SSH ready: ${host.waitForGuest()}")
         "stop" -> { host.stopVm(); listOf(if(host.vmConfig().persistDisk) "VM stopped; persistent disk writes retained" else "VM stopped; ephemeral guest changes discarded") }
         "status" -> listOf("VM: ${host.vm.state}", "Last failure: ${host.lastError ?: "none"}")
         "console" -> withContext(Dispatchers.IO) { host.vm.consoleTail().lineSequence().takeLastLines(100) }

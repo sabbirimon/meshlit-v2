@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-08",
+  "updated": "2026-10-09",
   "operations": [
     "SETTINGS_READ",
     "SETTINGS_PATCH",
@@ -921,13 +921,16 @@
     },
     {
       "id": "hyperl-libraries",
-      "title": "HyperL local preprocessing and source workbench",
+      "title": "HyperL reference/native CPU, precision and encrypted datasets",
       "status": "implemented",
       "sources": [
         "core-gpu/src/main/kotlin/com/meshlit/core/gpu/HyperLLibrary.kt",
         "core-gpu/src/main/kotlin/com/meshlit/core/gpu/HyperLAdmission.kt",
         "app/src/main/kotlin/com/meshlit/hyperl/HyperLWorkbenchController.kt",
-        "app/src/main/kotlin/com/meshlit/ui/modern/HyperLScreen.kt"
+        "app/src/main/kotlin/com/meshlit/ui/modern/HyperLScreen.kt",
+        "core-hyperl/src/main/kotlin/com/meshlit/core/hyperl/NativeCpu.kt",
+        "core-hyperl/src/main/kotlin/com/meshlit/core/hyperl/LargeData.kt",
+        "app/src/main/kotlin/com/meshlit/hyperl/HyperLDatasets.kt"
       ],
       "authority": [
         "HYPERL",
@@ -975,6 +978,40 @@
         "per-chat-human-ceiling",
         "exact-loaded-cluster-session"
       ]
+    },
+    {
+      "id": "ssh-node",
+      "title": "Scoped public-key SSH app node and delegated node actions",
+      "status": "experimental; actual host SSH transport tests; Android/Internet/guest qualification open",
+      "sources": [
+        "core-ssh/src/main/kotlin/com/meshlit/core/ssh/NodeSshServer.kt",
+        "core-ssh/src/main/kotlin/com/meshlit/core/ssh/NodeSshProtocol.kt",
+        "app/src/main/kotlin/com/meshlit/ssh/NodeSshHost.kt",
+        "app/src/main/kotlin/com/meshlit/ssh/SshMcpTools.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/NodeSshCard.kt"
+      ],
+      "limitations": [
+        "API 26+ inbound; explicit private IPv4; no shell/SFTP/forwarding/password/root; configured VM runtime required"
+      ],
+      "docs": [
+        "docs/SSH_NODE.md"
+      ]
+    },
+    {
+      "id": "production-candidate-channel",
+      "title": "Separate Core candidate package and immutable feature admission",
+      "status": "implemented candidate boundary; production qualification remains open",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/BuildProfile.kt",
+        "app/src/productionCandidate/AndroidManifest.xml",
+        "core-common/src/main/kotlin/com/meshlit/core/common/control/OperationGate.kt"
+      ],
+      "limitations": [
+        "shared inactive dependencies remain; debug signing; SDK telemetry/device endurance gates open"
+      ],
+      "docs": [
+        "docs/architecture/PRODUCTION_CHANNELS.md"
+      ]
     }
   ],
   "modules": [
@@ -992,6 +1029,7 @@
     "core-flags",
     "core-gpu",
     "core-guardrails",
+    "core-hyperl",
     "core-inference",
     "core-lifecycle",
     "core-mcp",

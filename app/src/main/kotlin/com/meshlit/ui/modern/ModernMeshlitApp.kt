@@ -65,14 +65,14 @@ fun ModernMeshlitApp() {
     val scope=rememberCoroutineScope()
     var tab by rememberSaveable { mutableStateOf("chat") }
     var settingsDestination by remember { mutableStateOf<String?>(null) }
-    com.meshlit.permissions.FirstLaunchPermissionSetup{tab="permissions"}
+    if(!com.meshlit.BuildProfile.coreCandidate) com.meshlit.permissions.FirstLaunchPermissionSetup{tab="permissions"}
     LaunchedEffect(chats) { chats.ready.await() }
     BackHandler(tab!="chat"){tab="chat"}
     val config=com.meshlit.ui.theme.LocalMeshlitThemeConfig.current
     val glass=config.surfaceStyle==com.meshlit.ui.theme.SurfaceStyle.GLASS
     val colors=MaterialTheme.colorScheme
     val openMenu:()->Unit={scope.launch{drawer.open()}}
-    fun select(id:String) {tab=id;scope.launch{drawer.close()}}
+    fun select(id:String) {tab=if(com.meshlit.BuildProfile.routeAllowed(id)) id else "about";scope.launch{drawer.close()}}
     if(showChatOptions) ChatOptionsDialog(state,chats,onSearchSettings={showChatOptions=false;select("search")}){showChatOptions=false}
     if(showGlobalSearch) GlobalSearchDialog(state,onResult={result,query->
         if(result.conversationId!=null) {
@@ -152,7 +152,7 @@ fun ModernMeshlitApp() {
 private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller:ChatController,engineTag:String,searchOpen:Boolean,searchQuery:String,searchMessageId:String?,onSearchQuery:(String)->Unit,onCloseSearch:()->Unit,onModels:()->Unit,onMedia:()->Unit,onVision:()->Unit,onOptions:()->Unit) {
     var draft by rememberSaveable(state.selectedId) { mutableStateOf("") }
     var showVoice by remember{mutableStateOf(false)}
-    if(showVoice) HandsFreeVoiceDialog(controller){showVoice=false}
+    if(showVoice && !com.meshlit.BuildProfile.coreCandidate) HandsFreeVoiceDialog(controller){showVoice=false}
     val list=rememberLazyListState()
     val scope=rememberCoroutineScope()
     val messages=state.current?.messages.orEmpty()
@@ -249,7 +249,7 @@ private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller
                         keyboardOptions=KeyboardOptions(imeAction=ImeAction.Send),keyboardActions=KeyboardActions(onSend={send()}),
                         colors=TextFieldDefaults.colors(focusedContainerColor=Color.Transparent,unfocusedContainerColor=Color.Transparent,
                             focusedIndicatorColor=Color.Transparent,unfocusedIndicatorColor=Color.Transparent))
-                    IconButton(onClick={showVoice=true},enabled=!state.running){Icon(Icons.Default.Mic,"Hands-free voice conversation")}
+                    if(!com.meshlit.BuildProfile.coreCandidate) IconButton(onClick={showVoice=true},enabled=!state.running){Icon(Icons.Default.Mic,"Hands-free voice conversation")}
                     FilledIconButton(enabled=state.running || canSend,onClick={if(state.running) controller.stop() else send()},modifier=Modifier.size(T.touch),
                         colors=IconButtonDefaults.filledIconButtonColors(containerColor=colors.primary,contentColor=colors.onPrimary)) {
                         Icon(if(state.running) Icons.Default.Stop else Icons.Default.ArrowUpward,

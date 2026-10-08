@@ -1,6 +1,6 @@
 # Meshlit full app guide and configuration tutorial
 
-Updated 2026-10-08. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
+Updated 2026-10-09. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
 
 ## Start here: what Meshlit does
 
@@ -331,3 +331,18 @@ rates or infers tokens from text. Missing/stale evidence uses Manual visibly;
 local/provider/router/tool-loop usage does not qualify as cluster power.
 Detailed limits, setup, permission matrix and examples:
 [Search and cluster output guide](SEARCH_AND_CLUSTER_OUTPUT.md).
+
+
+## Core Candidate, HyperL and SSH/VM nodes
+
+Core Candidate installs separately from Experimental, with independent chats, settings, models, keys and agreement records. It permits local chat, model transfers and files, and blocks experimental managed operations and model-directed tools. It remains a qualification candidate: shared inactive code, the SDK telemetry limitation, physical-device acceptance and production signing are still documented gates.
+
+Settings → HyperL libraries uses the separately licensed alpha.6 module. Read its offline notices and explicitly enable it before selecting Kotlin reference or Native C99 CPU. Twelve recipes and precise sum are bounded preprocessing, not the chat engine or a GPU/full-model runtime. API 26+ dataset import/rekey streams encrypted chunks; private no-backup raw key files are not hardware Keystore protection. Plaintext export and deletion need explicit human actions. Clearing data loses these datasets and keys.
+
+Settings → SSH nodes and connections supports both directions. Outbound hosts require independent fingerprint verification and encrypted credentials. On API 26+, enrol a client public key and explicit scopes, choose an assigned private IPv4/loopback address, then Start SSH into this app node. No password login, interactive shell, SFTP or forwarding is exposed. Use status or documented JSON node commands. Stop ends the listener; completed remote effects are not undone. Internet access needs a compatible owner-configured private network/VPN.
+
+Conversation and token settings → VM and SSH node tools is default off. Per-chat selection does not create permissions: saved/global SSH and VM grants, outbound action allowlists and remote key scopes remain separate. Agents cannot edit grants, enrol keys or use human app diagnostics/root paths. The tiny starter model is not qualified for reliable tool planning; invalid plans fail before dispatch.
+
+VM tools require a compatible installed QEMU executable, trusted bootable guest and verified guest SSH configuration. Path/configuration acceptance is not a successful guest boot. Agent activation remains off by default, with committed human opt-in and revocation. APP/PRoot/chroot modes are not strong arbitrary-code isolation. Check the displayed artifact/state errors; no VM runtime or guest is automatically downloaded or installed.
+
+Details: docs/architecture/PRODUCTION_CHANNELS.md, docs/hyperl/ANDROID_ALPHA6.md and docs/SSH_NODE.md.

@@ -60,6 +60,7 @@ include(
     ":core-orchestration",
     ":core-advanced-engines",
     ":core-gpu",
+    ":core-hyperl",
     ":core-net",
     ":core-observability",
     // Phase 6 — versioned peer-to-peer federation protocol.

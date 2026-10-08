@@ -20,19 +20,19 @@ class RuntimeMcpTools(private val host: RuntimeHost) {
         },
         McpToolSpec(name = "vm_start", description = "Start the user-configured Linux VM only " +
             "when a task needs guest tools. Requires the user's agent-VM opt-in. " +
-            "Uses a RAM budget, restricted networking and an ephemeral disk overlay.") {
+            "Uses operator-saved RAM, network and disk policy.") {
             requireAgentPermission()?.let { return@McpToolSpec it }
             val state = host.startVm(agentRequested = true)
             McpToolResult.Json(buildJsonObject { put("state", state.name); put("ssh_ready", state == VmState.SSH_READY) })
         },
         McpToolSpec(name = "vm_wait", description = "Wait up to 45 seconds for guest SSH readiness.") {
             requireAgentPermission()?.let { return@McpToolSpec it }
-            val ready = host.vm.waitForSsh()
+            val ready = host.waitForGuest(agentRequested=true)
             McpToolResult.Json(buildJsonObject { put("ssh_ready", ready); put("state", host.vm.state.name) })
         },
-        McpToolSpec(name = "vm_stop", description = "Stop the optional VM and discard ephemeral guest changes.") {
+        McpToolSpec(name = "vm_stop", description = "Stop the optional VM. Ephemeral changes are discarded; persistent disk writes remain.") {
             requireAgentPermission()?.let { return@McpToolSpec it }
-            host.stopVm()
+            host.stopVm(agentRequested=true)
             McpToolResult.Json(buildJsonObject { put("state", "STOPPED") })
         },
         McpToolSpec(name = "vm_exec", description = "Run a bounded batch command in the configured " +
@@ -58,7 +58,7 @@ class RuntimeMcpTools(private val host: RuntimeHost) {
             if (host.config().mode != RuntimeMode.VM_SSH || host.vm.state != VmState.SSH_READY) {
                 return@McpToolSpec McpToolResult.Error(McpToolResult.ErrorCode.PERMISSION_DENIED, "Configure verified VM SSH and wait for guest readiness")
             }
-            val result = host.executeGuest(argv.filterNotNull())
+            val result = host.executeGuest(argv.filterNotNull(),agentRequested=true)
             McpToolResult.Json(buildJsonObject {
                 put("exit_code", result.exitCode?.let(::JsonPrimitive) ?: JsonNull)
                 put("stdout", result.stdout); put("stderr", result.stderr)

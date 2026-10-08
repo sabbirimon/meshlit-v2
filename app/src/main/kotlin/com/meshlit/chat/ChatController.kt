@@ -13,9 +13,9 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.UUID
 
-@Serializable data class ChatOptions(val onlineProfileId:String?=null,val systemPrompt:String="",val maxTokens:Int=1024,val temperature:Float=0.7f,val historyMessages:Int=10,val routeId:String?=null,val routeScenario:String="general",val webTools:Boolean=false,val phoneTools:Boolean=false,val memoryTools:Boolean=false,val showTokenStats:Boolean=true,val localSearchTools:Boolean=false,val outputBudgetMode:OutputBudgetMode=OutputBudgetMode.MANUAL,val outputTargetSeconds:Int=30) {
-    val usesLocalTools get()=webTools || phoneTools || memoryTools || localSearchTools
-    fun validate(){require(outputTargetSeconds in 5..120);require(!usesLocalTools || (onlineProfileId==null && routeId==null)){"Chat tools currently require an on-device model"};require(routeId==null || routeId=="__auto__" || routeId.matches(Regex("[A-Za-z0-9_-]{1,64}")));require(routeScenario.matches(Regex("[a-z0-9_-]{1,40}")));require(routeId==null || (onlineProfileId==null && maxTokens<=1024));require(systemPrompt.length<=4000 && maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f && historyMessages in 0..20)}
+@Serializable data class ChatOptions(val onlineProfileId:String?=null,val systemPrompt:String="",val maxTokens:Int=1024,val temperature:Float=0.7f,val historyMessages:Int=10,val routeId:String?=null,val routeScenario:String="general",val webTools:Boolean=false,val phoneTools:Boolean=false,val memoryTools:Boolean=false,val showTokenStats:Boolean=true,val localSearchTools:Boolean=false,val outputBudgetMode:OutputBudgetMode=OutputBudgetMode.MANUAL,val outputTargetSeconds:Int=30,val nodeTools:Boolean=false) {
+    val usesLocalTools get()=webTools || phoneTools || memoryTools || localSearchTools || nodeTools
+    fun validate(){require(!nodeTools || (!webTools && !phoneTools)){"Choose node tools separately from web/phone tools"};require(outputTargetSeconds in 5..120);require(!usesLocalTools || (onlineProfileId==null && routeId==null)){"Chat tools currently require an on-device model"};require(routeId==null || routeId=="__auto__" || routeId.matches(Regex("[A-Za-z0-9_-]{1,64}")));require(routeScenario.matches(Regex("[a-z0-9_-]{1,40}")));require(routeId==null || (onlineProfileId==null && maxTokens<=1024));require(systemPrompt.length<=4000 && maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f && historyMessages in 0..20)}
 }
 @Serializable data class ChatMessage(val id:String=UUID.randomUUID().toString(),val role:String,val text:String,val usage:ChatTokenUsage?=null)
 @Serializable data class ChatConversation(val id:String=UUID.randomUUID().toString(),val title:String="New chat",
@@ -68,7 +68,7 @@ class ChatController(private val context:Context,private val coordinator:Inferen
         appScope.launch { runCatching { save() } }
     }
     fun setOptions(options:ChatOptions) {
-        options.validate();check(!_state.value.running)
+        options.validate();com.meshlit.BuildProfile.requireChat(options);check(!_state.value.running)
         if(_state.value.current==null) newChat()
         _state.update{old->old.copy(conversations=old.conversations.map{if(it.id==old.selectedId) it.copy(options=options) else it})}
         appScope.launch{runCatching{save()}.onFailure{error->_state.update{it.copy(error="Cannot save chat options: ${error.javaClass.simpleName}")}}}
@@ -84,6 +84,9 @@ class ChatController(private val context:Context,private val coordinator:Inferen
         val user=ChatMessage(role="user",text=text.trim())
         val assistant=ChatMessage(role="assistant",text="")
         val configured=_state.value.current!!.options
+        try { configured.validate();com.meshlit.BuildProfile.requireChat(configured) } catch(e:Exception) {
+            _state.update { it.copy(error=e.message) };return null
+        }
         val decision=budgetDecision(configured)
         val options=configured.copy(maxTokens=decision.limit)
         val history=_state.value.current!!.messages.filter{it.text.isNotBlank()}.takeLast(options.historyMessages)

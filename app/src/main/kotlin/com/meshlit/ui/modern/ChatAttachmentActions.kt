@@ -40,9 +40,9 @@ import java.nio.charset.CodingErrorAction
     }
     IconButton(enabled=enabled && !busy,onClick={menu=true}){Icon(Icons.Default.Add,"Add photo, file or chat options")}
     DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
-        DropdownMenuItem(text={Text("Photo or camera")},onClick={menu=false;onVision()})
+        if(!com.meshlit.BuildProfile.coreCandidate) DropdownMenuItem(text={Text("Photo or camera")},onClick={menu=false;onVision()})
         DropdownMenuItem(text={Text("Attach UTF-8 text files")},onClick={menu=false;pick.launch(arrayOf("text/*","application/json","application/xml","application/javascript"))})
-        DropdownMenuItem(text={Text("Generate images, audio or video")},onClick={menu=false;onMedia()})
+        if(!com.meshlit.BuildProfile.coreCandidate) DropdownMenuItem(text={Text("Generate images, audio or video")},onClick={menu=false;onMedia()})
         DropdownMenuItem(text={Text("Chat options and model routing")},onClick={menu=false;onOptions()})
     }
     error?.let{message->AlertDialog(onDismissRequest={error=null},title={Text("Attachment could not be read")},text={Text(message)},confirmButton={TextButton(onClick={error=null}){Text("OK")}})}

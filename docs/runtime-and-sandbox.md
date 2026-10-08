@@ -134,3 +134,7 @@ HTTPS with supplied SHA-256 and exact size. Maximum 8 GiB, thirty-minute deadlin
 Imports are serialized, atomic and remove incomplete staging. Compatible Android
 QEMU/native packaging, trusted distro catalogues and actual guest acceptance remain
 separate work. Imported Linux executables are not automatically Android-compatible.
+
+## SSH node and agent revocation (2026-10-09)
+
+Experimental [SSH node commands](SSH_NODE.md) can reach the configured guest with per-key control/execution scopes. Agent activation uses committed, default-off consent; revocation cancels waits/commands and stops agent-started VMs. Global VM policy is checked in session maintenance. Human app diagnostic commands are fixed to APP regardless of the selected root backend. The Core candidate removes the VM/SSH services and blocks their operation gates. None of these controls bundles or qualifies QEMU/guest artifacts.

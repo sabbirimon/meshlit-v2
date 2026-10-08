@@ -40,6 +40,7 @@ class WorkbenchUiDeviceTest {
     @Test fun navigationEditorsValidationCpuSourceAndFailureControls() {
         val context=InstrumentationRegistry.getInstrumentation().targetContext
         assertTrue("Owner must accept the app's legal agreement manually before UI qualification",LegalAgreementStore(context).accepted())
+        assertTrue("Owner must explicitly enable optional HyperL alpha.6 terms", context.getSharedPreferences("hyperl-alpha6",android.content.Context.MODE_PRIVATE).getBoolean("community-1-enabled",false))
         compose.waitUntil(180_000){compose.onAllNodesWithContentDescription("Menu").fetchSemanticsNodes().isNotEmpty() || compose.onAllNodesWithTag("boot-open-app").fetchSemanticsNodes().isNotEmpty()}
         if(compose.onAllNodesWithTag("boot-open-app").fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithTag("boot-open-app").performClick()
         if(compose.onAllNodesWithText("Later").fetchSemanticsNodes().isNotEmpty()) compose.onNodeWithText("Later").performClick()

@@ -29,7 +29,7 @@ import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun ModernSettingsScreen(initialDestination:String?=null,onExit:(()->Unit)?=null,onMenu:(()->Unit)?=null,onDestinationChanged:(String?)->Unit={}) {
-    var destination by rememberSaveable{mutableStateOf(initialDestination)}
+    var destination by rememberSaveable{mutableStateOf(initialDestination?.takeIf { com.meshlit.BuildProfile.routeAllowed(it) })}
     var query by rememberSaveable{mutableStateOf("")}
     LaunchedEffect(destination){onDestinationChanged(destination)}
     val context=LocalContext.current
@@ -96,7 +96,8 @@ import kotlinx.coroutines.*
                     }}}
                     "about" -> item{Card{Column(Modifier.padding(T.large),verticalArrangement=Arrangement.spacedBy(T.small)){
                         Text("Meshlit ${com.meshlit.BuildConfig.VERSION_NAME}",style=MaterialTheme.typography.titleLarge)
-                        Text("Local inference: RunAnywhere llama.cpp. Layer execution: optional experimental RPC workers. Linux and Crawl4AI require separately installed companions.")
+                        Text("Channel: ${com.meshlit.BuildProfile.name}")
+                        Text(if(com.meshlit.BuildProfile.coreCandidate) "Local chat, models and user-selected files. Separate package and storage from Experimental. Device endurance, SDK network privacy and release signing are still qualification gates." else "Local inference: RunAnywhere llama.cpp. Layer execution: optional experimental RPC workers. Linux and Crawl4AI require separately installed companions.")
                         Text("Legacy settings for account tiers, automatic model download, custom GPU layer counts and transport policy are not connected by this menu. They are not presented as functioning switches.")
                         Text("Project and third-party notices are maintained in the repository LICENSE and vendored source notices.")
                     }}}

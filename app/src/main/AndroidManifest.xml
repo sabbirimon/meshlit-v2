@@ -237,6 +237,9 @@
             </intent-filter>
         </receiver>
 
+        <service android:name=".ssh.NodeSshService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="Human-started public-key SSH node session on an explicit private interface" />
+        </service>
         <service android:name=".models.ModelDownloadService" android:exported="false" android:foregroundServiceType="dataSync" />
         <service android:name=".chat.ChatInferenceService" android:exported="false" android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User initiated on-device model generation" />

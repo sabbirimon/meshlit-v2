@@ -10,8 +10,10 @@ import com.meshlit.core.mcp.*
  * saved delegation, OS permission and operation checks. No generic shell tool. */
 class LocalChatTools(private val inference:InferenceCoordinator,private val gate:OperationGate,private val registry:()->McpToolRegistry,private val search:()->com.meshlit.search.AppSearchService) {
     suspend fun run(prompt:String,options:ChatOptions,status:(String)->Unit):LocalToolAnswer=gate.run(ManagedFeature.AUTOMATION,true) {
+        options.validate();com.meshlit.BuildProfile.requireChat(options)
         val model=inference.loadedModel() ?: error("Load a local model before enabling tools")
         val names=buildSet {
+            if(options.nodeTools) addAll(listOf("vm_status","vm_start","vm_wait","vm_stop","vm_exec","ssh_nodes","ssh_node_request"))
             if(options.memoryTools) add("personal_memory")
             if(options.webTools) addAll(listOf("crawl_url","web_search","search_access"))
             if(options.localSearchTools) add("app_search")

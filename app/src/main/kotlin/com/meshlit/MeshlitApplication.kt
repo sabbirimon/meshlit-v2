@@ -259,12 +259,14 @@ class MeshlitApplication : android.app.Application() {
         // with `awaitAll` after the sequential prefix.
         appScope.launch {
             com.meshlit.legal.LegalAgreementStore(this@MeshlitApplication).awaitAccepted()
+            if(!BuildProfile.coreCandidate) {
             appScope.launch(kotlinx.coroutines.Dispatchers.IO) { get<com.meshlit.observability.AuditTelemetry>().start() }
             startHooksFeed(appScope, settingsRepository)
             try {
                 get<com.meshlit.agent.AgentCapabilityRegistrar>().start()
             } catch (t: Throwable) {
                 log.error("app.agent_reg.fail", "AgentCapabilityRegistrar.start failed", t)
+            }
             }
             try {
                 inferenceCoordinator.runAnywhereEngine().initialize(this@MeshlitApplication)
@@ -277,6 +279,10 @@ class MeshlitApplication : android.app.Application() {
             // A managed installed model loads after SDK initialization and library reconciliation.
             launch { get<com.meshlit.models.ModelLibrary>().loadAtBoot() }
 
+            if(BuildProfile.coreCandidate) {
+                runSystemProbe()
+                return@launch
+            }
             // Independent subsystems run concurrently after the prefix.
             coroutineScope {
                 val jobs = listOf(

@@ -19,5 +19,6 @@
         <service android:name="com.meshlit.core.cloudmcp.android.MeshlitAccessibilityService" tools:node="remove" />
         <service android:name="com.meshlit.core.net.capture.MeshlitCaptureVpnService" tools:node="remove" />
         <receiver android:name="com.meshlit.network.termux.TermuxResultReceiver" tools:node="remove" />
+        <service android:name=".ssh.NodeSshService" tools:node="remove" tools:targetApi="26" />
     </application>
 </manifest>

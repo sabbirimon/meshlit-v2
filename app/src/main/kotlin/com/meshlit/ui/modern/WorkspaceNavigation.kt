@@ -41,10 +41,10 @@ object WorkspaceDestinations {
         "cloud","providers","gateway","external","peers","openclaw","automation","termux","crawler","hooks" -> "Connections"
         else -> "Preferences"
     }
-    val all:List<WorkspaceDestination> = primary+SettingsDestinations.all.filter{entry->primary.none{it.id==entry.id}}.map { entry ->
+    val all:List<WorkspaceDestination> = primary.filter { com.meshlit.BuildProfile.routeAllowed(it.id) }+SettingsDestinations.all.filter{entry->primary.none{it.id==entry.id}}.map { entry ->
         WorkspaceDestination(entry.id,when(entry.id){"network"->"Networking";"securitylab"->"Security Lab";else->entry.title},entry.description,group(entry.id),entry.keywords)
     }
-    val shortcuts=listOf("monitor","network","ssh","securitylab")
+    val shortcuts=listOf("monitor","network","ssh","securitylab").filter { id -> all.any { it.id == id } }
     val settingsIds=SettingsDestinations.all.map{it.id}.toSet()-setOf("models","monitor")
     fun search(query:String):List<WorkspaceDestination> {
         val words=query.trim().split(Regex("\\s+")).filter{it.isNotBlank()}
@@ -79,7 +79,7 @@ internal fun WorkspaceSidebar(state:ChatState,current:String,style:SidebarStyle,
             }
             Column(Modifier.weight(1f).padding(start=T.medium)) {
                 Text("Meshlit",style=MaterialTheme.typography.titleMedium)
-                Text("Your AI workspace",style=MaterialTheme.typography.labelSmall,color=colors.onSurfaceVariant)
+                Text(com.meshlit.BuildProfile.name,style=MaterialTheme.typography.labelSmall,color=colors.onSurfaceVariant)
             }
             IconButton(onClick={onSelect("settings")}) {Icon(Icons.Default.Settings,"Settings")}
         }

@@ -622,3 +622,44 @@ Load, non-empty local generation and Unload. Review static checks pass; live web
 remote settings, physical cluster, microphone and new wireless tests remain
 separate gates. Exact artifacts, timings and limitations are recorded in the
 device ledger. Human grants and the owner's selected chat/options are preserved.
+
+## HyperL alpha.6, Core Candidate and bidirectional SSH — 2026-10-09
+
+Build 38 integrates the separately licensed `core-hyperl` alpha.6 module with four-ABI
+native C99 preprocessing, precise sum, twelve recipes and bounded encrypted
+dataset import/verification/rekey/export. The human-only workbench is optional;
+ordinary local model, prompt/history, streaming and modern reply UI remain in place.
+
+Core Candidate installs independently from Experimental and blocks advanced
+operations, hosted routes and model-directed tools. Shared inactive dependencies
+remain, and development SDK network behavior is still a production privacy gate.
+The owner's ordered three-stage/device-category qualification plan and supplied
+architectural evaluation review distinguish implemented behavior from proposals.
+
+Experimental supports both SSH directions: encrypted persistent host identity,
+public-key scopes, private/loopback human-started lease and bounded JSON commands;
+outbound profiles retain mandatory pins and explicit agent action allowlists.
+Committed default-off VM agent permission, immediate revocation, registered work
+cancellation, global/profile/remote checks and bounded local tool plans are wired.
+Agents cannot configure keys/permissions or use human root/app-diagnostic paths.
+A compatible installed runtime, trusted bootable guest and verified guest identity
+remain necessary; no VM is bundled or automatically installed.
+
+Final affected-app validation passes in 16m18s; final doc/notice packaging in 2m04s.
+Retained targeted JVM evidence totals 894 cases: 893 pass, one older optional
+external SSH fixture skip, zero failures/errors. Real TCP SSH denial/revocation/Stop
+tests pass, as do host JNI, sanitized C contracts/4,096 seeded cases, nine crawler
+cases and provenance/feature checks. All three APKs/lints pass with zero errors;
+warning/hint counts and exact hashes are in docs/VALIDATION_BUILD_38.md. Core is
+non-debuggable, with separate package/consent/keys and the expected three services.
+Developer signatures, full pinned model/notices/policy/guide equality and four-ABI/
+24 ARM64 ELF plus ZIP 16 KiB packaging pass. Production signing and device runtime
+acceptance are not asserted. Notices version 2026-10-09.1 require fresh human
+acceptance without changing optional grants.
+
+ADB has no connected device: build-38 instrumentation compiled but was not run.
+Samsung build-37 proof remains historical. Windows/Xiaomi configuration, physical
+SSH/VM/lifecycle/thermal/privacy, multi-phone recovery and Internet client tests
+remain gates. Final universal installers/test APK are kept outside the checkout;
+0.963 GiB of duplicate generated ABI installers was reclaimed. No source, owner
+keys, model assets or earlier retained fallback installers were deleted.

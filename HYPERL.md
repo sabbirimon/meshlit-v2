@@ -52,3 +52,9 @@ in generated code sort names (`w`, then `x` in this example). Validate shapes an
 aliasing before any native execution. The source emitter does not compile or load
 untrusted code. The unit host check uses installed Clang; missing Clang is an
 explicit skipped host check, not proof of another backend.
+
+## Android alpha.6 integration
+
+The shared workbench now uses the separately licensed `core-hyperl` module for
+Kotlin/native C99 execution, precise sums and encrypted dataset operations. The
+old Apache `core-gpu` port is preserved. Read the [alpha.6 integration guide](docs/hyperl/ANDROID_ALPHA6.md) for licence opt-in, Android/API limits, safety boundaries and validation.
