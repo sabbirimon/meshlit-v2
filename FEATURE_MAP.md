@@ -391,13 +391,15 @@ execution remain unverified. Full red/blue tool adapters remain future acceptanc
 
 ## 2026-10-08 continuation
 
-Current inventory: **74 feature areas, 38 durable operations, 33 modules**.
+Current inventory: **75 feature areas, 38 durable operations, 33 modules**.
 Counts describe source/plans, not completion. New areas include manual replica
 metadata, MCP/A2A connectors, Terraform saved-plan and storage/DSP companions,
 managed stop/capacity dashboard, unified routing, SDK/topology probes, platform/native
 contracts and authenticated network measurements. See
 [continuation](docs/CONTINUATION_2026_10_08.md) and
 [platform plan](docs/PLATFORM_ADAPTER_PLAN.md) for explicit acceptance boundaries.
-HyperL remains on the separate `codex/hyperl-experimental` branch; no HyperL runtime
-is integrated into this application build. Meshlit's intended scope is AI software
+HyperL foundation was owner-merged through PR #1. The production-library port adds
+a human-only Settings workbench, twelve CPU recipes, memory admission and controlled
+source generation. [Workflow/provenance](docs/hyperl/APP_AND_LIBRARY.md) records its
+boundaries; mobile GPU/model execution is not implemented by this screen. Meshlit's intended scope is AI software
 across hosts and clusters; current APK installation remains Android-only.

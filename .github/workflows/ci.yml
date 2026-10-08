@@ -39,7 +39,9 @@ jobs:
       - name: Prepare real pinned starter model
         run: python3 scripts/prepare-bundled-model.py
       - name: Validate feature references
-        run: python3 scripts/validate-feature-map.py
+        run: |
+          python3 scripts/validate-feature-map.py
+          python3 scripts/check-hyperl-port.py
       - name: Assemble, unit checks and fatal lint
         env:
           FLAVOR: ${{ matrix.flavor }}

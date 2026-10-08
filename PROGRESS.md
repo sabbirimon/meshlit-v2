@@ -2,15 +2,43 @@
 
 Updated 2026-10-08. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
-Branch: `codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
+Current review branch: `codex/hyperl-production-library`; previous publication branch
+`codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
 to `sabbirimon/meshlit-v2` on 2026-10-07, followed by GitHub beta APK release assets
 and a separate Play review build. No force push or Play submission is authorized.
 Historical upstream records in `docs/history/` are not current test evidence.
 
-`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **74 feature areas,
+`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **75 feature areas,
 38 durable command operations and 33 modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
+
+## HyperL app port — 2026-10-08
+
+The review branch adds Settings → HyperL libraries to both flavors: twelve actual
+CPU recipes, strict JSON, complete-graph memory admission, editable examples,
+Stop, Metal/Vulkan source generation and explicit clipboard copying. Source
+port provenance pins six Apache-2.0 files to standalone HyperL tag source d330d2b;
+namespace-normalized hashes match. Runtime/ABI remain version 1. The human-only
+controller is bounded and shares HYPERL per-function/global emergency controls.
+
+Local validation passes: 36 core-gpu, 27 core-common, 120 core-mcp, 14 sandbox,
+46 network, 260 inference and 133 app tests per flavor: **769 cases, zero
+failures/errors/skips**. The first app/core/build/lint run passes in 24m40s;
+the required regression and final help/APK/lint run passes in 13m35s. Both Full
+flavors build ARM64, x86_64 and universal debug APKs. ARM64 payload inspection
+finds the real 105,454,432-byte starter model and HyperL controller classes.
+Fatal lint remains enabled: **zero errors/fatals, 350 warnings and 17 hints per
+flavor**. Nine crawler unit checks pass using the existing crawler virtualenv;
+system/bundled Python initially lacked FastAPI. No live crawler/device proof is
+inferred. Offline HTML help and its APK asset are byte-identical; the feature
+map validates 75 areas, 38 durable operations and 33 modules.
+
+No APK was installed on a physical phone; those tests remain paused. Android
+GPU/NPU/model execution, distributed HyperL jobs, SDK publishing, signing,
+installation/lifecycle/thermal acceptance and independent security review remain
+gates. Standalone desktop installers and Radeon evidence are separate from this
+app port. [Use cases and boundaries](docs/hyperl/APP_AND_LIBRARY.md) explain it.
 
 ## Current publication validation (2026-10-07)
 

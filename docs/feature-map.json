@@ -918,6 +918,21 @@
       "authority": [
         "human setup; saved agent delegation remains separate"
       ]
+    },
+    {
+      "id": "hyperl-libraries",
+      "title": "HyperL local preprocessing and source workbench",
+      "status": "implemented",
+      "sources": [
+        "core-gpu/src/main/kotlin/com/meshlit/core/gpu/HyperLLibrary.kt",
+        "core-gpu/src/main/kotlin/com/meshlit/core/gpu/HyperLAdmission.kt",
+        "app/src/main/kotlin/com/meshlit/hyperl/HyperLWorkbenchController.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/HyperLScreen.kt"
+      ],
+      "authority": [
+        "HYPERL",
+        "HUMAN_ONLY"
+      ]
     }
   ],
   "modules": [

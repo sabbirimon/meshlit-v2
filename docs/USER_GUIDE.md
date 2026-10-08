@@ -215,3 +215,15 @@ Open Settings → Audit and telemetry. Local collection defaults off. Enable it 
 Optional OpenTelemetry uses your HTTPS OTLP base URL and encrypted, endpoint-bound headers. The app adds /v1/traces and /v1/metrics; select OTLP collector mode to send metadata traces, counters, duration histograms and device gauges. Use Grafana Cloud, an owner-controlled Collector/Alloy, Tempo plus a metrics backend or another compatible destination. A successful flush does not prove a dashboard stored the data. Local audit collection and tracing mode have separate switches.
 
 Prompts, replies, credentials, URLs, paths and command arguments are excluded. Unknown sensor/token values remain absent. History is bounded and asynchronous; crashes can lose pending batches. This is not a tamper-proof compliance ledger. Meshlit switches do not establish vendor SDK telemetry opt-out. Detailed coverage, dashboard template and collector recipe: docs/AUDIT_TELEMETRY.md.
+
+## HyperL local libraries
+
+Open Settings → HyperL libraries in either app flavor. Choose one of twelve recipes,
+review/edit the program and inputs, select an array budget and Validate before Run CPU.
+Weighted ReLU uses x=[-1,2,3], w=[2,3,4] and returns [0,6,12]. Stop cancels local work.
+HyperL per-function controls and emergency stop apply to execution/source generation;
+resumption remains human-controlled. Metal/Vulkan exports are source only, reductions
+are CPU-only, and Copy output explicitly uses the OS clipboard. No root, VM, cloud
+account, network or agent invocation is required. Editors are transient and bounded
+to 65,536 characters; results preview 256 values. Full models, GPU/NPU dispatch and
+distributed jobs remain later. Details: docs/hyperl/APP_AND_LIBRARY.md.

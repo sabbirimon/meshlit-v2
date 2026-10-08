@@ -4,7 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.Serializable
 
-@Serializable enum class ManagedFeature { INFERENCE, MODEL_TRANSFERS, CLUSTER, GATEWAY, CLOUD, SSH, BROWSER, CYBER, VM, TRAINING, MEDIA, RECOVERY, AUTOMATION, FILES, CRAWLER }
+@Serializable enum class ManagedFeature { INFERENCE, MODEL_TRANSFERS, CLUSTER, GATEWAY, CLOUD, SSH, BROWSER, CYBER, VM, TRAINING, MEDIA, RECOVERY, AUTOMATION, FILES, CRAWLER, HYPERL }
 @Serializable data class OperationPolicy(val emergencyStopped: Boolean = false,
     val disabled: Set<ManagedFeature> = emptySet(), val agentDisabled: Set<ManagedFeature> = emptySet())
 /** Admission and cancellation are independent of model output. Only the trusted human

@@ -29,6 +29,7 @@ object SettingsDestinations {
         SettingsDestination("device","Device","Device profile, name and hardware capabilities",keywords="role chipset gpu peripherals"),
         SettingsDestination("tasks","Task manager","Plan tasks, track real jobs, bulk finish and stop operations",keywords="todo priorities tags due subtasks queue retry cancel agent"),
         SettingsDestination("ide","Code workspace","Offline source editor, files, syntax highlighting and search",keywords="IDE VS Code programming Kotlin Python JavaScript JSON develop"),
+        SettingsDestination("hyperl","HyperL libraries","Local AI preprocessing recipes, memory validation and kernel source",keywords="hyperl compute library vector affine dot relu CPU GPU Metal Vulkan programming"),
         SettingsDestination("permissions","App permissions","Optional setup, runtime grants and Android accessibility",keywords="first launch camera microphone location nearby Bluetooth security"),
         SettingsDestination("files","Files and storage","Browse, preview AI assets and stream ZIP creation/extraction",keywords="SAF copy move share export folders zip unzip archive GGUF safetensors ONNX JSONL datasets tokenizer"),
         SettingsDestination("termux","Termux integration","Probe an installed shell, manage delegation and view its audit",true,"terminal commands Linux tools networking"),

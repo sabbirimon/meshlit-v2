@@ -62,6 +62,7 @@ import kotlinx.coroutines.*
     if(destination=="files"){FileManagerScreen(back);return}
     if(destination=="termux"){ExistingTermuxSettings(back);return}
     if(destination=="ide"){com.meshlit.ide.CodeWorkspaceScreen(back);return}
+    if(destination=="hyperl"){HyperLScreen(back);return}
     if(destination=="permissions"){com.meshlit.permissions.PermissionSetupScreen(back);return}
     if(destination=="openclaw"){OpenClawScreen(back);return}
     if(destination=="audit"){AuditTelemetryScreen(back);return}
@@ -195,6 +196,6 @@ private fun settingsIcon(id:String)=when(id){
     "help"->Icons.Default.HelpOutline
     "logs","monitor","audit"->Icons.Default.Insights
     "permissions"->Icons.Default.Security
-    "ide","termux","runtime","hooks"->Icons.Default.Code
+    "ide","hyperl","termux","runtime","hooks"->Icons.Default.Code
     else->Icons.Default.Settings
 }

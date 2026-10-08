@@ -3,8 +3,8 @@
 HyperL began on `codex/hyperl-experimental` and the owner merged its source into
 `main` through [PR #1](https://github.com/sabbirimon/meshlit-v2/pull/1), merge
 `851576bdd0c9daaea71f32f5daac8720671c6453`, on 2026-10-08. It remains an
-experimental Apache-2.0 CPU library/source emitter within `core-gpu`, with no app
-workflow or native accelerator runtime integration. Start with [owner requests and build plan](docs/hyperl/REQUESTS_AND_PLAN.md),
+experimental Apache-2.0 CPU library/source emitter within `core-gpu`, with a bounded app recipe workflow added on the production-library review branch.
+Native mobile accelerator runtime integration remains unavailable. Start with [owner requests and build plan](docs/hyperl/REQUESTS_AND_PLAN.md),
 [language v1](docs/hyperl/LANGUAGE_V1.md) and [research](docs/hyperl/RESEARCH_2026_10_08.md).
 
 Implementation: `core-gpu` HyperL files and tests; `examples/hyperl`.
@@ -28,7 +28,8 @@ programming guide is maintained in that repository's `docs/USER_GUIDE.md`.
 The owner also requested memory-aware execution: standalone CPU heap/environment
 observations, full-DAG byte estimates and preflight admission evolve there, with
 HBM/unified GPU/NUMA/CXL/SSD/NVMe adapters and the full SDK kept as later milestones.
-Those new controls are not integrated into this Android foundation.
+The alpha.5 source port adds these CPU controls, the common JSON codec and twelve
+recipes to this Android foundation. See [app workflow and provenance](docs/hyperl/APP_AND_LIBRARY.md).
 
 Meshlit targets dynamic AI deployments across hosts and clusters; phones are one
 client. Direct hardware/driver/kernel and low-latency native networking are future
@@ -42,7 +43,8 @@ Use Java 21, the repository's Android SDK and pinned Gradle dependencies:
 ./gradlew :core-gpu:testDebugUnitTest --no-daemon --max-workers=1
 ```
 
-`HyperLCpuBackend` is a Kotlin library API; it has no standalone installer yet.
+`HyperLCpuBackend` is a Kotlin library API. The separate HyperL repository supplies
+desktop installers; this Android app uses Settings → HyperL libraries.
 Deserialize `examples/hyperl/elementwise.json` as `HyperLProgram`, pass finite f32
 `x`/`w` arrays to `HyperLRuntime.execute(CPU_REFERENCE, program, inputs)`, or call
 `HyperLSourceEmitter.emit(program, LLVM_CPU)` to obtain C99 text. Input bindings
