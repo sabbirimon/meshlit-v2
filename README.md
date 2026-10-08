@@ -47,6 +47,9 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 | Context and KV cache | Native context/thread/cache controls and encrypted local CPU KV checkpoints | Backend capabilities differ; distributed/portable KV recovery and replicated failover remain unfinished |
 | Agent and task tools | Typed human/agent commands, saved delegation scopes, encrypted durable jobs, cancellation/retry and task/subtask management | Planning status is separate from execution; direct legacy adapters have separate coverage |
 | Online AI and routing | Encrypted compatible provider profiles, explicit offline/online selection, scenario recipes, model chains and comparisons | Paid provider calls need credentials; public catalogs do not establish free inference or account entitlement |
+| Local model tools | Default-off web-page and scoped phone tools through a bounded JSON planning loop; permission Manage buttons and Android package confirmation workflows | Requires a suitable model and separate saved/OS grants. No silent app administration or in-app ADB adapter. [Setup and limits](docs/LOCAL_MODEL_TOOLS.md) |
+| Memory and voice | Optional encrypted preference recall, personality and one local native retry; separately selected offline/online speech adapters | Default off; real microphone/provider conversation acceptance and wider voice packs remain. [Setup](docs/MEMORY_AND_VOICE.md) |
+| Client hub | Scoped expiring client keys for buffered model/MCP/A2A endpoints | Loopback, screen-bound; remote encrypted transport and web companion require operator setup. [Client guide](docs/CLIENT_HUB.md) |
 | Devices and integrations | Pairing/enrollment, QR/manual verification, SSH host pins, OpenClaw adapter, scoped Android automation, browser sessions | Live host/device integration gates remain. A web/SSH member is not automatically a transformer worker |
 | Cloud and credentials | AWS, Azure, GCP, DigitalOcean, OpenRouter and custom **read** adapters; resource/cost views; reusable encrypted environments | Full vendor administration, automatic IaC deployments and authenticated account validation are not complete |
 | HyperL libraries | Twelve offline CPU preprocessing recipes; editable JSON, memory admission, Stop and Metal/Vulkan source export | Human-only Settings workflow; source generation is separate from GPU execution. [Guide and limits](docs/hyperl/APP_AND_LIBRARY.md) |
@@ -59,6 +62,10 @@ GPU/NPU adapters and IoT companions are future work. Raspberry Pi, ESP32, Arduin
 NAS and network appliances can eventually contribute storage, sensors, capture,
 preprocessing, routing or tools according to real capability. Listing a device
 category does not imply that it can execute transformer layers.
+
+[Samsung single-phone test record](docs/DEVICE_TESTING_2026-10-08.md) separates
+actual app execution, UI checks and benchmarks from standalone GPU experiments
+and the remaining cluster/integration gates.
 
 ## A calmer mobile workspace
 

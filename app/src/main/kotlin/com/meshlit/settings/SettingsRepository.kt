@@ -62,6 +62,8 @@ open class SettingsRepository(private val context: Context) {
             dynamicColors = prefs[Keys.dynamicColors] ?: MeshlitThemeConfig.Default.dynamicColors,
             uiFont = com.meshlit.ui.theme.UiFont.entries.firstOrNull{it.name==prefs[Keys.uiFont]} ?: com.meshlit.ui.theme.UiFont.FIGTREE,
             surfaceStyle = com.meshlit.ui.theme.SurfaceStyle.entries.firstOrNull{it.name==prefs[Keys.surfaceStyle]} ?: com.meshlit.ui.theme.SurfaceStyle.SOLID,
+            workspaceLayout = com.meshlit.ui.theme.WorkspaceLayout.entries.firstOrNull{it.name==prefs[Keys.workspaceLayout]} ?: com.meshlit.ui.theme.WorkspaceLayout.ADAPTIVE,
+            sidebarStyle = com.meshlit.ui.theme.SidebarStyle.entries.firstOrNull{it.name==prefs[Keys.sidebarStyle]} ?: com.meshlit.ui.theme.SidebarStyle.CARDS,
             fontScale = prefs[Keys.fontScale] ?: MeshlitThemeConfig.Default.fontScale,
             densityScale = prefs[Keys.densityScale] ?: MeshlitThemeConfig.Default.densityScale,
             animationsEnabled = prefs[Keys.animationsEnabled] ?: MeshlitThemeConfig.Default.animationsEnabled,
@@ -889,6 +891,18 @@ open class SettingsRepository(private val context: Context) {
 
     suspend fun setUiFont(font:com.meshlit.ui.theme.UiFont){store.edit{it[Keys.uiFont]=font.name}}
     suspend fun setSurfaceStyle(style:com.meshlit.ui.theme.SurfaceStyle){store.edit{it[Keys.surfaceStyle]=style.name}}
+    suspend fun setWorkspaceLayout(layout:com.meshlit.ui.theme.WorkspaceLayout){store.edit{it[Keys.workspaceLayout]=layout.name}}
+    suspend fun setSidebarStyle(style:com.meshlit.ui.theme.SidebarStyle){store.edit{it[Keys.sidebarStyle]=style.name}}
+    suspend fun applyAppearance(preset:com.meshlit.ui.theme.AppearancePreset) {
+        store.edit { prefs ->
+            prefs[Keys.accentHue]=preset.accent.name
+            prefs[Keys.basePalette]=preset.base.name
+            prefs[Keys.themeMode]=preset.mode.name
+            prefs[Keys.dynamicColors]=false
+            prefs[Keys.surfaceStyle]=preset.surface.name
+            prefs.remove(Keys.customPaletteJson)
+        }
+    }
 
     suspend fun setFontScale(scale: Float) {
         store.edit { it[Keys.fontScale] = scale.coerceIn(0.85f, 1.5f) }
@@ -980,6 +994,8 @@ open class SettingsRepository(private val context: Context) {
         val dynamicColors = booleanPreferencesKey("theme.dynamic_colors")
         val uiFont=stringPreferencesKey("theme.ui_font")
         val surfaceStyle=stringPreferencesKey("theme.surface_style")
+        val workspaceLayout=stringPreferencesKey("theme.workspace_layout")
+        val sidebarStyle=stringPreferencesKey("theme.sidebar_style")
         val fontScale = floatPreferencesKey("theme.font_scale")
         val densityScale = floatPreferencesKey("theme.density_scale")
         val animationsEnabled = booleanPreferencesKey("theme.animations_enabled")

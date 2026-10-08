@@ -22,8 +22,21 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
     private val json=Json {ignoreUnknownKeys=true}
     private val _settings=MutableStateFlow(store.get("settings")?.let {runCatching {json.decodeFromString<GatewaySettings>(it)}.getOrNull()} ?: GatewaySettings())
     val settings=_settings.asStateFlow()
+    private val _clients=MutableStateFlow(store.get("clients")?.let{runCatching{json.decodeFromString<List<GatewayClient>>(it).also{list->require(list.size<=64);require(list.map{client->client.id}.distinct().size==list.size);list.forEach{client->client.validate()}}}.getOrNull()} ?: emptyList())
+    val clients=_clients.asStateFlow()
+    private val access=GatewayClientAccess(records={clients.value})
+    @Synchronized fun issueClient(name:String,modelIds:Set<String>,scopes:Set<GatewayScope>,tools:Set<String> = emptySet(),hours:Int=1,maxTokens:Int=512,rpm:Int=30):IssuedGatewayKey {
+        require(_clients.value.size<64){"Remove an expired client before adding another"}
+        require(hours in 1..720)
+        val issued=GatewayClientAccess.issue(name,modelIds,scopes,tools,hours*3_600_000L,maxTokens,rpm)
+        stop();saveClients(_clients.value+issued.client);return issued
+    }
+    @Synchronized fun revokeClient(id:String){stop();saveClients(_clients.value.map{if(it.id==id) it.copy(revoked=true) else it})}
+    @Synchronized fun removeClient(id:String){stop();saveClients(_clients.value.filterNot{it.id==id})}
+    private fun saveClients(value:List<GatewayClient>){store.putCommitted("clients",json.encodeToString(value));_clients.value=value}
     private val _running=MutableStateFlow(false);val running=_running.asStateFlow()
     private var server:EmbeddedGateway?=null
+    private val expirations=java.util.concurrent.ConcurrentHashMap<String,Job>()
     private val epoch=java.util.concurrent.atomic.AtomicLong()
     private val cleanupScope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
     fun token():String=store.get("token") ?: (UUID.randomUUID().toString()+UUID.randomUUID()).also {store.putCommitted("token",it)}
@@ -33,10 +46,10 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
         operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.GATEWAY)
         check(!com.meshlit.BuildConfig.PLAY_REVIEW) {"Inbound gateway is not enabled in Play Review"}
         stop();val config=settings.value
-        val next=EmbeddedGateway(config.port,token(),{settings.value.policy},::tools,::invoke,::models,::chat,::send,::get,::cancel)
+        val next=EmbeddedGateway(config.port,token(),{settings.value.policy},::tools,::invoke,::models,::chat,::send,::get,::cancel,access)
         try {next.start(15000,false);server=next;_running.value=true} catch(e:Exception) {next.stop();throw e}
     }
-    @Synchronized fun stop() {remoteRoutes.resetSession();epoch.incrementAndGet();server?.stop();server=null;_running.value=false;val ids=owned.toList();owned.clear();cleanupScope.launch {backend.controller.ready.await();ids.forEach {id->backend.controller.jobs.value.firstOrNull {it.command.requestId==id && !it.terminal}?.let {backend.controller.cancel(id)}}}}
+    @Synchronized fun stop() {remoteRoutes.resetSession();epoch.incrementAndGet();server?.stop();server=null;_running.value=false;val ids=owned.keys.toList();owned.clear();expirations.values.forEach{it.cancel()};expirations.clear();cleanupScope.launch {backend.controller.ready.await();ids.forEach {id->backend.controller.jobs.value.firstOrNull {it.command.requestId==id && !it.terminal}?.let {backend.controller.cancel(id)}}}}
     private fun tools()=buildJsonArray {
         fun tool(name:String,description:String,schema:JsonObject)=add(buildJsonObject {put("name",name);put("description",description);put("inputSchema",schema)})
         tool("meshlit_command_submit","Submit a durable command; saved agent permissions remain required",AgentCommandSchema.describe())
@@ -50,7 +63,7 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
         tool("gateway_route_execute","Execute an owner-delegated unified LLM/MCP/A2A route once",buildJsonObject{put("type","object");put("required",buildJsonArray{add("routeId");add("arguments")});put("properties",buildJsonObject{put("routeId",buildJsonObject{put("type","string")});put("arguments",buildJsonObject{put("type","object")})})})
         remoteRoutes.tools().forEach {add(it)}
     }
-    private val owned=java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val owned=java.util.concurrent.ConcurrentHashMap<String,String>()
     private suspend fun invoke(name:String,args:JsonObject):JsonObject = operations.run(com.meshlit.core.common.control.ManagedFeature.GATEWAY,true) { invokeManaged(name,args) }
     private suspend fun invokeManaged(name:String,args:JsonObject):JsonObject {
         if(name.startsWith("remote_")) return remoteRoutes.invoke(name,args)
@@ -63,12 +76,12 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
             "meshlit_command_submit"->{
                 val command=json.decodeFromJsonElement<AgentCommand>(args)
                 backend.controller.ready.await()
-                require(owned.contains(command.requestId) || backend.controller.jobs.value.none {it.command.requestId==command.requestId})
-                require(owned.size<100 || command.requestId in owned) {"Restart gateway after retained admission limit"}
+                require(owned[command.requestId]==currentGatewayClient().id || backend.controller.jobs.value.none {it.command.requestId==command.requestId})
+                require(owned.size<100 || owned[command.requestId]==currentGatewayClient().id) {"Restart gateway after retained admission limit"}
                 val job=admit(command);safeJob(job)
             }
             "meshlit_job_status"->safeJob(ownedJob(args["id"]!!.jsonPrimitive.content) ?: throw NoSuchElementException())
-            "meshlit_job_cancel"->{val id=args["id"]!!.jsonPrimitive.content;require(id in owned);safeJob(backend.controller.cancel(id) ?: throw NoSuchElementException())}
+            "meshlit_job_cancel"->{val id=args["id"]!!.jsonPrimitive.content;require(owned[id]==currentGatewayClient().id);safeJob(backend.controller.cancel(id) ?: throw NoSuchElementException())}
             else->{require(name.startsWith("remote_"));remoteRoutes.invoke(name,args)}
         }
         return buildJsonObject {put("content",buildJsonArray {add(buildJsonObject {put("type","text");put("text",result.toString())})});put("isError",false)}
@@ -76,14 +89,24 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
     private suspend fun admit(command:AgentCommand):AgentJob {
         operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.GATEWAY,true)
         val started=epoch.get();check(running.value) {"Gateway is stopped"}
-        owned.add(command.requestId)
+        val principal=currentGatewayClient()
+        if(command.operation==AgentOperation.MODEL_GENERATE) {
+            require(principal.allowsModel(command.modelId.orEmpty()))
+            require(command.maxTokens<=principal.maxOutputTokens)
+        }
+        val existing=owned.putIfAbsent(command.requestId,principal.id)
+        require(existing==null || existing==principal.id)
+        if(!principal.owner && existing==null) expirations[command.requestId]=cleanupScope.launch {
+            delay((principal.expiresAtMs-System.currentTimeMillis()).coerceAtLeast(0))
+            if(owned[command.requestId]==principal.id) backend.controller.cancel(command.requestId)
+        }
         try {
             val result=backend.controller.submit(command)
             if(epoch.get()!=started || !running.value) {withContext(NonCancellable) {backend.controller.cancel(command.requestId)};throw CancellationException("Gateway revoked")}
             return result
         } catch(e:Exception) {owned.remove(command.requestId);throw e}
     }
-    private suspend fun ownedJob(id:String):AgentJob? {backend.controller.ready.await();return if(id in owned) backend.controller.jobs.value.firstOrNull {it.command.requestId==id} else null}
+    private suspend fun ownedJob(id:String):AgentJob? {backend.controller.ready.await();return if(owned[id]==currentGatewayClient().id) backend.controller.jobs.value.firstOrNull {it.command.requestId==id} else null}
     private fun safeJob(job:AgentJob)=buildJsonObject {put("id",job.command.requestId);put("phase",job.phase.name);job.result?.let {settings.value.policy.check(it.toString(),true);put("result",it)};job.errorCode?.let {put("errorCode",it)}}
     private suspend fun models():JsonArray {
         val value=backend.executeHuman(AgentCommand(UUID.randomUUID().toString(),AgentOperation.MODELS_LIST))
@@ -124,7 +147,7 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
         val text=parts.joinToString("\n") {val part=it.jsonObject;require(part["kind"]?.jsonPrimitive?.content=="text");part["text"]!!.jsonPrimitive.content}
         settings.value.policy.check(text)
         require(owned.size<100)
-        val id=UUID.randomUUID().toString();val command=AgentCommand(id,AgentOperation.MODEL_GENERATE,modelId=settings.value.modelId,prompt=text)
+        val id=UUID.randomUUID().toString();val command=AgentCommand(id,AgentOperation.MODEL_GENERATE,modelId=settings.value.modelId,prompt=text,maxTokens=minOf(256,currentGatewayClient().maxOutputTokens))
         admit(command);return get(id)!!
     }
     private suspend fun get(id:String):JsonObject?=ownedJob(id)?.let {job ->buildJsonObject {
@@ -132,5 +155,5 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
         put("status",buildJsonObject {put("state",when(job.phase) {AgentJobPhase.QUEUED->"submitted";AgentJobPhase.RUNNING->"working";AgentJobPhase.SUCCEEDED->"completed";AgentJobPhase.CANCELLED->"canceled";else->"failed"})})
         if(job.phase==AgentJobPhase.SUCCEEDED) {val text=job.result?.jsonObject?.get("text")?.jsonPrimitive?.content.orEmpty();settings.value.policy.check(text,true);put("artifacts",buildJsonArray {add(buildJsonObject {put("artifactId",id);put("parts",buildJsonArray {add(buildJsonObject {put("kind","text");put("text",text)})})})})}
     }}
-    private suspend fun cancel(id:String):JsonObject? {if(id !in owned) return null;backend.controller.cancel(id);return get(id)}
+    private suspend fun cancel(id:String):JsonObject? {if(owned[id]!=currentGatewayClient().id) return null;backend.controller.cancel(id);return get(id)}
 }

@@ -1,6 +1,6 @@
 # Meshlit full app guide and configuration tutorial
 
-Updated 2026-10-07. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
+Updated 2026-10-08. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
 
 ## Start here: what Meshlit does
 
@@ -46,7 +46,9 @@ Acceleration settings report installed backend capability. A vendor name, GPU de
 
 ## Chat, routing and online models
 
-Chats retain conversation history and selected options. Use local/offline models, a deliberately selected online profile or a configured scenario route. A local failure does not silently trigger a paid cloud request. Consumer chat subscriptions are different from provider API accounts.
+Chats retain conversation history and selected options. “On-device model” describes where inference executes; it does not turn off internet access. Use a local model, a deliberately selected online profile or a configured scenario route. A local failure does not silently trigger a paid cloud request. Consumer chat subscriptions are different from provider API accounts.
+
+For experimental local tools, open **+ → Chat options and model routing** and separately enable **Allow web page tools** or **Allow phone tools**. Both default off. Web-page retrieval needs your configured HTTPS Crawl4AI companion and domain approval; no crawler or search account is created automatically. Phone tools need saved autonomy, app scope and Android Accessibility. The loop allows three calls within 180 seconds and rejects invalid model plans. The starter is not qualified for reliable tool use. See [local tool setup and limits](LOCAL_MODEL_TOOLS.md).
 
 Online providers support existing protocol adapters such as OpenAI/compatible, Anthropic and Gemini. Save API credentials encrypted, configure the actual endpoint/model and discover supported models when the provider offers discovery. Select whether the profile allows agents; do not assume every model accepts temperature or all modalities.
 
@@ -188,7 +190,9 @@ If a model does not load: verify a complete artifact and hash, supported format/
 
 If pairing fails: verify reachability, explicit firewall allowance, identity revision/pin/token and independent approvals. If cloud fails: check token expiry, IAM/RBAC/quota/region and service origin. If an archive fails: inspect byte/count/path/CRC/provider limits and partial-output cleanup. If recovery fails: verify exact model/runtime/context/cache identity and installation key.
 
-Current physical-phone ADB testing is blocked while Samsung is absent from adb devices even though USB inventory sees it. Use normal Android Studio/Mac ADB authorization or an approved wireless endpoint; never silently authorize, wipe or elevate. Local OpenSSH preauthentication is also blocked by this enclosing environment. These are unresolved acceptance gates, not successful tests.
+Samsung USB authorization was restored on 2026-10-08 and single-phone testing resumed. See [dated device evidence](DEVICE_TESTING_2026-10-08.md) for individual outcomes; this does not establish two-phone cluster acceptance. Wireless debugging requires owner pairing on supported devices; it is distinct from an in-app ADB adapter. No live SSH host or cloud account is configured for these checks.
+
+In **Settings → App permissions**, use Request for an ungranted optional feature or Manage to open Android settings, including for already granted permissions. Android 11 notifications have no runtime permission prompt. The Full build can open Android's installer for a human-selected APK, request exact-package removal, or open another app's permissions screen. These are human confirmation workflows; submitting a request does not verify completion. Silent/root/device-owner and in-app wireless ADB administration remain unimplemented.
 
 ## Settings directory and safe recipes
 
@@ -227,3 +231,52 @@ are CPU-only, and Copy output explicitly uses the OS clipboard. No root, VM, clo
 account, network or agent invocation is required. Editors are transient and bounded
 to 65,536 characters; results preview 256 values. Full models, GPU/NPU dispatch and
 distributed jobs remain later. Details: docs/hyperl/APP_AND_LIBRARY.md.
+
+
+## Workspace navigation, client access and model details
+
+Open the menu to search all current workspaces. Monitor, Networking, SSH and
+Security Lab have direct shortcuts. Appearance selects Graphite/Aurora/Ocean/Paper/
+Coffee, Cards/Rows and Adaptive/Focus. Phones retain Chat, Models, Monitor, Settings
+bottom tabs; wide Android windows can show a persistent sidebar. These changes do
+not restore the old Android Studio UI or response mechanism.
+
+Use Model details and capabilities in Models or the chat info button for the
+selected artifact's architecture, quantization, context, backend and catalog tags
+when known. Text generation does not establish coding/reasoning accuracy, tools,
+vision or image/audio/video synthesis. Separate models/adapters and tests are needed.
+
+Agent Gateway issues scoped expiring keys to trusted clients. Restrict model IDs,
+MCP tool names, output tokens and request rate. Copy a new key once; client verifiers
+are stored encrypted. Revocation/policy changes stop active work; restart explicitly.
+The gateway is loopback and screen-bound. Remote LAN/off-grid/internet clients
+require a verified private transport or host HTTPS proxy; browser keys must stay on
+a reviewed backend. No always-on public web companion is supplied. See
+docs/CLIENT_HUB.md for limits and client examples.
+
+## Optional memory and live speech
+
+Settings → Memory and personality provides independent off-by-default recall,
+explicit Remember that capture, response style, one same-model native retry and
+human delegation for bounded agent memory management. Forget/Clear delete facts;
+Off suppresses recall but keeps facts. This is preference recall, not weight training,
+automatic fact validation or source-code self repair. Cloud/routed chats do not
+receive local memory.
+
+Voice conversation uses separate recognition, chat LLM and synthesis adapters.
+Import verified Whisper English/Piper voice ZIPs for app-local speech, choose
+installed offline Android voices, or explicitly permit an enabled HTTPS speech
+provider. The recognition and output model IDs are independent of the chat model.
+Network audio defaults off; Android 11's system recognizer cannot guarantee offline
+input, so use an offline speech pack. Preview uses real synthesis. Android voice
+styles are pitch/rate presets, not person/age/gender cloning. Piper packs and
+provider voice IDs determine other speakers; their pitch presets are unavailable.
+
+Start requires microphone permission. Stop/background/close ends capture and
+playback; sessions cap at ten turns/five minutes, with bounded recording/audio.
+Native cleanup can finish after Stop and keeps controls locked. This is turn-taking;
+Gemini Live/OpenAI Realtime full-duplex adapters remain later. No microphone audio
+file is retained by Meshlit; recognized text remains in chat and selected online
+providers receive their explicit audio/text inputs. Existing SDK telemetry limits
+still apply. See docs/MEMORY_AND_VOICE.md for installation, licensing, privacy and
+actual qualification limits.

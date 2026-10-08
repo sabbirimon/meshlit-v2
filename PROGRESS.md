@@ -13,16 +13,75 @@ Historical upstream records in `docs/history/` are not current test evidence.
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
 
-## HyperL app port — 2026-10-08
+## Samsung, local tools and permission controls — 2026-10-08
+
+The owner resumed single-phone tests on Galaxy A20s SM-A207F, Android 11/API 30,
+ARM64, Adreno 506. Both USB and owner-paired TLS wireless ADB reach this device.
+Full V2 installed over USB and Full V1 over TLS wireless, preserving the existing
+signing identity and app data. Five scoped host-to-shell requests per transport
+passed after a warmup; median wall times were 89.748 ms and 172.200 ms, including
+Mac process/ADB overhead during builds. They are not network-only latency.
+
+The standalone HyperL Vulkan runner passed all thirteen listed cases separately
+over both transports: eleven exact CPU-verified finite outputs and two expected
+overflow rejections, followed by temporary-file cleanup. Meshlit's earlier V2
+app-UID CPU suite passed all twelve recipes and bounded benchmarks; its partial
+UI run and failed model-admission harness are retained in the
+[device record](docs/DEVICE_TESTING_2026-10-08.md). These are different backends;
+the app's HyperL screen does not dispatch mobile GPU inference.
+
+Current source adds always-visible permission Manage controls, explicit Android
+11 notification status, bounded human-confirmed package administration, and
+default-off local chat web/phone tool loops. Local inference and internet access
+are separate. Saved delegation, target scope, OS grants and emergency controls
+remain independent; in-app ADB, silent installation and root adapters remain
+unimplemented. [Local tool setup and boundaries](docs/LOCAL_MODEL_TOOLS.md).
+
+A fresh model UI test passed over both USB and TLS wireless on build 13: full
+105,454,432-byte pinned hash verification, actual SDK Load, non-empty Chat Send
+and Unload. Native CPU/TLS/checkpoint smoke passed on both transports. The short
+reply regression was traced to the test leaving its 16-token chat selected; new
+source persists/restores owner selection and retains normal 1,024-token defaults.
+The owner confirmed the reinstalled recent build works. Model answer quality
+remains model-dependent; longer output alone is not quality proof.
+
+Targeted local evidence now totals **832 JVM cases**, zero failures/errors/skips:
+common 27, GPU 36, MCP 133, sandbox 14, network 46, inference 266 and app 155 per
+Full flavor. Common/GPU suites retain their unchanged prior evidence; required
+changed module/flavor checks reran. New contracts cover scoped client keys, chat
+restoration, optional memory, speech pack integrity, WAV bounds and transcription
+requests and native float PCM normalization. Twelve benchmark-wire and nine
+crawler checks pass. APKs contain the exact real starter and synchronized help
+assets. Final required unit/APK/lint checks passed in **18m11s**. Full lint has
+zero fatal/errors, 364 warnings and 18 hints per flavor; Play Review lint has
+zero fatal/errors, 367 warnings and 18 hints. Review static permission/policy and
+all 23 ARM64 ELF alignment checks pass; runtime 16 KiB testing, signing and Play
+submission remain unqualified. Final Full APK hashes match device-tested build 28.
+
+The workspace exposes Monitor/Networking/SSH/Labs, cards/rows and adaptive/focus
+layouts. Model details separate declared tags from unknown quality and modality
+adapter requirements. Client keys are scoped/expiring and loopback/screen-bound;
+[remote deployment limits](docs/CLIENT_HUB.md) remain. Optional encrypted
+[memory/personality/recovery and offline/online voice](docs/MEMORY_AND_VOICE.md)
+are separate from the current LLM. Offline speech uses imported checked ONNX
+weights; hosted audio is explicit. A build-28 prerecorded USB speech test passes
+actual recognition/synthesis plus local LLM generation with both speech models
+loaded and separate successful cleanup. Live microphone/provider sessions, unlocked
+UI/engine acceptance, sustained thermal tests, two-phone sharding, configured
+crawler/cloud/SSH and signed production distribution remain separate gates.
+
+## Earlier HyperL app port validation — 2026-10-08
 
 Subsequent owner-authorized **single-phone GPU experiment** passes on Samsung
 Galaxy A20s SM-A207F, Android 11/API 30, Adreno 506 / Vulkan 1.1.128. HyperL's
 separate native ADB-shell runner executes eleven finite-output cases matching
 its CPU reference and two expected overflow rejections; temporary device files
 are removed. [Hardware/build record](https://github.com/sabbirimon/HyperL/blob/codex/production-library/docs/ANDROID_VULKAN.md).
-No Meshlit APK was installed/run, no app JNI/GPU backend was wired, and the portable
-source hashes remain unchanged. App lifecycle/thermal and two-phone cluster tests
-remain pending. The build evidence below predates this hardware experiment.
+At that earlier checkpoint no Meshlit APK had been installed/run and no app
+JNI/GPU backend was wired. The subsequent app installations and tests are recorded
+above. Portable source hashes remain unchanged. Sustained lifecycle/thermal and
+two-phone cluster tests remain pending. The build evidence below predates these
+subsequent device tests.
 
 The review branch adds Settings → HyperL libraries to both flavors: twelve actual
 CPU recipes, strict JSON, complete-graph memory admission, editable examples,
@@ -43,8 +102,9 @@ system/bundled Python initially lacked FastAPI. No live crawler/device proof is
 inferred. Offline HTML help and its APK asset are byte-identical; the feature
 map validates 75 areas, 38 durable operations and 33 modules.
 
-No APK was installed on a physical phone; those tests remain paused. Android
-GPU/NPU/model execution, distributed HyperL jobs, SDK publishing, signing,
+At that checkpoint no APK had been installed on a physical phone; single-phone
+tests have since resumed as recorded above. App GPU/NPU execution, distributed
+HyperL jobs, SDK publishing, signing,
 installation/lifecycle/thermal acceptance and independent security review remain
 gates. Standalone desktop installers and Radeon evidence are separate from this
 app port. [Use cases and boundaries](docs/hyperl/APP_AND_LIBRARY.md) explain it.

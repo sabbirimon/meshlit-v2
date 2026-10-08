@@ -9,6 +9,7 @@ object SettingsDestinations {
         SettingsDestination("models","Models and downloads","Import files, manage downloads and load local models",keywords="hugging face token storage GGUF RAM"),
         SettingsDestination("media","Camera, vision and audio","Real image input, microphone and existing SDK media paths",keywords="CCTV webcam phone camera microphone WAV speech VLM STT TTS"),
         SettingsDestination("configuration","Configuration profiles","Export, review and apply portable device settings",keywords="import backup default custom declarative ansible terraform pulumi IaC"),
+        SettingsDestination("personalization","Memory and personality","Local recall, profile and bounded self recovery",keywords="learning memories repair adaptation"),
         SettingsDestination("behavior","Custom local model behavior","Custom weights and your own local instructions",keywords="uncensored jailbreak system prompt offline"),
         SettingsDestination("recovery","Checkpoints and recovery","Encrypted native CPU KV snapshots and honest cluster recovery status",keywords="cache restart restore memory bank failover session tasks"),
         SettingsDestination("training","Fine-tuning","Real Soup LoRA/QLoRA jobs on a paired training host",keywords="train adapter dataset quantization stream layers compact GPU"),

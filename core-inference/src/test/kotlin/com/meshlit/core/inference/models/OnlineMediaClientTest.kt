@@ -14,6 +14,31 @@ class OnlineMediaClientTest {
         onRequest(chain.request());Response.Builder().request(chain.request()).protocol(Protocol.HTTP_1_1).code(200).message("OK")
             .body(body.toResponseBody("application/json".toMediaType())).build()
     }.build())
+    private fun wav()=ByteArray(32044).apply {
+        "RIFF".toByteArray().copyInto(this,0);"WAVE".toByteArray().copyInto(this,8)
+    }
+    @Test fun transcriptionUsesSeparateModelAndAudioEndpointWithExplicitCredential()=runBlocking {
+        val text=client("""{"text":"Actual response field"}"""){request->
+            assertEquals("/v1/audio/transcriptions",request.url.encodedPath)
+            assertEquals("Bearer test-key",request.header("Authorization"))
+            val body=request.body as MultipartBody
+            val encoded=okio.Buffer();body.writeTo(encoded);val raw=encoded.readUtf8()
+            assertTrue(raw.contains("recognition-model"));assertTrue(raw.contains("filename=\"turn.wav\""))
+            assertFalse(raw.contains("vision-model"))
+        }.transcribe(p,"test-key","recognition-model",wav())
+        assertEquals("Actual response field",text)
+    }
+    @Test fun transcriptionRejectsDisabledInvalidAudioAndEmptyTranscript()=runBlocking {
+        var calls=0;val c=client("""{"text":""}"""){calls++}
+        for(profile in listOf(p.copy(enabled=false),p.copy(protocol=OnlineProtocol.ANTHROPIC))) {
+            try{c.transcribe(profile,"test-key","recognition-model",wav());fail("unsupported profile")}
+            catch(_:IllegalArgumentException){assertEquals(0,calls)}
+        }
+        try{c.transcribe(p,"test-key","recognition-model",ByteArray(50));fail("invalid audio")}
+        catch(_:IllegalArgumentException){assertEquals(0,calls)}
+        try{c.transcribe(p,"test-key","recognition-model",wav());fail("empty transcript")}
+        catch(_:IllegalStateException){assertEquals(1,calls)}
+    }
     @Test fun disabledProfilesFailBeforeAnyRequest()=runBlocking {
         var calls=0
         try{client("{}"){calls++}.startVideo(p.copy(enabled=false),"secret","video-model","task");fail("disabled")}

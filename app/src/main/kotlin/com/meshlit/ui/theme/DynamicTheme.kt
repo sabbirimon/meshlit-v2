@@ -31,6 +31,8 @@ import kotlinx.serialization.Serializable
  */
 enum class UiFont(val label:String) { FIGTREE("Figtree"), SYSTEM("System sans"), SERIF("Serif"), MONO("Maple Mono") }
 enum class SurfaceStyle(val label:String) { SOLID("Solid"), GLASS("Tinted glass") }
+enum class WorkspaceLayout(val label:String) { ADAPTIVE("Adaptive"), FOCUS("Focus") }
+enum class SidebarStyle(val label:String) { CARDS("Cards"), ROWS("Rows") }
 
 @Immutable
 data class MeshlitThemeConfig(
@@ -41,6 +43,8 @@ data class MeshlitThemeConfig(
     val fontScale: Float = 1.0f,
     val uiFont: UiFont = UiFont.FIGTREE,
     val surfaceStyle: SurfaceStyle = SurfaceStyle.SOLID,
+    val workspaceLayout: WorkspaceLayout = WorkspaceLayout.ADAPTIVE,
+    val sidebarStyle: SidebarStyle = SidebarStyle.CARDS,
     val densityScale: Float = 1.0f,
     val animationsEnabled: Boolean = true,
     val highContrast: Boolean = false,
@@ -111,6 +115,7 @@ enum class AccentHue(val displayName: String, val primary: Color, val primaryCon
 }
 
 enum class BasePalette(val displayName: String) {
+    GRAPHITE("Graphite"),
     MIDNIGHT("Midnight (default)"),
     DUSK("Dusk"),
     DAWN("Dawn"),
@@ -189,6 +194,7 @@ fun buildColorScheme(
     }
     val base = config.basePalette
     val (background, surface, surfaceVariant, outline, textPrimary, textSecondary) = when (base) {
+        BasePalette.GRAPHITE -> PaletteShades(Color(0xFF0F1012),Color(0xFF17181B),Color(0xFF25262B),Color(0xFF44464E),Color(0xFFF4F5F7),Color(0xFFB8BBC4))
         BasePalette.MIDNIGHT -> MeshlitMidnightShades
         BasePalette.DUSK -> MeshlitDuskShades
         BasePalette.DAWN -> MeshlitDawnShades

@@ -555,6 +555,7 @@ val coreModule = module {
     single { com.meshlit.openclaw.OpenClawHost(androidContext(),get()) }
     single { com.meshlit.openclaw.OpenClawNode(androidContext(),get(),get(),get()) }
     single { com.meshlit.openclaw.AndroidControl(androidContext(),get()) }
+    single { com.meshlit.openclaw.PhoneAdministration(androidContext(),get(),get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate) }
     single { com.meshlit.pipeline.PipelineHost(androidContext(), get(), get()) }
     single { com.meshlit.ssh.SshConnections(androidContext(),get()) }
     single { com.meshlit.training.TrainingHost(androidContext(),get()) }
@@ -571,7 +572,10 @@ val coreModule = module {
     single { com.meshlit.configuration.ConfigurationTransfer(androidContext(),get(),get(),get()) }
     single { com.meshlit.media.MediaGeneration(androidContext(),get()) }
     single { com.meshlit.routing.ModelRoutes(androidContext(),get(),get(),get()) }
-    single { com.meshlit.chat.ChatController(androidContext(), get(), get(),get(),get()) }
+    single { com.meshlit.chat.VoiceModels(androidContext()) }
+    single { com.meshlit.chat.PersonalMemory(androidContext()) }
+    single { com.meshlit.chat.LocalChatTools(get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate,{get()}) }
+    single { com.meshlit.chat.ChatController(androidContext(), get(), get(),get(),get(),get(),get(),get()) }
     single { com.meshlit.models.ModelLibrary(androidContext(), get(), get(), get()) }
     single { com.meshlit.sandbox.RuntimeHost(androidContext()) }
     single { com.meshlit.sandbox.RuntimeTerminal(androidContext(), get()) }
@@ -579,12 +583,14 @@ val coreModule = module {
     single {
         val crawler: com.meshlit.core.mcp.builtin.CrawlSettingsStore = get()
         McpToolRegistry(com.meshlit.operations.OperationsControl.get(androidContext()).gate).apply {
+            registerAll(get<com.meshlit.chat.PersonalMemory>().specs())
             registerAll(get<com.meshlit.operations.OperationTools>().specs())
             registerAll(com.meshlit.gateway.GatewayRoutingTools { get<com.meshlit.gateway.GatewayHost>() }.specs())
             registerAll(get<com.meshlit.control.AgentBackend>().specs())
             registerAll(com.meshlit.control.EnvironmentTools(androidContext(),get(),get(),get()).specs())
             registerAll(com.meshlit.routing.RouterTools(get(),get()).specs())
             registerAll(get<com.meshlit.openclaw.AndroidControl>().specs())
+            registerAll(get<com.meshlit.openclaw.PhoneAdministration>().specs())
             registerAll(com.meshlit.pipeline.PipelineMcpTools(get(),get()).specs())
             registerAll(com.meshlit.sandbox.RuntimeMcpTools(get()).specs())
             registerAll(com.meshlit.core.mcp.builtin.CrawlMcpTools(

@@ -1,5 +1,5 @@
 MESHLIT — TERMS OF USE
-Version 2026-10-07.1 · Effective 7 October 2026
+Version 2026-10-08.1 · Effective 8 October 2026
 Maintainer: IMON · Project: https://github.com/sabbirimon/meshlit-v2
 
 1. The software and this agreement
@@ -13,6 +13,8 @@ Models can produce incorrect, incomplete, biased or inappropriate output. Review
 
 4. Devices, tools and authority
 Only connect devices, accounts, storage, networks and services you own or are authorized to use. Agents operate within separately saved permissions and Android grants. Root, shell, SSH, browser input, cloud services and radio hardware may affect files, accounts, battery and other devices. Review targets, costs and destructive commands. Stop or revoke delegation when needed. Never use Meshlit to defeat authentication or permission boundaries, steal credentials, interfere with networks or violate applicable laws or service terms.
+
+Local chat can use separately enabled web-page and phone tools. Model/tool output does not grant additional authority. APK installation/removal and other-app permission requests use Android's human confirmation screens. Submitted requests are not proof of completion. Silent root, device-owner administration and an in-app wireless ADB adapter are not implemented. Do not enable autonomous planning for a model that has not been evaluated for reliable tool use.
 
 5. Content and hosted services
 Use AI responsibly. Do not create or distribute child exploitation material, facilitate abuse, deceptive activity or other prohibited content. Hosted providers apply their own rules, billing, model licenses and data practices. A local prompt setting does not change those rules or reliably prevent every harmful output. The Play review candidate is not yet ready for Play submission: restricted-content prevention and a developer-managed in-app reporting flow still need verification and implementation.

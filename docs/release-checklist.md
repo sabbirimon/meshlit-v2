@@ -33,7 +33,7 @@
 - [ ] **Load / generate / unload cycle** — `LoadModel → Generate → UnloadModel → LoadModel` works cleanly across the three ABIs (arm64-v8a, armeabi-v7a, x86_64) without FGS restart.
 - [ ] **Cancellation** — issuing `cancel()` mid-generation transitions `CoordinatorState` from `Generating` to `Ready` within 1 s; no token is delivered after the cancel ack.
 - [ ] **No native-handle leak after stress** — `pmap` / `dumpsys meminfo` of the FGS process after 50 load/generate/unload cycles shows the same VmHWM as after 5 cycles (within ±5 MB).
-- [ ] **Bundle vs catalog parity** — bundled SmolLM2 360M Q8 and a downloaded catalog model (Qwen 1.5B Q4_K_M) both produce non-empty token streams on the first generation.
+- [ ] **Bundle vs download parity** — the actual bundled SmolLM2 135M Instruct Q4_K_M and a fresh pinned HTTPS download produce non-empty actual replies after complete artifact validation. Larger catalog models such as Qwen require separate device memory admission and execution proof.
 
 ---
 
@@ -48,12 +48,33 @@
 
 ## 4. Benchmark gates
 
-> Use `scripts/native_benchmark.py`. Append the JSON report to `docs/benchmarks/<tag>.json`.
+Use the actual app-UID `DeviceCoreBenchmarkTest` for model loading, engine
+generation, cancellation/recovery and process-memory observations. Use
+`ModelDownloadUiDeviceTest` for a fresh complete download and actual Load/Send/
+Unload buttons. See [device commands and evidence](DEVICE_TESTING_2026-10-08.md).
 
-- [ ] **SmolLM2 360M Q8** — `tokens_per_sec ≥ 8` on a Pixel 6-class device; `first_token_ms ≤ 2000`; `peak_mem_mb ≤ 1500`.
-- [ ] **Qwen 1.5B Q4_K_M** — `tokens_per_sec ≥ 4`; `first_token_ms ≤ 4000`; `peak_mem_mb ≤ 2400`.
-- [ ] **Cross-ABI parity** — the same two models produce within ±15 % tokens/sec on arm64-v8a vs x86_64 emulators.
-- [ ] **No silent engine swap** — the benchmark's `engineTag` assertion (`EXPECTED_ENGINE_TAG`) is satisfied. If `engineTag == "llama.cpp"` ever appears, that's a milestone (Slice 2), not a regression.
+`scripts/native_benchmark.py` measures an already-running HTTP/SSE server and
+requires its explicit actual engine. For a server already enabled and loaded by
+the owner, use an explicit ADB target and a fresh private report file:
+
+```sh
+adb -s PHONE_TARGET forward tcp:18080 tcp:8080
+python3 scripts/native_benchmark.py --engine runanywhere \
+  --samples 3 --warmups 1 --max-tokens 16 --output NEW_PRIVATE_REPORT.json
+adb -s PHONE_TARGET forward --remove tcp:18080
+```
+
+Choose `llama-native-local` only when that is the actual loaded engine. Remote
+endpoints require HTTPS with system trust; local HTTP requires loopback. The
+script does not start/load a server or manufacture engine/token measurements.
+Review reports before publishing sanitized measurements; do not commit private
+artifacts automatically.
+
+- [ ] **Actual engine completion** — each warmup/measured request returns non-empty real text and an explicit successful completion, within bounded time/output.
+- [ ] **Usage provenance** — report native measured token counts/rates when available; SDK unknown counts stay null. Text-event counts and character counts are not tokens.
+- [ ] **Resource scope** — app-UID PSS, owned native child memory, battery temperature, thermal status and load/request times are labeled separately. Wire readiness is not model-load latency.
+- [ ] **Transport coverage** — record explicitly selected USB and owner-paired TLS wireless runs; preserve ADB overhead separately from kernel/GPU timestamps.
+- [ ] **Model/device coverage** — qualify larger admitted models and each target ABI/device separately. Debug emulator and phone results do not establish cross-architecture throughput parity or production latency targets.
 
 ---
 

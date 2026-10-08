@@ -1,5 +1,5 @@
 MESHLIT — PRIVACY POLICY
-Version 2026-10-07.1 · Effective 7 October 2026
+Version 2026-10-08.1 · Effective 8 October 2026
 Maintainer: IMON · Project: https://github.com/sabbirimon/meshlit-v2
 
 1. Scope and first use
@@ -16,6 +16,10 @@ When you choose a hosted model or media provider, relevant prompts, conversation
 
 5. Credentials and permissions
 API tokens, SSH credentials, reusable environments and collector headers are stored through encrypted credential stores. Service bindings and human/agent permissions are separate. Secrets should not be exported as ordinary configuration or audit metadata. File operations use explicitly granted storage access. Camera, microphone, location, nearby devices, notifications and optional cross-app Android control require separately chosen features and applicable Android grants. The Play review build removes the Accessibility service, device-wide VPN capture, SMS, broad storage/media grants and Termux command permission. This does not constitute Play approval.
+
+Per-chat web-page and phone tool options default off. Enabled local planning uses the selected on-device model. Web requests send URLs and retrieve content through the separately configured HTTPS crawler host and its approved domains. Allowed Accessibility snapshots can contain ordinary screen text and are supplied to local planning; sensitive/protected input remains subject to the existing tool restrictions. Answers and source links may be retained in local chat history. These options do not enable a hosted model or enlarge OS grants.
+
+Full builds can request Android-confirmed installation/removal and open another app's permission settings. A human-selected APK URI approval is remembered locally. APK bytes are staged in private app cache (at most four files, each up to 512 MiB); incomplete copies are removed, and files older than 24 hours are cleaned during a later install request. Android may reclaim cache sooner. No default upload is involved. File-picker grants can expire. The Play review build removes installation/removal request permissions and disables package administration. Android confirmation is not treated as a completed change, and silent root/device-owner/wireless-ADB administration is not implemented.
 
 6. Optional audit telemetry
 Audit collection is off by default. If enabled, a bounded encrypted local journal retains closed event metadata: time, source, actor class, action, outcome, pseudonymous hashed identifiers and allowlisted numeric measurements. It excludes prompt/reply content, task titles, raw tool arguments, passwords and token values at the collection and export boundaries. Identifier hashing is pseudonymization, not guaranteed anonymization. Retention is configurable from 1–90 days and 100–5,000 records. Batched writes and bounded queues can drop records; the journal is not a complete or tamper-proof compliance record.

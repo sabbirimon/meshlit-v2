@@ -52,6 +52,15 @@ class OnlineMediaClient(private val client:OkHttpClient=OkHttpClient.Builder().c
         model(model);prompt(text);require(voice.matches(Regex("[A-Za-z0-9_-]{1,80}")))
         return download(post(p,key,"audio/speech",buildJsonObject{put("model",model);put("input",text);put("voice",voice);put("response_format","wav")}),target,16L*1024*1024,"wav")
     }
+    suspend fun transcribe(p:OnlineProfile,key:String,model:String,wav:ByteArray):String {
+        model(model);require(wav.size in 44..1_000_000)
+        require(wav.copyOfRange(0,4).toString(Charsets.US_ASCII)=="RIFF" && wav.copyOfRange(8,12).toString(Charsets.US_ASCII)=="WAVE")
+        val body=MultipartBody.Builder().setType(MultipartBody.FORM).addFormDataPart("model",model)
+            .addFormDataPart("file","turn.wav",wav.toRequestBody("audio/wav".toMediaType())).build()
+        val result=exchange(request(p,key,"audio/transcriptions").post(body).build()){json(it,128*1024)}
+        return result["text"]?.jsonPrimitive?.content?.trim()?.takeIf{it.isNotEmpty() && it.length<=12000}
+            ?: error("Provider returned no usable transcript")
+    }
     suspend fun vision(p:OnlineProfile,key:String,jpeg:ByteArray,prompt:String):String {
         prompt(prompt);require(jpeg.size in 4..2*1024*1024 && jpeg[0]==(-1).toByte() && jpeg[1]==(-40).toByte())
         val payload=buildJsonObject {

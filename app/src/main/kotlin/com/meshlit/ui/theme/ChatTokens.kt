@@ -15,5 +15,7 @@ object ChatTokens {
     val touch=48.dp
     val bubbleMax=680.dp
     val contentMax=840.dp
-    val sidebar=300.dp
+    val sidebar=288.dp
+    val wideSidebar=264.dp
+    val workspaceBreakpoint=900.dp
 }

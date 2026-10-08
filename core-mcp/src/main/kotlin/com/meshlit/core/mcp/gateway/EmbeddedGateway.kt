@@ -20,6 +20,7 @@ class EmbeddedGateway(port:Int,private val token:String,
     private val sendTask:suspend(JsonObject)->JsonObject,
     private val getTask:suspend(String)->JsonObject?,
     private val cancelTask:suspend(String)->JsonObject?,
+    private val clientAccess:GatewayClientAccess?=null,
 ):NanoHTTPD("127.0.0.1",port) {
     private val admissions=Semaphore(2)
     private val lifetime=SupervisorJob()
@@ -28,14 +29,22 @@ class EmbeddedGateway(port:Int,private val token:String,
     override fun serve(session:IHTTPSession):Response {
         if(session.headers["origin"]!=null) return failure(Response.Status.FORBIDDEN,"Browser origins are not enabled")
         val authorization=session.headers["authorization"].orEmpty()
-        if(!authorization.startsWith("Bearer ") || !MessageDigest.isEqual(token.toByteArray(),authorization.removePrefix("Bearer ").toByteArray()))
-            return failure(Response.Status.UNAUTHORIZED,"Authentication required")
-        if(!admissions.tryAcquire()) return failure(Response.Status.TOO_MANY_REQUESTS,"Gateway is busy")
+        if(!authorization.startsWith("Bearer ") || authorization.length>4103) return failure(Response.Status.UNAUTHORIZED,"Authentication required")
+        val key=authorization.removePrefix("Bearer ")
+        val owner=MessageDigest.isEqual(token.toByteArray(),key.toByteArray())
+        val principal=if(owner) GatewayPrincipal("owner",GatewayScope.entries.toSet(),emptySet(),emptySet(),1024,Long.MAX_VALUE,true)
+            else clientAccess?.authenticate(key) ?: return failure(Response.Status.UNAUTHORIZED,"Authentication required")
+        val needed=when(session.uri){"/v1/models"->GatewayScope.MODELS;"/v1/chat/completions"->GatewayScope.CHAT;"/mcp"->GatewayScope.MCP;"/a2a","/.well-known/agent-card.json"->GatewayScope.A2A;else->null}
+        if(needed!=null && !principal.allows(needed)) return failure(Response.Status.FORBIDDEN,"Client permission denied")
+        if(!owner && clientAccess?.acquire(principal)!=true) return failure(Response.Status.TOO_MANY_REQUESTS,"Client rate or concurrency limit reached")
+        if(!admissions.tryAcquire()) {if(!owner) clientAccess?.release(principal);return failure(Response.Status.TOO_MANY_REQUESTS,"Gateway is busy")}
+        val context=lifetime+principal
+        val deadline=minOf(120000L,principal.expiresAtMs-System.currentTimeMillis()).coerceAtLeast(1)
         try {
             if(session.method==Method.GET) return when(session.uri) {
                 "/health"->json(buildJsonObject { put("status","ready");put("implementation","meshlit-kotlin");put("streaming",false) })
                 "/.well-known/agent-card.json"->json(card())
-                "/v1/models"->json(runBlocking(lifetime) { withTimeout(15000) { buildJsonObject {put("object","list");put("data",models())} } })
+                "/v1/models"->json(runBlocking(context) { withTimeout(15000) { buildJsonObject {put("object","list");put("data",JsonArray(models().filter{principal.allowsModel(it.jsonObject["id"]!!.jsonPrimitive.content)}))} } })
                 "/mcp"->failure(Response.Status.METHOD_NOT_ALLOWED,"Server-initiated SSE is not supported")
                 else->failure(Response.Status.NOT_FOUND,"Unknown endpoint")
             }
@@ -49,7 +58,11 @@ class EmbeddedGateway(port:Int,private val token:String,
             if(session.uri=="/v1/chat/completions") {
                 require(request["stream"]?.jsonPrimitive?.booleanOrNull!=true) { "This embedded endpoint currently supports buffered text only" }
                 require(request["tools"]==null) { "Use the MCP endpoint for tools; LLM tool calling is not available here" }
-                return json(runBlocking(lifetime) { withTimeout(120000) { policy().check(request.toString());chat(request).also {policy().check(it.toString(),true)} } })
+                return json(runBlocking(context) { withTimeout(deadline) { require(principal.allowsModel(request["model"]?.jsonPrimitive?.content.orEmpty())) { "Model is outside client scope" }
+                    val limit=(request["max_completion_tokens"] ?: request["max_tokens"])?.jsonPrimitive?.int ?: minOf(256,principal.maxOutputTokens)
+                    require(limit in 1..principal.maxOutputTokens)
+                    val bounded=JsonObject(request+mapOf("max_tokens" to JsonPrimitive(limit)))
+                    policy().check(bounded.toString());chat(bounded).also {policy().check(it.toString(),true)} } })
             }
             if(session.uri !in setOf("/mcp","/a2a")) return failure(Response.Status.NOT_FOUND,"Unknown endpoint")
             require(request["jsonrpc"]?.jsonPrimitive?.content=="2.0") { "JSON-RPC 2.0 required" }
@@ -68,7 +81,7 @@ class EmbeddedGateway(port:Int,private val token:String,
                 }
             } else require(id!=null) { "A2A requests require an ID" }
             return try {
-                val result=runBlocking(lifetime) { withTimeout(120000) {
+                val result=runBlocking(context) { withTimeout(deadline) {
                     if(session.uri=="/mcp") when(method) {
                         "initialize"->buildJsonObject {
                             val requested=params["protocolVersion"]?.jsonPrimitive?.content
@@ -77,9 +90,10 @@ class EmbeddedGateway(port:Int,private val token:String,
                             put("serverInfo",buildJsonObject {put("name","meshlit");put("version","1.0")})
                         }
                         "ping"->buildJsonObject {}
-                        "tools/list"->buildJsonObject {put("tools",tools())}
+                        "tools/list"->buildJsonObject {put("tools",JsonArray(tools().filter{principal.allowsTool(it.jsonObject["name"]!!.jsonPrimitive.content)}))}
                         "tools/call"->{
                             val name=params["name"]?.jsonPrimitive?.content ?: throw IllegalArgumentException("Tool name required")
+                            require(principal.allowsTool(name)) {"Tool is outside client scope"}
                             val args=params["arguments"] as? JsonObject ?: buildJsonObject {}
                             policy().check(args.toString());invoke(name,args).also {policy().check(it.toString(),true)}
                         }
@@ -99,7 +113,7 @@ class EmbeddedGateway(port:Int,private val token:String,
             catch(_:Exception) {rpcError(id,-32000,"Operation failed; inspect permissions and task state")}
         } catch(_:IllegalArgumentException) {return failure(Response.Status.BAD_REQUEST,"Invalid request or policy denied")}
         catch(_:Exception) {return failure(Response.Status.INTERNAL_ERROR,"Gateway request failed")}
-        finally {admissions.release()}
+        finally {admissions.release();if(!owner) clientAccess?.release(principal)}
     }
     private fun taskId(params:JsonObject):String=params["id"]?.jsonPrimitive?.content?.also {require(it.matches(Regex("[A-Za-z0-9_-]{1,80}")))} ?: throw IllegalArgumentException()
     private fun card()=buildJsonObject {

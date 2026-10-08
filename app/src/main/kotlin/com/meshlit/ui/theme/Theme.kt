@@ -39,7 +39,13 @@ fun MeshlitTheme(
     content: @Composable () -> Unit,
 ) {
     val systemDark = isSystemInDarkTheme()
-    val hour = java.time.LocalTime.now().hour
+    var hour by remember { mutableStateOf(java.time.LocalTime.now().hour) }
+    LaunchedEffect(config.themeMode) {
+        if(config.themeMode==ThemeMode.AUTO_TIME) while(isActive) {
+            hour=java.time.LocalTime.now().hour
+            delay(60_000)
+        }
+    }
     val dark = when(config.themeMode) {
         ThemeMode.SYSTEM -> systemDark
         ThemeMode.DARK -> true

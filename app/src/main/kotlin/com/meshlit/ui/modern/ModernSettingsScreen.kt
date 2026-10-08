@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meshlit.di.koinInject
 import com.meshlit.settings.SettingsRepository
@@ -38,6 +39,7 @@ import kotlinx.coroutines.*
     val back={destination=null}
     BackHandler(destination!=null){destination=null}
     if(destination=="legal"){com.meshlit.legal.LegalDocumentsScreen(back);return}
+    if(destination=="personalization"){PersonalizationScreen(back);return}
     if(destination=="behavior"){LocalBehaviorScreen(back,{destination="models"});return}
     if(destination=="help"){HelpTutorialScreen(back);return}
     if(destination=="cloud"){CloudManagementScreen(back);return}
@@ -75,12 +77,12 @@ import kotlinx.coroutines.*
     if(destination?.startsWith("hook:")==true){com.meshlit.ui.screens.settings.HookEditorScreen(destination!!.removePrefix("hook:"),{destination="hooks"});return}
     Scaffold(topBar={TopAppBar(colors=TopAppBarDefaults.topAppBarColors(containerColor=Color.Transparent),title={Text(SettingsDestinations.all.firstOrNull{it.id==destination}?.title ?: "Settings")},
         navigationIcon={if(destination!=null || onExit!=null) IconButton(onClick={if(destination!=null) destination=null else onExit?.invoke()}){
-            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")} else if(onMenu!=null) IconButton(onClick=onMenu){Icon(Icons.Default.Menu,"Open menu")}})}){padding ->
+            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")} else if(onMenu!=null) IconButton(onClick=onMenu){Icon(Icons.Default.Menu,"Menu")}})}){padding ->
         when(destination){
             "appearance" -> AppearanceSettings(Modifier.padding(padding))
             "device" -> Box(Modifier.padding(padding)){com.meshlit.ui.screens.settings.DeviceScreen(back)}
             "monitor" -> Box(Modifier.padding(padding)){ModernMonitorScreen()}
-            else -> LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),
+            else -> LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax).testTag("settings-list"),contentPadding=PaddingValues(T.large),
                 verticalArrangement=Arrangement.spacedBy(T.medium)) {
                 when(destination){
                     "runtime" -> item{com.meshlit.ui.screens.cloud.RuntimeDashboardCard()}
@@ -98,7 +100,7 @@ import kotlinx.coroutines.*
                         Text("Project and third-party notices are maintained in the repository LICENSE and vendored source notices.")
                     }}}
                     else -> {
-                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Search settings")},
+                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth().testTag("settings-search"),singleLine=true,placeholder={Text("Search settings")},
                             leadingIcon={Icon(Icons.Default.Search,null)},trailingIcon={if(query.isNotEmpty()) IconButton(onClick={query=""}){Icon(Icons.Default.Close,"Clear search")}},shape=RoundedCornerShape(28.dp))}
                         item {Row(horizontalArrangement=Arrangement.spacedBy(T.small)){
                             FilterChip(!advanced,{advanced=false;prefs.edit().putBoolean("advanced",false).apply()},label={Text("Basic")})
@@ -131,6 +133,25 @@ import kotlinx.coroutines.*
     fun write(action:suspend()->Unit){scope.launch{try{action()}catch(e:CancellationException){throw e}catch(e:Exception){error=e.message}}}
     LazyColumn(modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.large)){
         item {Text("Colors, type and display",style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+        item {Text("Workspace themes",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                AppearancePreset.entries.forEach { preset -> FilterChip(preset.matches(config),{write{settings.applyAppearance(preset)}},
+                    modifier=Modifier.testTag("appearance-preset-${preset.name}"),label={Text(preset.label)},
+                    leadingIcon={Icon(Icons.Default.Circle,null,tint=buildColorScheme(config.copy(basePalette=preset.base,accentHue=preset.accent,customPalette=CustomPalette.None)).primary)}) }
+            }
+            Text("Presets retain font size, high contrast and operation permissions.",style=MaterialTheme.typography.bodySmall)
+        }
+        item {Text("Workspace layout",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                WorkspaceLayout.entries.forEach { layout -> FilterChip(config.workspaceLayout==layout,{write{settings.setWorkspaceLayout(layout)}},label={Text(layout.label)}) }
+            }
+            Text("Adaptive keeps a sidebar in wide windows. Focus uses an on-demand menu. Phones always keep the content width.",style=MaterialTheme.typography.bodySmall)
+        }
+        item {Text("Side menu",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                SidebarStyle.entries.forEach { style -> FilterChip(config.sidebarStyle==style,{write{settings.setSidebarStyle(style)}},label={Text(style.label)}) }
+            }
+        }
         item {OutlinedButton(onClick={write{settings.applyReferenceAppearance()}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(24.dp)){
             Icon(Icons.Default.AutoAwesome,null);Spacer(Modifier.width(T.small));Text("Reference blue · light theme")}}
         item {Text("Display mode",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
@@ -183,7 +204,7 @@ import kotlinx.coroutines.*
 }
 
 /** The same icon vocabulary is used in settings and the app drawer. */
-private fun settingsIcon(id:String)=when(id){
+internal fun settingsIcon(id:String)=when(id){
     "appearance"->Icons.Default.Palette
     "models","router","acceleration"->Icons.Default.Storage
     "cloud","providers"->Icons.Default.Cloud
