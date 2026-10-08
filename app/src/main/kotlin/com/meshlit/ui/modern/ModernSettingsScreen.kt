@@ -38,6 +38,7 @@ import kotlinx.coroutines.*
     val repository=koinInject<SettingsRepository>()
     val back={destination=null}
     BackHandler(destination!=null){destination=null}
+    if(destination=="search"){SearchAccessScreen(back);return}
     if(destination=="legal"){com.meshlit.legal.LegalDocumentsScreen(back);return}
     if(destination=="personalization"){PersonalizationScreen(back);return}
     if(destination=="behavior"){LocalBehaviorScreen(back,{destination="models"});return}

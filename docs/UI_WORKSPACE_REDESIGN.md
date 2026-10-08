@@ -71,8 +71,9 @@ lab, HyperL, audit, recovery, router and fine-tuning pages are added to the same
 navigation catalog. Each retains its own operational policy and availability.
 
 The old source was used only to inventory menu/features. Its UI and LLM response
-mechanism are not restored. Four bottom tabs—Chat, Models, Monitor, Settings—are
-again visible on the phone chat view. Selection persists across restarts; device
+mechanism are not restored. The owner subsequently requested removal of the four
+bottom tabs. The shared modern shell now uses the searchable sidebar and top
+menu, leaving more vertical space for replies and the composer. Selection persists across restarts; device
 tests restore the owner chat/model and do not leave their 16-token request policy
 selected. Model details in chat and Models separate text capability, catalog tags,
 unknown quality and additional image/audio/tool adapter requirements.

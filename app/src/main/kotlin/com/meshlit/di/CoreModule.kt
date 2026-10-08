@@ -561,7 +561,7 @@ val coreModule = module {
     single { com.meshlit.training.TrainingHost(androidContext(),get()) }
     single { com.meshlit.security.LabPackages(androidContext(),get()) }
     single { com.meshlit.security.SecurityLab(androidContext(),get()) }
-    single { com.meshlit.gateway.GatewayHost(androidContext(),get(),get(),get()) }
+    single { com.meshlit.gateway.GatewayHost(androidContext(),get(),get(),get(),{get()}) }
     single { com.meshlit.recovery.ReplicaHost(androidContext()) }
     single { com.meshlit.operations.OperationsControl.get(androidContext()) }
     single { com.meshlit.operations.ClusterControls.get(androidContext()) }
@@ -574,7 +574,8 @@ val coreModule = module {
     single { com.meshlit.routing.ModelRoutes(androidContext(),get(),get(),get()) }
     single { com.meshlit.chat.VoiceModels(androidContext()) }
     single { com.meshlit.chat.PersonalMemory(androidContext()) }
-    single { com.meshlit.chat.LocalChatTools(get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate,{get()}) }
+    single { com.meshlit.chat.LocalChatTools(get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate,{get()},{get()}) }
+    single { com.meshlit.search.AppSearchService(androidContext(),get(),{get<com.meshlit.chat.ChatController>().state.value},{get<com.meshlit.models.ModelLibrary>().models.value},{get<com.meshlit.control.WebBridgeHost>().directory.read()},get<com.meshlit.operations.OperationsControl>().gate,{get<com.meshlit.settings.SettingsRepository>()},{get<com.meshlit.control.AgentBackend>().delegated(com.meshlit.control.AgentBackend.Scope.SETTINGS)},{get<com.meshlit.gateway.GatewayHost>().remoteRoutes}) }
     single { com.meshlit.chat.ChatController(androidContext(), get(), get(),get(),get(),get(),get(),get()) }
     single { com.meshlit.models.ModelLibrary(androidContext(), get(), get(), get()) }
     single { com.meshlit.sandbox.RuntimeHost(androidContext()) }
@@ -584,6 +585,7 @@ val coreModule = module {
         val crawler: com.meshlit.core.mcp.builtin.CrawlSettingsStore = get()
         McpToolRegistry(com.meshlit.operations.OperationsControl.get(androidContext()).gate).apply {
             registerAll(get<com.meshlit.chat.PersonalMemory>().specs())
+            registerAll(get<com.meshlit.search.AppSearchService>().specs())
             registerAll(get<com.meshlit.operations.OperationTools>().specs())
             registerAll(com.meshlit.gateway.GatewayRoutingTools { get<com.meshlit.gateway.GatewayHost>() }.specs())
             registerAll(get<com.meshlit.control.AgentBackend>().specs())

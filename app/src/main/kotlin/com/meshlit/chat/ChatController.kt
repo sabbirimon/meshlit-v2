@@ -13,14 +13,15 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.UUID
 
-@Serializable data class ChatOptions(val onlineProfileId:String?=null,val systemPrompt:String="",val maxTokens:Int=1024,val temperature:Float=0.7f,val historyMessages:Int=10,val routeId:String?=null,val routeScenario:String="general",val webTools:Boolean=false,val phoneTools:Boolean=false,val memoryTools:Boolean=false) {
-    fun validate(){require(!(webTools || phoneTools || memoryTools) || (onlineProfileId==null && routeId==null)){"Chat tools currently require an on-device model"};require(routeId==null || routeId=="__auto__" || routeId.matches(Regex("[A-Za-z0-9_-]{1,64}")));require(routeScenario.matches(Regex("[a-z0-9_-]{1,40}")));require(routeId==null || (onlineProfileId==null && maxTokens<=1024));require(systemPrompt.length<=4000 && maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f && historyMessages in 0..20)}
+@Serializable data class ChatOptions(val onlineProfileId:String?=null,val systemPrompt:String="",val maxTokens:Int=1024,val temperature:Float=0.7f,val historyMessages:Int=10,val routeId:String?=null,val routeScenario:String="general",val webTools:Boolean=false,val phoneTools:Boolean=false,val memoryTools:Boolean=false,val showTokenStats:Boolean=true,val localSearchTools:Boolean=false,val outputBudgetMode:OutputBudgetMode=OutputBudgetMode.MANUAL,val outputTargetSeconds:Int=30) {
+    val usesLocalTools get()=webTools || phoneTools || memoryTools || localSearchTools
+    fun validate(){require(outputTargetSeconds in 5..120);require(!usesLocalTools || (onlineProfileId==null && routeId==null)){"Chat tools currently require an on-device model"};require(routeId==null || routeId=="__auto__" || routeId.matches(Regex("[A-Za-z0-9_-]{1,64}")));require(routeScenario.matches(Regex("[a-z0-9_-]{1,40}")));require(routeId==null || (onlineProfileId==null && maxTokens<=1024));require(systemPrompt.length<=4000 && maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f && historyMessages in 0..20)}
 }
-@Serializable data class ChatMessage(val id:String=UUID.randomUUID().toString(),val role:String,val text:String)
+@Serializable data class ChatMessage(val id:String=UUID.randomUUID().toString(),val role:String,val text:String,val usage:ChatTokenUsage?=null)
 @Serializable data class ChatConversation(val id:String=UUID.randomUUID().toString(),val title:String="New chat",
     val messages:List<ChatMessage> = emptyList(),val updatedAt:Long=System.currentTimeMillis(),val options:ChatOptions=ChatOptions(),val usageNote:String?=null)
 data class ChatState(val conversations:List<ChatConversation> = emptyList(),val selectedId:String?=null,
-    val running:Boolean=false,val error:String?=null) {
+    val running:Boolean=false,val error:String?=null,val generationStartedMs:Long?=null,val activeOutputLimit:Int?=null) {
     val current get()=conversations.firstOrNull { it.id==selectedId }
 }
 
@@ -32,6 +33,9 @@ class ChatController(private val context:Context,private val coordinator:Inferen
     private val json=Json { ignoreUnknownKeys=true }
     private val persistence=Mutex()
     private var generation:Job?=null
+    private val evidence=MutableStateFlow<ClusterOutputEvidence?>(null)
+    val clusterEvidence=evidence.asStateFlow()
+    fun budgetDecision(options:ChatOptions)=clusterOutputBudget(options,coordinator.engineTag,coordinator.loadedModel(),evidence.value,android.os.SystemClock.elapsedRealtime())
     @Volatile var generationId:String?=null; private set
     val ready=appScope.async(Dispatchers.IO) {
         val items=runCatching { json.decodeFromString<List<ChatConversation>>(file.readText()) }.getOrDefault(emptyList()).take(40)
@@ -79,13 +83,17 @@ class ChatController(private val context:Context,private val coordinator:Inferen
         val selected=_state.value.selectedId!!
         val user=ChatMessage(role="user",text=text.trim())
         val assistant=ChatMessage(role="assistant",text="")
-        val options=_state.value.current!!.options
+        val configured=_state.value.current!!.options
+        val decision=budgetDecision(configured)
+        val options=configured.copy(maxTokens=decision.limit)
         val history=_state.value.current!!.messages.filter{it.text.isNotBlank()}.takeLast(options.historyMessages)
-        _state.update { old -> old.copy(running=true,error=null,conversations=old.conversations.map { c ->
+        _state.update { old -> old.copy(running=true,error=null,generationStartedMs=android.os.SystemClock.elapsedRealtime(),activeOutputLimit=options.maxTokens,conversations=old.conversations.map { c ->
             if(c.id==selected) c.copy(title=if(c.messages.isEmpty()) text.trim().take(56) else c.title,
                 messages=(c.messages+user+assistant).takeLast(100),updatedAt=System.currentTimeMillis()) else c }) }
         generationId=assistant.id
         generation=appScope.launch {
+            val started=android.os.SystemClock.elapsedRealtime()
+            fun recordUsage(usage:ChatTokenUsage) {_state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(messages=c.messages.map{if(it.id==assistant.id) it.copy(usage=usage.copy(budgetReason=decision.explanation)) else it}) else c})}}
             try {
                 ready.await();save()
                 androidx.core.content.ContextCompat.startForegroundService(context,
@@ -99,12 +107,14 @@ class ChatController(private val context:Context,private val coordinator:Inferen
                     val result=router.execute(options.routeId.takeUnless{it=="__auto__"},options.routeScenario,prompt,options.maxTokens)
                     if(!result.success) error("Route ${result.routeId} failed at step ${(result.failedStep ?: 0)+1}: ${result.error}")
                     _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(messages=c.messages.map{if(it.id==assistant.id) it.copy(text=result.text) else it},usageNote="Route ${result.routeId} · ${result.mode} · ${result.steps.size} completed steps") else c})}
+                    recordUsage(chatTokenUsage("Routed run · counts not aggregated",options.maxTokens,null,null,null,android.os.SystemClock.elapsedRealtime()-started,null,null))
                 } else if(options.onlineProfileId!=null) {
                     val (profile,reply)=providers.generate(options.onlineProfileId, (history+user).map{com.meshlit.core.inference.models.OnlineMessage(it.role,it.text)},options.systemPrompt,options.maxTokens,options.temperature)
                     val cost=reply.estimatedCost(profile)
                     val note="${profile.name} · input ${reply.inputTokens ?: "unknown"}, output ${reply.outputTokens ?: "unknown"} tokens · "+
                         (cost?.let{"estimated ${"%.6f".format(it)} ${profile.currency} (user prices)"} ?: "cost unknown")
                     _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(messages=c.messages.map{if(it.id==assistant.id) it.copy(text=reply.text) else it},usageNote=note) else c})}
+                    recordUsage(chatTokenUsage("Provider usage",options.maxTokens,reply.inputTokens,reply.outputTokens,null,android.os.SystemClock.elapsedRealtime()-started,null,null))
                 } else {
                 memory.captureRequest(user.text)
                 val prompt=memory.context(user.text)+options.systemPrompt.takeIf{it.isNotBlank()}?.let{"Instructions: $it\n\n"}.orEmpty()+if(history.isEmpty()) user.text else buildString {
@@ -112,15 +122,18 @@ class ChatController(private val context:Context,private val coordinator:Inferen
                     history.forEach { append(it.role).append(": ").append(it.text.take(4000)).append('\n') }
                     append("user: ").append(user.text)
                 }
-                if(options.webTools || options.phoneTools || options.memoryTools) {
+                if(options.usesLocalTools) {
                     fun publish(value:String){_state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(messages=c.messages.map{if(it.id==assistant.id) it.copy(text=value) else it}) else c})}}
                     val answer=localTools.run(prompt,options){publish(it)}
                     publish(answer.text+if(answer.sources.isEmpty()) "" else "\n\nSources:\n"+answer.sources.joinToString("\n"){"- $it"})
                     _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(usageNote="On-device tool loop · ${answer.calls} tool calls · native token totals not aggregated") else c})}
+                    recordUsage(chatTokenUsage("Tool loop · counts not aggregated",options.maxTokens,null,null,null,android.os.SystemClock.elapsedRealtime()-started,null,null))
                 } else {
                 val buffer=StringBuilder()
-                val originalModel=library.models.value.firstOrNull{it.installed && it.path==coordinator.loadedModel()?.modelPath}
-                suspend fun generate()=coordinator.infer(InferenceRequest(prompt=prompt,maxTokens=options.maxTokens,temperature=options.temperature,reuseContext=coordinator.engineTag=="llama-native-local",onToken={ token ->
+                val originalInfo=coordinator.loadedModel()
+                val originalEngine=coordinator.engineTag
+                val originalModel=library.models.value.firstOrNull{it.installed && it.path==originalInfo?.modelPath}
+                suspend fun generate()=coordinator.infer(InferenceRequest(prompt=prompt,maxTokens=options.maxTokens,temperature=options.temperature,reuseContext=coordinator.engineTag=="llama-native-local",expectedModelPath=originalInfo?.modelPath,onToken={ token ->
                     buffer.append(token)
                     _state.update { old -> old.copy(conversations=old.conversations.map { c ->
                         if(c.id==selected) c.copy(messages=c.messages.map { if(it.id==assistant.id) it.copy(text=buffer.toString()) else it }) else c }) }
@@ -139,6 +152,11 @@ class ChatController(private val context:Context,private val coordinator:Inferen
                     _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(messages=c.messages.map{if(it.id==assistant.id) it.copy(text=answer) else it}) else c})}
                 }
                 if(completed is MeshlitResult.Success) _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(usageNote="Input ${completed.value.promptTokens ?: "unknown"}, output ${completed.value.generatedTokens ?: "unknown"} tokens · cached ${completed.value.cachedPromptTokens ?: "unknown"}") else c})}
+                if(completed is MeshlitResult.Success && originalEngine=="llama-rpc-layer" && coordinator.engineTag==originalEngine && originalInfo!=null && coordinator.loadedModel()===originalInfo && (completed.value.generatedTokens ?: 0)>=8) {
+                    completed.value.tokensPerSecond?.takeIf{it.isFinite() && it>0}?.let{evidence.value=ClusterOutputEvidence(originalInfo,it.toDouble(),android.os.SystemClock.elapsedRealtime())}
+                }
+                if(completed is MeshlitResult.Success) recordUsage(chatTokenUsage("Runtime usage",options.maxTokens,completed.value.promptTokens?.toLong(),completed.value.generatedTokens?.toLong(),completed.value.cachedPromptTokens?.toLong(),
+                    android.os.SystemClock.elapsedRealtime()-started,completed.value.tokensPerSecond,originalInfo?.contextSize,completed.value.finishReason.tag))
                 }
                 }
             } catch(cancelled:CancellationException) { throw cancelled }
@@ -147,7 +165,7 @@ class ChatController(private val context:Context,private val coordinator:Inferen
                 withContext(NonCancellable) { runCatching { save() } }
                 generationId=null
                 context.stopService(android.content.Intent(context,ChatInferenceService::class.java))
-                _state.update { it.copy(running=false) }
+                _state.update { it.copy(running=false,generationStartedMs=null,activeOutputLimit=null) }
             }
         }
         return assistant.id

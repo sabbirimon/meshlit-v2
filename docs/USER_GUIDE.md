@@ -237,11 +237,12 @@ distributed jobs remain later. Details: docs/hyperl/APP_AND_LIBRARY.md.
 
 Open the menu to search all current workspaces. Monitor, Networking, SSH and
 Security Lab have direct shortcuts. Appearance selects Graphite/Aurora/Ocean/Paper/
-Coffee, Cards/Rows and Adaptive/Focus. Phones retain Chat, Models, Monitor, Settings
-bottom tabs; wide Android windows can show a persistent sidebar. These changes do
+Coffee, Cards/Rows and Adaptive/Focus. The four phone bottom tabs are removed;
+use the sidebar to keep the reply area taller. Wide Android windows can show a
+persistent sidebar. These changes do
 not restore the old Android Studio UI or response mechanism.
 
-Use Model details and capabilities in Models or the chat info button for the
+Use Model details and capabilities in Models or Chat menu → Model details for the
 selected artifact's architecture, quantization, context, backend and catalog tags
 when known. Text generation does not establish coding/reasoning accuracy, tools,
 vision or image/audio/video synthesis. Separate models/adapters and tests are needed.
@@ -280,3 +281,53 @@ file is retained by Meshlit; recognized text remains in chat and selected online
 providers receive their explicit audio/text inputs. Existing SDK telemetry limits
 still apply. See docs/MEMORY_AND_VOICE.md for installation, licensing, privacy and
 actual qualification limits.
+
+## Reading replies and managing tokens
+
+Replies render headings, emphasis, lists, quotes, tables and fenced code as native
+text. Headings and bold emphasis use the theme accent; inline code has a contrasting
+background, and model-provided emojis remain intact. Tables/code can scroll
+horizontally; code can also wrap. Remote images appear
+as links and never load automatically. Copy/Share preserve the original response.
+Read full response opens a composer-free reader with search, an outline and original
+Markdown view. Response actions can save a Markdown file or open token details.
+
+Chat menu → Conversation and token settings opens the expanded settings sheet.
+Set the exact maximum output (1–2,048; routed runs up to 1,024), history messages,
+instructions, sampling and separate tool permissions. The requested limit is a
+ceiling, not an actual token count or a guarantee of long replies. Runtime context
+capacity appears only when known; this is not a tokenizer-based remaining budget.
+
+Show token speed indicator controls the compact per-chat indicator. During a run
+it shows elapsed application time and the requested output ceiling. On completion,
+a trustworthy runtime rate is preferred; if counts alone are available, the average
+is explicitly labelled as end-to-end, including input/network overhead. Missing
+counts/rates stay unavailable. The pinned SDK's unqualified counters are not used.
+Text callbacks and characters are never counted as tokens. Details belong to the
+individual response and survive restart; older responses have no added metadata.
+
+Native bar charts require an explicit validated `meshlit-chart` block. Meshlit does
+not invent data from prose. Format, limits and validation: docs/CHAT_PRESENTATION.md.
+
+
+## Global search, chat search and Automatic cluster output
+
+Tap Chat’s Search icon or Menu → Search all of Meshlit for offline results across
+connected app pages/options, saved model names, chats, imported articles and
+approved device access records. Chat menu → Search this chat provides Previous /
+Next in the current timeline; Read full response has its own single-reply search.
+Settings → Search access and articles imports UTF-8 text/Markdown and separately
+controls Internet and agent search grants. No background web request is made
+while typing. Brave searches need your own encrypted API key; source URLs and
+snippets remain visible. Read approved device settings uses an authenticated,
+explicitly allowlisted MCP read, with independent remote Settings delegation;
+LAN access does not require Brave or Internet search. Credentials and arbitrary
+remote/Android settings are excluded.
+
+Token management now saves Manual or Automatic cluster mode and target duration.
+Automatic uses a recent successful native cluster’s actual whole-cluster rate,
+your output ceiling and one quarter of verified context. It never adds device
+rates or infers tokens from text. Missing/stale evidence uses Manual visibly;
+local/provider/router/tool-loop usage does not qualify as cluster power.
+Detailed limits, setup, permission matrix and examples:
+[Search and cluster output guide](SEARCH_AND_CLUSTER_OUTPUT.md).

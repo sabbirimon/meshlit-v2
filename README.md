@@ -41,7 +41,7 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 
 | Area | Source behavior | Evidence and practical boundary |
 | --- | --- | --- |
-| Local AI chat | Real bundled SmolLM2 135M Instruct Q4_K_M; saved chats, model selector, selectable text, Copy/Share, keyboard-aware composer | Real emulator load and generation observed. The 101 MiB starter tests installation; it is not a strong general-purpose agent or vision model |
+| Local AI chat | Real bundled SmolLM2 135M Instruct Q4_K_M; saved chats, model selector, native Markdown/tables/code, full response reader, output-token controls and keyboard-aware composer | Real emulator load and generation observed. The 101 MiB starter tests installation; it is not a strong general-purpose agent or vision model |
 | Model management | RunAnywhere/verified HTTPS downloads, pinned Hugging Face artifacts, resumable transfers, multi-file import, validation, load/unload and startup policy | Download completion is separate from validated installation and usable generation; account access to gated weights remains required |
 | Phone layer sharding | Native CPU coordinator/workers, memory-aware layer placement and pinned authenticated TLS tunnels | Real two-worker **desktop** execution exists. Oversized-model execution across physical phones remains an acceptance gate |
 | Context and KV cache | Native context/thread/cache controls and encrypted local CPU KV checkpoints | Backend capabilities differ; distributed/portable KV recovery and replicated failover remain unfinished |
@@ -63,6 +63,9 @@ NAS and network appliances can eventually contribute storage, sensors, capture,
 preprocessing, routing or tools according to real capability. Listing a device
 category does not imply that it can execute transformer layers.
 
+[Reply reader and token controls](docs/CHAT_PRESENTATION.md) explains formatting,
+theme highlights, export and measured versus unavailable token rates.
+
 [Samsung single-phone test record](docs/DEVICE_TESTING_2026-10-08.md) separates
 actual app execution, UI checks and benchmarks from standalone GPU experiments
 and the remaining cluster/integration gates.
@@ -79,10 +82,10 @@ modes, saved fonts and accessibility scaling remain configurable.
 <td><img src="docs/assets/screenshots/settings.png" width="250" alt="Real Meshlit Android searchable settings screen"></td>
 </tr></table>
 
-Screenshots are real API 35 x86_64 emulator captures. Chat and Models show the
-final beta UI; Settings comes from the earlier reference UI checkpoint. They
-demonstrate layout, not phone performance or distributed
-inference. Retained legacy tools still need individual UX work. Third-party brands,
+Screenshots are historical real API 35 x86_64 emulator captures from before the
+latest sidebar and reply-reader changes. Settings comes from an earlier reference
+checkpoint. They demonstrate those layouts, not current phone performance or
+distributed inference. Retained legacy tools still need individual UX work. Third-party brands,
 OS keyboards and pickers retain their own identities; Google assets are not copied.
 
 ## How the pieces connect
@@ -298,3 +301,8 @@ self-hosted workspace integration research.
 The owner's [standalone HyperL repository](https://github.com/sabbirimon/HyperL)
 holds independent CLI/GUI, native SDK foundation and platform research work;
 new standalone changes are not automatically integrated into Meshlit's application.
+
+Global/current-chat search, opt-in web articles, approved remote settings reads
+and Manual/Automatic cluster output controls are documented in the
+[search and cluster output guide](docs/SEARCH_AND_CLUSTER_OUTPUT.md). Actual
+provider and multi-phone evidence remains separate from UI/policy validation.

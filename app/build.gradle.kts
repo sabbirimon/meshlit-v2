@@ -303,6 +303,9 @@ dependencies {
     implementation(libs.androidx.window.core)
     implementation(libs.androidx.compose.material.icons)
     implementation(libs.androidx.navigation.compose)
+    // Parse replies to native Compose blocks; never execute model HTML/scripts.
+    implementation(libs.commonmark)
+    implementation(libs.commonmark.tables)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Logging — slf4j-api alone gives us NOP; logback-android binds it

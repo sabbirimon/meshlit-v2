@@ -580,3 +580,45 @@ jobs. The owner requested a more polished UI and built-in developer tools; those
 workbench/editor changes and detailed IDE plan evolve in the standalone repo.
 Full SDK, real native mobile/accelerator, profiler/debugger, tensor/model and
 distributed/telecom execution remain later gates. Physical-device tests stay paused.
+
+## Reply presentation, token controls and search continuation — 2026-10-08
+
+The owner resumed physical Samsung testing. The shared modern interface removes
+the four app bottom tabs while retaining the searchable sidebar destinations.
+Native bounded Markdown blocks, full reply reader, themed emphasis, preserved
+emoji, selectable/wrappable code, tables and explicit-data charts replace the
+single large reply card. The existing default local model, prompt/history and
+streaming engine remain in place. Token settings persist per conversation; rates
+use authoritative runtime counts and unknown SDK usage stays unknown.
+
+Build 35 passes both Full app suites/APKs/lint and Play Review APK/lint. The
+retained targeted JVM set has 856 cases with no failures/errors/skips. Two actual
+USB UI tests pass in 27.701 seconds, covering reader/rendering controls plus
+Cancel, Save, persistence, reopen and restoration. A separate fresh real model
+UI test on build 34 passes in 92.336 seconds, including full pinned 105,454,432-byte
+download/checksum, Load, Send and Unload. Details, hashes, individual wall times
+and remaining gates are in `docs/DEVICE_TESTING_2026-10-08.md`.
+
+Global/local chat search, imported article indexing, separate human/agent web
+grants, fixed Brave API search and read-only approved device settings are added
+in source. Manual remains the output default; Automatic cluster budgeting uses
+only a recent authoritative native whole-cluster rate, the human ceiling and a
+bounded context allocation. No rate is inferred from characters, memory, GPU
+inventory or added device counts. Search and cluster contracts are passing in
+build 36; final affected-source/UI validation is still recorded separately.
+
+Standalone HyperL `dev` points to `67b30e0`. The owner's open PR #2 into `main`
+has 28 successful checks, three skipped publication checks and none pending or
+failed as observed at 15:29 UTC. It is unmerged; installer build success is
+distinct from signing, notarization and actual platform installation.
+
+Final build 37 passes the affected-source JVM/APK/lint set in 27m25s. The retained
+targeted set totals 887 cases without failures/errors/skips, with unchanged
+common/GPU evidence explicitly retained. Three actual Samsung USB UI tests pass
+in 41.072s, including eleven local search checks; the clipped Web category from
+the failed build-36 attempt is corrected with wrapping chips. A fresh real model
+UI test on the same V2 build passes in 87.193s, verifying all pinned model bytes,
+Load, non-empty local generation and Unload. Review static checks pass; live web,
+remote settings, physical cluster, microphone and new wireless tests remain
+separate gates. Exact artifacts, timings and limitations are recorded in the
+device ledger. Human grants and the owner's selected chat/options are preserved.

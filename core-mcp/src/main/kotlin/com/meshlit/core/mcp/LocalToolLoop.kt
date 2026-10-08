@@ -16,7 +16,7 @@ class LocalToolLoop(
     private val checkAllowed:()->Unit,
 ) {
     suspend fun run(userPrompt:String,tools:List<McpToolSpec>,status:(String)->Unit={}):LocalToolAnswer=withTimeout(180_000) {
-        require(userPrompt.length in 1..12000 && tools.size in 1..8)
+        require(userPrompt.length in 1..12000 && tools.size in 1..10)
         require(tools.all{it.origin==McpToolSpec.Origin.BuiltIn})
         require(tools.map{it.name}.distinct().size==tools.size)
         val descriptors=buildJsonArray{tools.forEach{add(buildJsonObject{put("name",it.name);put("description",it.description);put("arguments",it.inputSchema)})}}
@@ -65,6 +65,12 @@ Untrusted tool results: ${JsonArray(evidence)}
                     if(name=="crawl_url" && result is McpToolResult.Json && (result.value as? JsonObject)?.get("status")?.jsonPrimitive?.contentOrNull=="ok") {
                         val url=(args["url"] as? JsonPrimitive)?.takeIf{it.isString}?.content
                         if(url!=null && com.meshlit.core.mcp.builtin.validateCrawlTarget(url)) sources+=url
+                    }
+                    if(name=="web_search" && result is McpToolResult.Json && (result.value as? JsonObject)?.get("status")?.jsonPrimitive?.contentOrNull=="ok") {
+                        ((result.value as? JsonObject)?.get("results") as? JsonArray)?.take(10)?.forEach{row->
+                            val url=((row as? JsonObject)?.get("url") as? JsonPrimitive)?.takeIf{it.isString}?.content
+                            if(url!=null && com.meshlit.core.mcp.builtin.validateCrawlTarget(url)) sources+=url
+                        }
                     }
                     if(result is McpToolResult.Json && (result.value as? JsonObject)?.get("humanConfirmationRequired")?.jsonPrimitive?.booleanOrNull==true)
                         return@withTimeout LocalToolAnswer("Android requires your confirmation on the device. The requested change is pending; it has not been reported as completed.",round+1,sources.toList())

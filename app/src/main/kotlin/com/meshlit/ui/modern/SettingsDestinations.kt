@@ -5,6 +5,7 @@ data class SettingsDestination(val id:String,val title:String,val description:St
     val keywords:String="")
 object SettingsDestinations {
     val all=listOf(
+        SettingsDestination("search","Search access and articles","Offline content search, Internet permission and agent search grants",keywords="global chat articles Brave API key web internet search"),
         SettingsDestination("appearance","Appearance","Dynamic colors, accents, light and dark mode",keywords="theme display wallpaper font motion palette glass typography readability contrast"),
         SettingsDestination("models","Models and downloads","Import files, manage downloads and load local models",keywords="hugging face token storage GGUF RAM"),
         SettingsDestination("media","Camera, vision and audio","Real image input, microphone and existing SDK media paths",keywords="CCTV webcam phone camera microphone WAV speech VLM STT TTS"),

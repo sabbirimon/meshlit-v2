@@ -107,7 +107,9 @@ class ModelDownloadUiDeviceTest {
             assertEquals("runanywhere",inference.engineTag)
             measurements["uiLoadWallMs"]=(System.nanoTime()-loadStart)/1_000_000.0
             chat.newChat();chat.setOptions(ChatOptions(maxTokens=16,temperature=0f,historyMessages=0))
-            compose.onNode(hasText("Chat") and hasAnyAncestor(hasTestTag("workspace-bottom-bar"))).performClick()
+            compose.onNodeWithContentDescription(context.getString(R.string.modern_menu)).performClick()
+            compose.onNodeWithTag("app-drawer").performScrollToNode(hasTestTag("workspace-chat"))
+            compose.onNodeWithTag("workspace-chat").performClick()
             compose.onNodeWithTag("chat-composer").performTextInput("Say hello in one short sentence.")
             closeSoftKeyboard()
             val generationStart=System.nanoTime()

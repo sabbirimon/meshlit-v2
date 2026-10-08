@@ -14,7 +14,7 @@ import java.util.UUID
 
 @Serializable data class GatewaySettings(val port:Int=18893,val modelId:String="",val policy:GatewayPolicy=GatewayPolicy())
 /** Configuration edits are human-only; restart/rekey revokes the old listener and running request handlers. */
-class GatewayHost(context:Context,private val backend:AgentBackend,private val lab:com.meshlit.security.SecurityLab,private val packages:com.meshlit.security.LabPackages) {
+class GatewayHost(context:Context,private val backend:AgentBackend,private val lab:com.meshlit.security.SecurityLab,private val packages:com.meshlit.security.LabPackages,private val search:()->com.meshlit.search.AppSearchService) {
     private val operations = com.meshlit.operations.OperationsControl.get(context).gate
     private val store=EncryptedCredentialStore(context,"agent-gateway")
     val remoteRoutes=RemoteRoutes(context)
@@ -61,11 +61,16 @@ class GatewayHost(context:Context,private val backend:AgentBackend,private val l
         tool("security_assessment_run","Run an approved read-only tool inside an SSH-ready VM",buildJsonObject {put("type","object");put("required",buildJsonArray {add("id");add("tool")});put("properties",buildJsonObject {put("id",buildJsonObject {put("type","string")});put("tool",buildJsonObject {put("type","string");put("enum",buildJsonArray {add("apk_inventory");add("pcap_summary");add("tshark");add("sleuthkit");add("elf_inventory");add("sqlite_metadata")})})})})
         tool("gateway_routes_list","List enabled unified routes without credentials",buildJsonObject{put("type","object")})
         tool("gateway_route_execute","Execute an owner-delegated unified LLM/MCP/A2A route once",buildJsonObject{put("type","object");put("required",buildJsonArray{add("routeId");add("arguments")});put("properties",buildJsonObject{put("routeId",buildJsonObject{put("type","string")});put("arguments",buildJsonObject{put("type","object")})})})
+        search().specs().forEach{spec->tool(spec.name,spec.description,spec.inputSchema.jsonObject)}
         remoteRoutes.tools().forEach {add(it)}
     }
     private val owned=java.util.concurrent.ConcurrentHashMap<String,String>()
     private suspend fun invoke(name:String,args:JsonObject):JsonObject = operations.run(com.meshlit.core.common.control.ManagedFeature.GATEWAY,true) { invokeManaged(name,args) }
     private suspend fun invokeManaged(name:String,args:JsonObject):JsonObject {
+        if(name in setOf("app_search","web_search","search_access","device_settings_read")) {
+            val result=search().specs().single{it.name==name}.handler(args)
+            return buildJsonObject{put("content",buildJsonArray{add(buildJsonObject{put("type","text");put("text",when(result){is com.meshlit.core.mcp.McpToolResult.Json->result.value.toString();is com.meshlit.core.mcp.McpToolResult.Text->result.text;is com.meshlit.core.mcp.McpToolResult.Error->result.message})})});put("isError",result is com.meshlit.core.mcp.McpToolResult.Error)}
+        }
         if(name.startsWith("remote_")) return remoteRoutes.invoke(name,args)
         val result=when(name) {
             "gateway_routes_list"->json.encodeToJsonElement(routing.routes.value.filter{it.enabled && it.agentAllowed})

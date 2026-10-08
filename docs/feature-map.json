@@ -933,6 +933,48 @@
         "HYPERL",
         "HUMAN_ONLY"
       ]
+    },
+    {
+      "id": "global-content-search",
+      "title": "Global app/options/chat/article/device search and separate web/agent grants",
+      "status": "implemented-unit-and-Samsung-local-tested-live-web-remote-pending",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/search/AppSearchService.kt",
+        "app/src/main/kotlin/com/meshlit/search/SearchAccess.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/GlobalSearchDialog.kt",
+        "docs/SEARCH_AND_CLUSTER_OUTPUT.md"
+      ],
+      "authority": [
+        "human-search-grants",
+        "gateway-tool-scopes",
+        "remote-settings-delegation"
+      ]
+    },
+    {
+      "id": "reply-reader-token-controls",
+      "title": "Native formatted reply blocks, full reader and authoritative token details",
+      "status": "implemented-Samsung-UI-tested",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/ui/modern/ReplyContent.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/ReplyFormatting.kt",
+        "app/src/main/kotlin/com/meshlit/chat/ChatTokenUsage.kt",
+        "docs/CHAT_PRESENTATION.md"
+      ],
+      "authority": []
+    },
+    {
+      "id": "cluster-output-budget",
+      "title": "Manual or evidence-bound Automatic whole-cluster output ceiling",
+      "status": "implemented-policy-tested-physical-cluster-pending",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/chat/ClusterOutputBudget.kt",
+        "app/src/main/kotlin/com/meshlit/chat/ChatController.kt",
+        "docs/SEARCH_AND_CLUSTER_OUTPUT.md"
+      ],
+      "authority": [
+        "per-chat-human-ceiling",
+        "exact-loaded-cluster-session"
+      ]
     }
   ],
   "modules": [

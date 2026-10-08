@@ -69,7 +69,7 @@ private fun workspaceIcon(id:String):ImageVector=when(id) {
 
 @Composable
 internal fun WorkspaceSidebar(state:ChatState,current:String,style:SidebarStyle,onSelect:(String)->Unit,onNew:()->Unit,
-    onChat:(String)->Unit,onDelete:(String)->Unit) {
+    onChat:(String)->Unit,onDelete:(String)->Unit,onGlobalSearch:()->Unit) {
     var query by rememberSaveable {mutableStateOf("")}
     val colors=MaterialTheme.colorScheme
     Column(Modifier.fillMaxSize()) {
@@ -83,6 +83,7 @@ internal fun WorkspaceSidebar(state:ChatState,current:String,style:SidebarStyle,
             }
             IconButton(onClick={onSelect("settings")}) {Icon(Icons.Default.Settings,"Settings")}
         }
+        TextButton(onClick=onGlobalSearch,modifier=Modifier.fillMaxWidth().heightIn(min=T.touch).testTag("workspace-global-search")){Icon(Icons.Default.Search,null);Spacer(Modifier.width(T.small));Text("Search all of Meshlit")}
         OutlinedTextField(query,{query=it},Modifier.fillMaxWidth().padding(horizontal=T.medium).testTag("workspace-search"),singleLine=true,
             textStyle=MaterialTheme.typography.bodyMedium,placeholder={Text("Find a workspace")},leadingIcon={Icon(Icons.Default.Search,null)},
             trailingIcon={if(query.isNotBlank()) IconButton(onClick={query=""}){Icon(Icons.Default.Close,"Clear menu search")}},shape=RoundedCornerShape(16.dp))

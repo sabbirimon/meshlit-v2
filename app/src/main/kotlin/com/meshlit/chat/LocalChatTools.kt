@@ -8,12 +8,13 @@ import com.meshlit.core.mcp.*
 
 /** Chat grants expose a small tool list; each existing tool retains its own
  * saved delegation, OS permission and operation checks. No generic shell tool. */
-class LocalChatTools(private val inference:InferenceCoordinator,private val gate:OperationGate,private val registry:()->McpToolRegistry) {
+class LocalChatTools(private val inference:InferenceCoordinator,private val gate:OperationGate,private val registry:()->McpToolRegistry,private val search:()->com.meshlit.search.AppSearchService) {
     suspend fun run(prompt:String,options:ChatOptions,status:(String)->Unit):LocalToolAnswer=gate.run(ManagedFeature.AUTOMATION,true) {
         val model=inference.loadedModel() ?: error("Load a local model before enabling tools")
         val names=buildSet {
             if(options.memoryTools) add("personal_memory")
-            if(options.webTools) add("crawl_url")
+            if(options.webTools) addAll(listOf("crawl_url","web_search","search_access"))
+            if(options.localSearchTools) add("app_search")
             if(options.phoneTools) addAll(listOf("android_control_status","android_control","android_package_status","android_package_request"))
         }
         val tools=registry().list().filter{it.name in names && it.origin==McpToolSpec.Origin.BuiltIn}
@@ -24,6 +25,6 @@ class LocalChatTools(private val inference:InferenceCoordinator,private val gate
                     expectedModelPath=model.modelPath,onDeviceOnly=true,publishEvents=false,onToken={}))
                 when(result){is MeshlitResult.Success->result.value.finalText;is MeshlitResult.Failure->error("Local tool planning failed: ${result.error.tag}")}
             }
-        },invoke={registry().invoke(it)},checkAllowed={gate.requireAllowed(ManagedFeature.AUTOMATION,true)}).run(prompt,tools,status)
+        },invoke={request->if(request.name=="crawl_url") search().access.web(true){registry().invoke(request)} else registry().invoke(request)},checkAllowed={gate.requireAllowed(ManagedFeature.AUTOMATION,true)}).run(prompt,tools,status)
     }
 }

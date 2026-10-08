@@ -21,3 +21,12 @@ Soup training code or weights are bundled in this APK. The SSH supervisor is
 original Meshlit source. Uncensored-AI/Heretic (AGPL-3.0), the referenced Flutter
 app and USB launcher are research references only; none of their code is copied.
 See `docs/local-model-behavior-and-training.md`.
+
+## CommonMark reply parsing
+
+`org.commonmark:commonmark` and `commonmark-ext-gfm-tables` are pinned to 0.30.0.
+Upstream: https://github.com/commonmark/commonmark-java, BSD-2-Clause,
+Copyright (c) 2015, Robin Stocker. The unmodified license is distributed in
+`app/src/main/assets/licenses/commonmark-java-BSD-2-Clause.txt`.
+Meshlit renders parsed nodes as native Compose text/blocks; HTML, scripts and
+remote images are not executed or automatically fetched.

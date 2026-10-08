@@ -58,4 +58,14 @@ class LocalToolLoopTest {
         val result=LocalToolLoop({if(plans++==0) call else answer},{McpToolResult.Json(buildJsonObject{put("status","blocked");put("url","https://example.com")})},{}).run("test",listOf(descriptor()))
         assertTrue(result.sources.isEmpty())
     }
+    @Test fun successfulWebSearchAddsOnlyReturnedPublicHttpsSources()=runBlocking {
+        var plans=0
+        val request="""{"action":"tool","name":"web_search","arguments":{"query":"articles"}}"""
+        val spec=McpToolSpec("web_search","test descriptor"){McpToolResult.Text("")}
+        val result=LocalToolLoop({if(plans++==0) request else answer},{McpToolResult.Json(buildJsonObject{put("status","ok");put("results",buildJsonArray{
+            add(buildJsonObject{put("url","https://example.com/article")});add(buildJsonObject{put("url","javascript:bad")});add(buildJsonObject{put("url","https://user:password@example.com/")})
+        })})},{}).run("Find articles",listOf(spec))
+        assertEquals(listOf("https://example.com/article"),result.sources)
+    }
+
 }

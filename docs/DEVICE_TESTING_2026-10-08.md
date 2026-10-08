@@ -266,3 +266,101 @@ connections and discovery returns no service; no new wireless speech result is
 claimed. Live microphone, audible playback quality, Stop/background/revocation
 and new interactive UI acceptance remain pending. No secure lockscreen bypass or
 automatic microphone grant was performed.
+
+## Reply presentation and token controls — builds 32–35
+
+The owner unlocked the Samsung for the next tests. The shared phone/wide UI now
+removes the four app bottom tabs; Android's system navigation remains. Monitor,
+Networking, SSH, Labs, Models and other destinations remain in the sidebar.
+Assistant replies use native Markdown blocks, readable theme typography, tables,
+selectable code with Copy/Wrap/Scroll, explicit data charts and a full response
+reader with outline/search. These rendering changes do not replace the model,
+its system prompt, history or local inference engine.
+
+Build 35 passed both Full app unit suites/APKs, V2 instrumentation APK, Full lint
+and Play Review APK/lint in **19m33s**. The retained targeted JVM set totals 856
+cases with zero failures, errors or skips; unchanged common/GPU/core results are
+retained separately. The installed V2 APK SHA-256 is
+`500b94afd80c91b8ad58ee4348ae962b4de83a8ba0c283a647c2977b1dd18176`;
+test APK is `faaab547a1aa9e14eaf1fd5e31e290f60c88dd1bccc507037126cccb097ad483`.
+Bundled pinned GGUF and offline HTML guide equality were verified in both Full
+APKs.
+
+Two actual app-UID USB tests passed in **27.701 seconds**: ten presentation/settings
+checks and six native renderer checks. The settings test exercises Cancel,
+Save, persisted output ceiling/speed-display changes, reopening and restoration
+of the owner's settings. Unknown SDK context capacity is displayed as unknown,
+rather than zero or a guessed capacity. The renderer uses an explicitly labelled
+Markdown/chart fixture to test UI formatting, Copy, Wrap/Scroll, table, chart,
+outline and reader navigation; fixture values are not live weather/model evidence.
+Screenshots were pulled and visually inspected. An earlier build-33 UI test failed
+because its switch selector matched four controls; that failure does not establish
+Save/persistence success. Build 35 uses unique selectors and verifies persistence.
+
+## Fresh real model download and generation — build 34
+
+A separate USB UI test passed in **92.336 seconds**, pressing Add URL, Download,
+Load, Send and Unload. The phone freshly downloaded all **105,454,432 bytes** of
+SmolLM2 135M Instruct Q4_K_M from pinned Hugging Face revision
+`09816acd5d99df7be770d85ea30822623dab342c`, then verified full SHA-256
+`2e8040ceae7815abe0dcb3540b9995eaa1fa0d2ca9e797d0a635ae4433c68c2d`.
+It generated a non-empty local reply. The test restored the selected chat/model
+and options; its real qualification chat remains inspectable.
+
+| Action | One observed wall time |
+| --- | ---: |
+| Download, checksum validation and installation | 67,961.512 ms |
+| UI Load through completion | 4,220.591 ms |
+| UI Send through completion | 879.225 ms |
+| UI Unload through completion | 2,539.884 ms |
+
+The output ceiling was 16 tokens. The report records 20 output **characters**,
+which do not establish generated-token counts or tokens/second. These are single
+debug-build wall times, not sustained throughput, quality, thermal or GPU inference
+benchmarks. Download uses the phone's Internet independently of the ADB transport.
+Previously recorded wireless tests remain historical; no fresh wireless result is
+implied by this USB test. Live microphone, hosted speech/search and a physical
+second-phone cluster still require separate acceptance evidence.
+
+## Final search, reply and model checks — build 37
+
+The final affected-source build passed in **27m25s**: both Full app unit suites,
+APKs and lint, V2 instrumentation APK, and V2 Play Review APK/lint. The retained
+targeted JVM set is **887 cases, zero failures/errors/skips**; unchanged common/GPU
+results remain prior evidence, rather than newly rerun tests. Full lint has zero
+errors, 366 warnings and 18 hints per flavor; V2 Review has zero errors, 369
+warnings and 18 hints. The Review static check passes for target SDK 36, legal
+asset equality, removed forbidden permissions/services and 23 ARM64 native ELF
+libraries aligned to 16 KiB. Production signing, runtime 16 KiB and Play acceptance
+are still separate gates.
+
+Three actual app-UID USB UI tests pass in **41.072 seconds**: ten presentation/
+settings checks, six labelled renderer checks, and eleven local search checks.
+Global search opens the actual token setting, shows Manual fallback for an
+unmeasured Automatic cluster, searches workspace destinations and displays every
+category. Chat search uses the owner's saved conversation, exercises Previous/
+Next and preserves the selected chat/options. Web access remains gated; no key,
+credential, web request or human grant was changed. Screenshots were pulled and
+visually inspected. Build 36 failed because Web was clipped outside a horizontal
+category row; build 37 wraps categories and verifies each one is displayed.
+
+V1 APK SHA-256: `7a2a2d013d65652552be605e5b9f7867187ec669adc6eec204204c2f87743d42`;
+V2: `d29f083e4f515dbe10bd17afce54c9106015fef19802cbeed52ab6198b5045fe`;
+instrumentation: `d9a81806b0b191f01c13f1dbc54cd2220e80853d4bbd088083895e0baff58637`;
+ARM64 Review: `03650c05f6b63dcd968dc71b29b2351b98a52f602ea7fc201841e3c14687a5e5`.
+The V2 debug certificate SHA-256 remains
+`1e9e5cf146c9a4cb7035d79b1eced1c0b298b0ca0d9080a887c8ab085f1ddf60`.
+Both Full APKs retain the pinned model and byte-identical offline HTML guide.
+
+A fresh build-37 USB model UI test passes in **87.193 seconds**, downloading and
+hashing the full pinned 105,454,432-byte GGUF, then Load, Send and Unload. One
+observation: download/validation/install **63,329.948 ms**, Load **4,600.956 ms**,
+Send-to-completion **925.263 ms**, Unload **2,768.615 ms**. The qualification ceiling
+is 16 tokens and the report records 20 characters, not an authoritative token
+count. No tokens/second is inferred. The owner's selected model/chat/options are
+restored; the temporary stay-awake preference is returned to its original value.
+
+Wireless discovery currently exposes no service, so this increment has USB
+evidence only. Live Brave/provider execution, approved second-device settings,
+physical multi-phone throughput and live microphone/playback remain unrun here.
+Fixture provider/remote replies and cluster-policy tests do not establish them.
