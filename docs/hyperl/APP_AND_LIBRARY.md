@@ -82,5 +82,11 @@ describes CLI/Python/C workflows, NumPy/CPU Torch copies, explicit macOS Metal
 selection and encrypted dataset streaming. Those desktop integrations are not
 automatically ported into the Android app. Native mobile GPU/NPU backends,
 model/tensor libraries, distributed HyperL jobs and automatic storage spill need
-separate designs and hardware tests. Physical-phone tests remain paused by the
-owner. Signing, lifecycle/thermal tests and security review remain production gates.
+separate designs and hardware tests. The owner resumed single-phone GPU testing:
+the standalone native Vulkan runner passes eleven CPU-verified kernel outputs and
+two expected overflow rejections on Samsung Galaxy A20s SM-A207F / Adreno 506,
+Android 11. [Build and hardware scope](https://github.com/sabbirimon/HyperL/blob/codex/production-library/docs/ANDROID_VULKAN.md).
+This ADB-shell experiment does not run through this screen or prove an app-UID
+JNI adapter, model inference or mobile production readiness. Two-phone cluster
+acceptance remains paused. Signing, lifecycle/thermal tests and security review
+remain production gates. The six-file source port is unchanged.

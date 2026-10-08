@@ -15,6 +15,15 @@ emulator observations, host runtime proof and physical-phone proof are separate.
 
 ## HyperL app port — 2026-10-08
 
+Subsequent owner-authorized **single-phone GPU experiment** passes on Samsung
+Galaxy A20s SM-A207F, Android 11/API 30, Adreno 506 / Vulkan 1.1.128. HyperL's
+separate native ADB-shell runner executes eleven finite-output cases matching
+its CPU reference and two expected overflow rejections; temporary device files
+are removed. [Hardware/build record](https://github.com/sabbirimon/HyperL/blob/codex/production-library/docs/ANDROID_VULKAN.md).
+No Meshlit APK was installed/run, no app JNI/GPU backend was wired, and the portable
+source hashes remain unchanged. App lifecycle/thermal and two-phone cluster tests
+remain pending. The build evidence below predates this hardware experiment.
+
 The review branch adds Settings → HyperL libraries to both flavors: twelve actual
 CPU recipes, strict JSON, complete-graph memory admission, editable examples,
 Stop, Metal/Vulkan source generation and explicit clipboard copying. Source
