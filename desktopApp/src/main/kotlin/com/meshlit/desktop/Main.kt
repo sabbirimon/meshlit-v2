@@ -43,6 +43,7 @@ fun main(args: Array<String>) {
     var messages by remember { mutableStateOf(listOf<Message>()) }
     var prompt by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
+    var hostProtocol by remember { mutableStateOf(HostProtocol.OPENAI) }
     var endpoint by remember { mutableStateOf("") }
     var token by remember { mutableStateOf("") }
     var colibriHost by remember { mutableStateOf(false) }
@@ -105,7 +106,7 @@ fun main(args: Array<String>) {
         job = scope.launch {
             var active: HostClient? = null
             try {
-                val host = HostEndpoint.parse(endpoint); val connectedClient = HostClient(host, token); active = connectedClient; client = connectedClient
+                val host = HostEndpoint.parse(endpoint, hostProtocol); val connectedClient = HostClient(host, token); active = connectedClient; client = connectedClient
                 val choices = withContext(Dispatchers.IO) { connectedClient.models() }
                 if (revision != currentRevision) throw CancellationException("Request superseded")
                 models = choices; model = choices.firstOrNull().orEmpty(); connected = true; observedAt = System.nanoTime()
@@ -125,7 +126,7 @@ fun main(args: Array<String>) {
             var active: HostClient? = null
             try {
                 val session = if (localMode) checkNotNull(localSession) else null
-                val generationClient = HostClient(session?.endpoint ?: HostEndpoint.parse(endpoint), session?.token ?: token); active = generationClient; client = generationClient
+                val generationClient = HostClient(session?.endpoint ?: HostEndpoint.parse(endpoint, hostProtocol), session?.token ?: token); active = generationClient; client = generationClient
                 val result = withContext(Dispatchers.IO) {
                     generationClient.generate(model, context, GenerationBudget(budget.toInt())) { chunk ->
                         runBlocking { withContext(Dispatchers.Main) { if (revision == currentRevision) messages = messages.dropLast(1) + messages.last().copy(text = messages.last().text + chunk) } }
@@ -227,14 +228,21 @@ fun main(args: Array<String>) {
                             Text(t("Download a trusted .gguf in your browser, choose it here, then Load. Files stay at your chosen location; no duplicate import or automatic download. .safetensors/.bin require conversion outside this app. Unload or closing the app stops its private local process. Stop during generation also unloads it.", "在浏览器中下载可信的 .gguf，在这里选择后加载。文件保留原位置，不复制、不自动下载。.safetensors/.bin 需要在应用外转换。卸载或关闭应用会停止私有本地进程；生成时停止也会卸载模型。"), style = MaterialTheme.typography.caption)
                         } else {
                         MenuHeading("models", t("Explicit host access", "明确授权主机访问"))
-                        Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(colibriHost, { stop(); colibriHost = it; connected = false; observedAt = null }); Text(t("Use Colibri host", "使用 Colibri 主机")) }
+                        Row {
+                            listOf("LM Studio" to "http://127.0.0.1:1234/v1", "Ollama" to "http://127.0.0.1:11434/v1", "Open WebUI" to "http://127.0.0.1:3000/api").forEach { (label, url) ->
+                                TextButton({ stop(true); hostProtocol = if (label == "Open WebUI") HostProtocol.OPEN_WEBUI else HostProtocol.OPENAI; endpoint = url; token = ""; network = false; colibriHost = false; messages = emptyList() }) { Text(label) }
+                            }
+                        }
+                        Text(if (hostProtocol == HostProtocol.OPEN_WEBUI) t("Open WebUI API: /api. Obtain your account API key from that host's Settings → Account. The administrator must enable it. This connects to your existing host; it does not install or rebrand Open WebUI.", "Open WebUI API：/api。请从该主机设置 → 账户获取 API 密钥，管理员需要启用。此连接使用现有主机，不安装或重新品牌化 Open WebUI。") else t("OpenAI-compatible API: /v1. LM Studio/Ollama must already be installed and serving the selected model. No automatic installation or remote discovery.", "OpenAI 兼容 API：/v1。LM Studio/Ollama 需要已安装并提供所选模型。不自动安装或发现远程主机。"), style = MaterialTheme.typography.caption)
+                        Text(t("The selected host may forward to a cloud provider or execute its configured server-side tools. Meshlit's local tool grants do not control that host; review its configuration.", "所选主机可能转发到云服务或执行其服务端工具。Meshlit 的本地工具授权不控制该主机，请检查主机配置。"), style = MaterialTheme.typography.caption)
+                        Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(colibriHost, { stop(true); colibriHost = it; connected = false; observedAt = null; hostProtocol = HostProtocol.OPENAI; network = false; token = ""; endpoint = ""; messages = emptyList() }); Text(t("Use Colibri host", "使用 Colibri 主机")) }
                         if (colibriHost) {
                             Row { ColibriMode.entries.forEach { mode -> TextButton({ stop(); colibriMode = mode; if (mode == ColibriMode.OFF) connected = false }) { Text((if (colibriMode == mode) "✓ " else "") + mode.name) } } }
                             Text(t("Auto uses this explicitly authorized, recently observed Colibri host while remote mode is selected. Refresh expires after 5 minutes. No server or model is installed. Agent switching is supported in the Android Experimental node with separate user grants; this preview has no agent controller.", "选择远程模式时，自动模式使用已授权且近期确认的 Colibri 主机。刷新记录在五分钟后失效，不会安装服务器或模型。代理切换需要 Android 实验性节点中的单独授权；本预览没有代理控制器。"), style = MaterialTheme.typography.caption)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(network, { network = it; if (!it) { stop(); connected = false; models = emptyList(); model = "" } }); Text(t("Allow requests to the selected host", "允许向所选主机发送请求")) }
                         Text(t("Prompts and your token go to this host. TLS uses the system trust store; redirects are blocked. HTTP is limited to literal loopback. Host model operation is managed separately.", "提示词和令牌将发送至此主机。TLS 使用系统信任库，并禁止重定向。HTTP 仅限本机回环地址。主机模型需要单独管理。"), style = MaterialTheme.typography.caption)
-                        OutlinedTextField(endpoint, { stop(); endpoint = it.take(2048); connected = false; model = ""; models = emptyList() }, label = { Text("https://host:port/v1") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                        OutlinedTextField(endpoint, { stop(true); endpoint = it.take(2048); network = false; token = ""; connected = false; model = ""; models = emptyList(); messages = emptyList() }, label = { Text("https://host:port${hostProtocol.basePath}") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                         OutlinedTextField(token, { stop(); token = it.take(8192); connected = false }, label = { Text(t("Client token · session only", "客户端令牌 · 仅当前会话")) }, modifier = Modifier.fillMaxWidth(), singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation())
                         Button(::connect, enabled = network && !busy && endpoint.isNotBlank() && (!colibriHost || colibriMode != ColibriMode.OFF)) { Text(t("Connect / refresh models", "连接 / 刷新模型")) }
                         models.forEach { id -> Row(verticalAlignment = Alignment.CenterVertically) { RadioButton(model == id, { model = id }); Text(id) } }

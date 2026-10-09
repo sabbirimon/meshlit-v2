@@ -42,6 +42,29 @@ class HostClientTest {
             assertEquals("你好 🌍", text.toString()); assertEquals(7L, usage.outputTokens); assertTrue(usage.tokensPerSecond!! > 0)
         }
     }
+    @Test fun openWebuiUsesItsDistinctAuthenticatedApiRoutes() = host { server, address ->
+        val base = address.removeSuffix("/v1") + "/api"
+        assertFails { HostEndpoint.parse(base) }
+        val endpoint = HostEndpoint.parse(base, HostProtocol.OPEN_WEBUI)
+        assertFails { HostClient(endpoint, "") }
+        server.createContext("/api/models") { e ->
+            assertEquals("Bearer scoped-key", e.requestHeaders.getFirst("Authorization"))
+            val data = "{\"data\":[{\"id\":\"webui-fixture\"}]}".toByteArray()
+            e.sendResponseHeaders(200, data.size.toLong()); e.responseBody.use { it.write(data) }
+        }
+        server.createContext("/api/chat/completions") { e ->
+            assertEquals("Bearer scoped-key", e.requestHeaders.getFirst("Authorization"))
+            val data = "data: {\"choices\":[{\"delta\":{\"content\":\"API contract only\"}}]}\n\ndata: [DONE]\n\n".toByteArray()
+            e.responseHeaders.add("Content-Type", "text/event-stream"); e.sendResponseHeaders(200, data.size.toLong())
+            e.responseBody.use { it.write(data) }
+        }
+        HostClient(endpoint, "scoped-key").use { client ->
+            assertEquals(listOf("webui-fixture"), client.models())
+            val text = StringBuilder()
+            val usage = client.generate("webui-fixture", listOf(ChatTurn("user", "test")), GenerationBudget(128)) { text.append(it) }
+            assertEquals("API contract only", text.toString()); assertNull(usage.outputTokens)
+        }
+    }
     @Test fun redirectsNeverForwardBearerToken() = host { server, address ->
         val forwarded = AtomicInteger()
         server.createContext("/v1/models") { e -> e.responseHeaders.add("Location", "$address/stolen"); e.sendResponseHeaders(302, -1); e.close() }

@@ -21,6 +21,7 @@ padding. Preserve Meshlit branding, themes, accessibility and user controls.
 | [Ollama](https://github.com/ollama/ollama) | MIT | Explicit native API adapter for installed Ollama; later reviewed optional runtime packaging |
 | [Jan](https://github.com/janhq/jan/blob/main/LICENSE) | Current root Apache-2.0 | Local/cloud workspace and assistant workflow reference; preserve licence/attribution for any copied component |
 | [AnythingLLM](https://github.com/Mintplex-Labs/anything-llm) | MIT, dependencies separate | Persistent document/workspace/RAG patterns; selectively reuse reviewed components rather than embedding its whole app |
+| [Open WebUI](https://github.com/open-webui/open-webui) | Current custom licence with branding conditions | Own authenticated API adapter; optional external branded service, no wholesale rebranding/copy |
 | LM Studio office-document-processor-sources | MPL-2.0 modifications; mixed upstream/font licences | Separate optional document service only after component/source-obligation review |
 
 The supplied comparison was outdated: Ollama now has a desktop chat app; Jan's
@@ -36,7 +37,7 @@ supported model formats, operations and real metrics. Model configuration and
 credentials bind to the selected backend; switching cannot leak history/keys.
 
 Backend choices: bundled llama.cpp CPU, optional qualified GPU backend, existing
-Ollama, existing LM Studio, generic authenticated host, Meshlit phone/cluster and
+Ollama, existing LM Studio, Open WebUI, generic authenticated host, Meshlit phone/cluster and
 later MLX on Apple Silicon. Model file sharing and task routing are separate from
 genuine multi-node layer execution; remote hosts are not pooled RAM by default.
 
@@ -98,3 +99,10 @@ ships only working controls, with unsupported features explicitly unavailable.
 - [Ollama model pulling](https://docs.ollama.com/api/pull)
 - [Ollama keep_alive](https://docs.ollama.com/faq)
 - [Ollama desktop chat app](https://ollama.com/blog/new-app)
+
+Open WebUI extensions: multi-model selection/comparison, durable chats, document knowledge,
+workspace presets, controlled tools and optional account/RBAC UI belong to milestones 2–5.
+Current addition is its explicit authenticated models/chat API route, not a claim that
+its whole Python/Svelte server, RAG index or multi-user system is bundled.
+See [API reference](https://docs.openwebui.com/reference/api-endpoints/) and
+[current licence](https://github.com/open-webui/open-webui/blob/main/LICENSE).

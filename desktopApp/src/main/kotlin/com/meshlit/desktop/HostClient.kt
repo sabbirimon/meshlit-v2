@@ -14,18 +14,19 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** System TLS, no redirects, no background discovery, no persisted bearer secrets. */
-class HostEndpoint private constructor(val base: URI) {
+enum class HostProtocol(val basePath: String) { OPENAI("/v1"), OPEN_WEBUI("/api") }
+class HostEndpoint private constructor(val base: URI, val protocol: HostProtocol) {
     val loopback: Boolean get() = base.host in setOf("127.0.0.1", "::1", "[::1]")
     fun route(path: String): URI = URI(base.toString().trimEnd('/') + "/" + path)
     companion object {
-        fun parse(text: String): HostEndpoint {
+        fun parse(text: String, protocol: HostProtocol = HostProtocol.OPENAI): HostEndpoint {
             require(text.length in 1..2048 && text.none { it.isWhitespace() || it.isISOControl() }) { "Enter an HTTPS /v1 endpoint, or HTTP on literal loopback." }
             val uri = URI(text)
             require(uri.host != null && uri.rawUserInfo == null && uri.rawQuery == null && uri.rawFragment == null)
             require(uri.scheme == "https" || (uri.scheme == "http" && uri.host in setOf("127.0.0.1", "::1", "[::1]"))) { "Remote hosts require HTTPS with a trusted certificate." }
             require(uri.port == -1 || uri.port in 1..65535)
-            require(uri.rawPath == "/v1" || uri.rawPath == "/v1/") { "Endpoint must end in /v1." }
-            return HostEndpoint(URI(text.trimEnd('/')))
+            require(uri.rawPath == protocol.basePath || uri.rawPath == protocol.basePath + "/") { "Wrong API base path." }
+            return HostEndpoint(URI(text.trimEnd('/')), protocol)
         }
     }
 }
@@ -33,6 +34,7 @@ class HostClient(private val endpoint: HostEndpoint, private val token: String) 
     init {
         require(token.length <= 8192 && token.none { it.isISOControl() })
         require(endpoint.loopback || token.isNotBlank()) { "A remote host requires a client token." }
+        require(endpoint.protocol != HostProtocol.OPEN_WEBUI || token.isNotBlank()) { "Open WebUI requires its account API token." }
     }
 
     private val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))

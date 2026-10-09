@@ -33,6 +33,14 @@ the app clears them. Appearance persists. Switching between local and remote
 clears the chat to avoid sending local history to another host.
 This preview does not provide the Android app's complete node/agent/voice features.
 
+Settings -> Remote host offers LM Studio (127.0.0.1:1234/v1), Ollama
+(127.0.0.1:11434/v1) and Open WebUI (127.0.0.1:3000/api) presets. These must already
+be installed/running by you. Presets reset prior credentials/network opt-in.
+For Open WebUI use its account API key; its administrator must enable API access.
+Then allow requests and Connect / refresh models. The host may use cloud models
+or execute its configured server-side tools; review that host's configuration.
+Full native lifecycle integration/model downloads for those hosts remain planned.
+
 The PKG contains no installation scripts, background services, login items,
 drivers, shell commands or global Java installation. The starter model is included
 in the application payload; it is not downloaded by an installer script.

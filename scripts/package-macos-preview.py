@@ -54,11 +54,13 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     args.scratch.mkdir(parents=True, exist_ok=False)
     runtime = args.scratch / "runtime"
+    clean_input = args.scratch / "application-input"
+    shutil.copytree(app_input, clean_input, symlinks=True, ignore=shutil.ignore_patterns("*.cfg", ".jpackage.xml"))
     run(args.jdk_home / "bin/jlink", "--add-modules", MODULES,
         "--strip-debug", "--no-man-pages", "--no-header-files", "--output", runtime)
     image_dir = args.scratch / "image"
     run(args.jdk_home / "bin/jpackage", "--type", "app-image", "--dest", image_dir,
-        "--input", app_input, "--runtime-image", runtime, "--name", "MeshlitPreview",
+        "--input", clean_input, "--runtime-image", runtime, "--name", "MeshlitPreview",
         "--main-jar", jars[0].name, "--main-class", "com.meshlit.desktop.MainKt",
         "--app-version", "2.0.40", "--vendor", "Sabbir Hassan Imon",
         "--description", "Experimental Meshlit authenticated host client",
@@ -128,6 +130,12 @@ def main():
     # Modified bundles are explicitly ad-hoc signed for local integrity only.
     # This is not an Apple Developer ID identity or notarization.
     run("/usr/bin/codesign", "--force", "--deep", "--sign", "-", app)
+    # Deep signing can change the native executable bytes; seal its final hash.
+    engine_file = local_resources / "local/engine.json"
+    engine_metadata = json.loads(engine_file.read_text())
+    engine_metadata["sha256"] = digest(local_resources / "local/llama-server")
+    engine_file.write_text(json.dumps(engine_metadata, indent=2) + "\n", encoding="utf-8")
+    run("/usr/bin/codesign", "--force", "--sign", "-", app)
     run("/usr/bin/codesign", "--verify", "--deep", "--strict", app)
     stem = "MeshlitPreview-2.0.40-macos-intel"
     pkg = args.output / (stem + ".pkg")
