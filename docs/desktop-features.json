@@ -327,8 +327,8 @@
       "id": "release-cleanup",
       "area": "Delivery and storage hygiene",
       "requested": "GitHub source/review/release, verified packages/checksums/provenance, retain recovery build; remove only known generated duplicates",
-      "status": "In progress",
-      "boundary": "Intel Studio DMG/PKG payloads are verified; source/review pushed, asset upload/publication tracked in RELEASE_EVIDENCE.md. About 5 GiB duplicate scratch reclaimed. User models and historical evidence must not be deleted as build junk.",
+      "status": "Experimental release verified; clean-target acceptance pending",
+      "boundary": "Intel Studio DMG/PKG payloads are verified; source/review pushed and all eight public release digests match; see RELEASE_EVIDENCE.md. About 5 GiB duplicate scratch reclaimed. User models and historical evidence must not be deleted as build junk.",
       "source": "docs/DESKTOP_BUILD_LOG.md"
     }
   ]

@@ -15,7 +15,7 @@ Updated 2026-10-10. Older bug IDs, hypotheses and screenshots are preserved in d
 | Benchmark warm-up violated shared minimum output budget | Fixed harness | 64-token warm-up; four real matched trials pass; aborted run contributes no timing data |
 | q4_0 key cache gave poor arithmetic response | Held out of normal desktop settings | f16/q8_0 exposed; no general model-quality certification; Q4_K_M weights are a different setting |
 | Combined Android lint/build stalled under concurrent load | Serial retry passes | One worker/in-process compiler; both flavors zero errors, 374 warnings each; core inference 7 warnings |
-| Windows Ghostty argument test assumed POSIX absolute paths | Fixture corrected; 30 local desktop cases pass; CI rerun pending | Native temp-directory absolute paths retain pin/literal/relative-path rejection assertions; no Ghostty process launched or Windows port claimed |
+| Windows Ghostty argument test assumed POSIX absolute paths | Fixture corrected; 30 local desktop cases and Windows host CI pass at c1f2d60 | Native temp-directory absolute paths retain pin/literal/relative-path rejection assertions; no Ghostty process launched or Windows port claimed |
 | Existing app warnings and historical cold-start/ANRs | Open acceptance/cleanup | Latest APK device tests required; prior build/start observations retain their dates |
 | Forced process loss/orphan recovery, memory/leak/long-run behavior | Unqualified | Shutdown hooks and explicit unload are implemented; stress/crash evidence still needed |
 | Physical multi-device oversized model, native placement and failover | Open implementation/acceptance | Planner/loopback evidence is insufficient for physical fleet qualification |

@@ -18,7 +18,7 @@ Updated 2026-10-10. This list tracks current user requests; older task IDs and p
 
 ## Immediate acceptance
 
-- [ ] Finish installer upload, compare every GitHub asset SHA-256 and publish the Intel Experimental release.
+- [x] Intel Experimental release published; all eight GitHub asset names/sizes/states/SHA-256 digests match local files.
 - [ ] Clean-machine Intel installation/Gatekeeper acceptance, lifecycle/leak/crash/cancel/idle stress and wider model quality tests.
 - [ ] Real HF verified download/cancel/storage failure acceptance; resume/gated entitlement work is separate.
 - [ ] Actual desktop process-stop and remote interactive SSH/Ghostty acceptance.

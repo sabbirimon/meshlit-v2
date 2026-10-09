@@ -80,7 +80,7 @@ in-process Kotlin strategy rather than writing outside the workspace.
 - [ ] HF actual metadata/verified transfer and cancellation acceptance recorded.
 - [x] New DMG and PKG created, recovered and payload-tested; native hashes and provenance match.
 - [ ] Intel Mac install/open accepted; unsigned/ad-hoc/notarisation status explicit.
-- [ ] Source/review and release publication URLs/checksums verified on GitHub.
+- [x] Source/review and release publication URLs/checksums verified on GitHub.
 - [ ] Windows, Linux, independent phones, server daemon and other platform proof separately recorded.
 
 ## Template for each next build
@@ -231,3 +231,24 @@ all 30 cases in a 14-second run. Current runtime/model binaries did not change.
 Documentation links, generator idempotence, unchanged protected text/archive
 identity, feature/source references and 39 registered Gradle modules also pass
 their checks. GitHub platform rerun is a separate observed gate.
+
+## Verified Intel publication
+
+Public Experimental release: https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-macos-intel-build40.1. Release ID 408390281, source/tag
+`c1f2d60ffeff043ef2da210c552ccaf73b65ea8a`, application packaging source 12bd20a.
+Both installers, matching Temurin Java sources, INSTALL/PACKAGING/VALIDATION/
+RUNTIME_SOURCE and SHA256SUMS upload successfully. All **eight** GitHub names,
+sizes, uploaded states and SHA-256 digests match local files before publication
+and remain identical after publication. The resolved public tag matches its
+source target. Draft target updates do not rewrite an existing published tag.
+Structured proof: desktop/evidence/github-studio-release-check.json.
+
+The first release-create attempt used an abbreviated SHA rejected by GitHub; it
+created no release/assets. The full SHA succeeded. Current remote CI is separate
+from local/payload acceptance and does not imply physical Windows/NEXT/cluster
+qualification. No PR merge or Play submission was performed.
+
+Public HTTPS download HEAD checks for both DMG and PKG return **200**, with
+redirects restricted to HTTPS. Structured proof includes those results.
+
+At published source c1f2d60, [host contract CI](https://github.com/sabbirimon/meshlit-v2/actions/runs/38000011088) completes successfully on Ubuntu, macOS and Windows. The Windows fixture correction passes without adding a skip; two existing POSIX execution skips remain. [Android CI](https://github.com/sabbirimon/meshlit-v2/actions/runs/38000011128) has V1 successful and V2 still running at this snapshot. Later documentation commits trigger independent checks; these results describe the named release source.

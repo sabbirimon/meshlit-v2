@@ -79,7 +79,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Current regressions, limitations and verification",
-      "contentSha256WithoutTrackingBlock": "7352646a5a38fa2c6ab8706354bbf66ee30eaa690e89a53f6b224757b6bbb152"
+      "contentSha256WithoutTrackingBlock": "94956c31e8470f57f81a52cb1b19083914adadfe367ac1a17b3f52e4b39a5a22"
     },
     {
       "path": "BUILD.md",
@@ -93,7 +93,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Sequential implementation and acceptance ledger",
-      "contentSha256WithoutTrackingBlock": "40dc29e6af4d719a946fb50867eaef90f6e01278fd99c52fe9480e22c0d9d63f"
+      "contentSha256WithoutTrackingBlock": "5129848b77b6a0181f274784e69e021224ff19a862c145c6da000bea4eb33d23"
     },
     {
       "path": "CLAUDE.md",
@@ -128,14 +128,14 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit implementation and qualification plan",
-      "contentSha256WithoutTrackingBlock": "9c8f91a4bcb0e88c96411d860092a5e005dfe52bdade611c29c778debeff4677"
+      "contentSha256WithoutTrackingBlock": "8dedcd9c19235fe1305f8f2ae21fea1f7740743467ba6aadf038d6f0f0819c11"
     },
     {
       "path": "PROGRESS.md",
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit progress and evidence",
-      "contentSha256WithoutTrackingBlock": "f22798e96c4c156ac9a7fd1ea00e90dab42e2d1b19e914fa78a9586641d5bcf3"
+      "contentSha256WithoutTrackingBlock": "8f30c11d36c962363cff3343339b7771b5dd242754ee07763b7c8e88ca0bade7"
     },
     {
       "path": "README.md",
@@ -170,7 +170,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit current implementation and acceptance queue",
-      "contentSha256WithoutTrackingBlock": "efb28a999a2810fb46c147db5107e8f158d027159a266e41cab8c9f580b479f7"
+      "contentSha256WithoutTrackingBlock": "54c57f54be19bc41ea2cefd21807d1887628c6ef3e89e0ea66697747a890fdf2"
     },
     {
       "path": "app/BUILD_GUIDE.md",
@@ -401,14 +401,14 @@
       "class": "active",
       "scope": "desktop/server; individual acceptance gates apply",
       "title": "Desktop/server build update ledger",
-      "contentSha256WithoutTrackingBlock": "a0660a3616c690491543f7462a778a826fe642f9d44e67a3638457812f1d7715"
+      "contentSha256WithoutTrackingBlock": "7f87985ee184e80e71a5852c2ac39ddcaef18840700876bee8b99983e05d7ec4"
     },
     {
       "path": "docs/DESKTOP_FEATURE_TRACKER.md",
       "class": "active",
       "scope": "desktop/server; individual acceptance gates apply",
       "title": "Desktop and server feature tracker",
-      "contentSha256WithoutTrackingBlock": "0cb4a059a27e31190acf33b9650bfc099b716b5d65162ecf3ab7f9b4a7141252"
+      "contentSha256WithoutTrackingBlock": "2e520a20f85c23ae11bb63d79c6239f610e05a438e22064c404f52ee093fb1bd"
     },
     {
       "path": "docs/DESKTOP_STUDIO_PLAN.md",
@@ -527,7 +527,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Release publication and qualification evidence",
-      "contentSha256WithoutTrackingBlock": "6291e05619025fc66c085231aca1ff88a476c7dfef95dc32f43647894e90f825"
+      "contentSha256WithoutTrackingBlock": "86765ddf5af2ac24fcc82a57a1524a07b174027bcb297d94a0c678f0d4dc61b2"
     },
     {
       "path": "docs/SEARCH_AND_CLUSTER_OUTPUT.md",
@@ -548,7 +548,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit current session handoff",
-      "contentSha256WithoutTrackingBlock": "63b5862da77d53566211f7f81ca60ded9737d305c9290d77d3615ff01ce29c2d"
+      "contentSha256WithoutTrackingBlock": "35b93b4fd0ba2c139fd5b415b197ab3b4a4a2bebc4c42defa128ee03165c2800"
     },
     {
       "path": "docs/SSH_NODE.md",

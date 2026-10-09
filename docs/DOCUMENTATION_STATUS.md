@@ -15,7 +15,7 @@ Phase names are independent workstreams, not a unified numbered stage or an over
 | Desktop management | Partial source and scoped host qualification | Remaining real category controllers and operational acceptance |
 | Android reliability | Current build/lint gate passes; older device proof dated | Current Samsung/Xiaomi/Windows category device qualification |
 | Governed agents and fleet | Android reference; desktop authority/audit port pending | Common permission/controller/audit bridge before autonomous MCP/A2A/hooks |
-| Platform and distribution | Intel recovered payloads pass; upload pending; no production promotion | Remote digests/publication, clean-target signing/privacy and independent OS/device gates |
+| Platform and distribution | Intel Experimental release published; recovered payloads/hash verification pass | Clean-target signing/privacy and independent OS/device gates; CI remains separately observed |
 
 ## Coverage and maintenance
 

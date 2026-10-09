@@ -39,7 +39,7 @@ No overall percentage is inferred.
 | Intel local engine | Verified starter, CPU dispatch/options, lazy load and idle unload, memory/native context checks | Both recovered installer generation/unload pass; clean-machine/lifecycle/quality/stress remain |
 | Shared sharding | Same portable sources on Android/JVM, integer/manual capacity admission and weak-worker exclusion | Contract-tested; desktop RPC controller and physical workers are next |
 | Management | Seven Basic/Advanced groups, scoped global/settings/chat/model/node search and live monitor | Render/sampling pass; category backends remain individually pending |
-| Release | Source/review pushed; DMG/PKG created, recovered, hashes/signatures checked | Asset upload/remote digests/publication tracked in docs/RELEASE_EVIDENCE.md |
+| Release | Source/review pushed; DMG/PKG created, recovered, hashes/signatures checked | Public Experimental release and all eight remote digests verified; clean-target/signing gates remain |
 | Production | Restricted Android Core Candidate separate from Experimental | Privacy/signing/device/fleet/OS gates outstanding; no production promotion |
 
 No unified phase number is declared. PLAN.md and docs/DOCUMENTATION_STATUS.md carry current workstream tracking; dated sections below retain their original scopes.

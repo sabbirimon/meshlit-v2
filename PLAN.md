@@ -19,11 +19,11 @@ No single project-wide phase number or completion percentage is used. The workst
 | Desktop management | Seven categories, distinct Basic/Advanced menus, bounded global/settings/chat/model/node search, real local monitoring, human shell, SSH/status listener and HyperL CPU | HF download/cancel/storage failures, actual process Stop, interactive SSH; finish pending category backends |
 | Android reliability | Both current Full V1/V2 APK assemblies/lints pass; earlier Samsung build-37 local/UI checks are historical | Install and test current build on Samsung, then Xiaomi/Windows categories; preserve data and human permissions |
 | Governed agents and fleet | Android typed controls/grants/audit and optional gateways are references; desktop shared agent dispatch remains pending | One common authority/controller layer, durable redacted audit, scopes/budgets/revocation/Stop, then MCP/A2A/hooks and controlled automation |
-| Platform and release | Intel DMG/PKG recovered-payload qualification; source/review pushed; asset upload tracked separately | Verify remote asset hashes and publish Experimental release; Developer ID/notarization and independent OS/device acceptance precede production |
+| Platform and release | Intel DMG/PKG recovered-payload qualification; source/review pushed; all eight public asset digests verified | Experimental release published with matching digests; Developer ID/notarization and independent OS/device acceptance precede production |
 
 ## Ordered implementation queue
 
-1. Finish Intel release publication and model/library operational acceptance. Retain one working build and remove only known generated duplicates.
+1. Intel release publication is verified; finish model/library operational acceptance. Retain one working build and remove only known generated duplicates.
 2. Add genuine desktop worker enrollment/execution to the shared planner. Distinguish remote model API/job routing from pooled-memory layer execution. Use pinned identities, exact revision/model hash, fresh capability offers and bounded failure/Stop.
 3. Build the common desktop agent permission and audit foundation before unattended jobs. Human root/credential/policy edits stay human-controlled; model responses and received messages do not grant authority.
 4. Port agent/MCP/A2A/hooks, optional memory/personality/voice and document workspaces through real controllers. Ship unsupported controls as pending, not successful stubs.

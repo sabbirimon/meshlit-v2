@@ -5,7 +5,7 @@
   "sourceEvidenceCheckpoint": "630cba2",
   "review": "https://github.com/sabbirimon/meshlit-v2/pull/2",
   "releaseTag": "v2.0.0-macos-intel-build40.1",
-  "releaseState": "uploading-draft",
+  "releaseState": "published-experimental",
   "productionQualified": false,
   "workstreams": [
     {
@@ -35,8 +35,10 @@
     },
     {
       "name": "Platform and distribution",
-      "state": "Intel recovered payloads pass; upload pending; no production promotion",
-      "nextGate": "Remote digests/publication, clean-target signing/privacy and independent OS/device gates"
+      "state": "Intel Experimental release published; recovered payloads/hash verification pass",
+      "nextGate": "Clean-target signing/privacy and independent OS/device gates; CI remains separately observed"
     }
-  ]
+  ],
+  "releaseUrl": "https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-macos-intel-build40.1",
+  "releaseSourceCommit": "c1f2d60ffeff043ef2da210c552ccaf73b65ea8a"
 }
