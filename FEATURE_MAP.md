@@ -1,6 +1,6 @@
 # Meshlit structured feature and architecture map
 
-Updated 2026-10-08. This is the map of the separate Codex implementation, not the
+Updated 2026-10-09. This is the map of the separate Codex implementation, not the
 old Android checkout. `PROGRESS.md` records evidence; `PLAN.md` records unfinished
 acceptance. Machine-readable companion: `docs/feature-map.json`.
 
@@ -409,3 +409,16 @@ across hosts and clusters; current APK installation remains Android-only.
 The shared workbench now uses the separately licensed `core-hyperl` module for
 Kotlin/native C99 execution, precise sums and encrypted dataset operations. The
 old Apache `core-gpu` port is preserved. Read the [alpha.6 integration guide](docs/hyperl/ANDROID_ALPHA6.md) for licence opt-in, Android/API limits, safety boundaries and validation.
+
+## Multiplatform / latest HarmonyOS NEXT continuation (2026-10-09)
+
+`shared-workspace` adds KMP common settings/contracts and the existing bounded JVM
+reply parser; Android consumes it without changing on-device prompts/history.
+English/简体中文 modern resources and Monochrome appearance persist. `desktopApp`
+adds the experimental authenticated host-client GUI/CLI with real SSE streaming,
+chat search, output bounds and reported token rates. `ohosApp` is native ArkTS/ArkUI
+for NEXT 26.0.0; source supports English/Chinese themes and bounded complete-response
+HTTPS chat. Local NEXT LLM reports unavailable. Not full shared UI/runtime parity
+or production/device certification. See docs/MULTIPLATFORM_NEXT.md.
+
+Current continuation inventory: **83 feature areas, 38 durable operations, 36 Gradle modules**. The separate NEXT Stage project is not a Gradle module. Counts include preview/unverified work and do not imply production support.

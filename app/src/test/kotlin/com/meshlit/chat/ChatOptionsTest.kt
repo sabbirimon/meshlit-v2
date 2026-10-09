@@ -23,4 +23,15 @@ class ChatOptionsTest {
             assertThrows(IllegalArgumentException::class.java) { options.validate() }
         }
     }
+    @Test fun newDeviceAndCryptoGrantsStayOffForOldChatsAndRejectUnboundedToolMixes() {
+        val old = Json.decodeFromString<ChatOptions>("{\"maxTokens\":256}")
+        assertFalse(old.cryptoTools); assertFalse(old.gibberlinkTools); assertFalse(old.remoteTools); assertFalse(old.peerTools)
+        assertEquals("OFF", old.colibriMode); assertFalse(old.colibriAgentAllowed)
+        ChatOptions(peerTools=true,cryptoTools=true).validate()
+        ChatOptions(remoteTools=true).validate()
+        ChatOptions(gibberlinkTools=true).validate()
+        for (invalid in listOf(ChatOptions(peerTools=true,remoteTools=true), ChatOptions(peerTools=true,webTools=true), ChatOptions(gibberlinkTools=true,onlineProfileId="p"), ChatOptions(nodeTools=true,memoryTools=true,localSearchTools=true,cryptoTools=true))) {
+            assertThrows(IllegalArgumentException::class.java) { invalid.validate() }
+        }
+    }
 }

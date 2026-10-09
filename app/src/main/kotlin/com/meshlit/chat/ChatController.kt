@@ -13,9 +13,9 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.UUID
 
-@Serializable data class ChatOptions(val onlineProfileId:String?=null,val systemPrompt:String="",val maxTokens:Int=1024,val temperature:Float=0.7f,val historyMessages:Int=10,val routeId:String?=null,val routeScenario:String="general",val webTools:Boolean=false,val phoneTools:Boolean=false,val memoryTools:Boolean=false,val showTokenStats:Boolean=true,val localSearchTools:Boolean=false,val outputBudgetMode:OutputBudgetMode=OutputBudgetMode.MANUAL,val outputTargetSeconds:Int=30,val nodeTools:Boolean=false) {
-    val usesLocalTools get()=webTools || phoneTools || memoryTools || localSearchTools || nodeTools
-    fun validate(){require(!nodeTools || (!webTools && !phoneTools)){"Choose node tools separately from web/phone tools"};require(outputTargetSeconds in 5..120);require(!usesLocalTools || (onlineProfileId==null && routeId==null)){"Chat tools currently require an on-device model"};require(routeId==null || routeId=="__auto__" || routeId.matches(Regex("[A-Za-z0-9_-]{1,64}")));require(routeScenario.matches(Regex("[a-z0-9_-]{1,40}")));require(routeId==null || (onlineProfileId==null && maxTokens<=1024));require(systemPrompt.length<=4000 && maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f && historyMessages in 0..20)}
+@Serializable data class ChatOptions(val onlineProfileId:String?=null,val systemPrompt:String="",val maxTokens:Int=1024,val temperature:Float=0.7f,val historyMessages:Int=10,val routeId:String?=null,val routeScenario:String="general",val webTools:Boolean=false,val phoneTools:Boolean=false,val memoryTools:Boolean=false,val showTokenStats:Boolean=true,val localSearchTools:Boolean=false,val outputBudgetMode:OutputBudgetMode=OutputBudgetMode.MANUAL,val outputTargetSeconds:Int=30,val nodeTools:Boolean=false,val colibriMode:String="OFF",val colibriAgentAllowed:Boolean=false,val cryptoTools:Boolean=false,val gibberlinkTools:Boolean=false,val remoteTools:Boolean=false,val peerTools:Boolean=false) {
+    val usesLocalTools get()=webTools || phoneTools || memoryTools || localSearchTools || nodeTools || cryptoTools || gibberlinkTools || remoteTools || peerTools
+    fun validate(){require((if(nodeTools)8 else 0)+(if(remoteTools)3 else 0)+(if(peerTools)4 else 0)+(if(gibberlinkTools)2 else 0)+(if(cryptoTools)1 else 0)+(if(memoryTools)1 else 0)+(if(localSearchTools)1 else 0)+(if(webTools)3 else 0)+(if(phoneTools)4 else 0)<=10){"Select at most ten chat tools; deselect another group"};require(listOf(nodeTools,remoteTools,peerTools,gibberlinkTools).count{it}<=1 && (!(remoteTools || peerTools || gibberlinkTools) || !(webTools || phoneTools || memoryTools || localSearchTools))){"Choose one device/audio tool group separately from web, phone, memory and search tools"};require(colibriMode in com.meshlit.workspace.ColibriMode.entries.map{it.name});require(!nodeTools || (!webTools && !phoneTools)){"Choose node tools separately from web/phone tools"};require(outputTargetSeconds in 5..120);require(!usesLocalTools || (onlineProfileId==null && routeId==null)){"Chat tools currently require an on-device model"};require(routeId==null || routeId=="__auto__" || routeId.matches(Regex("[A-Za-z0-9_-]{1,64}")));require(routeScenario.matches(Regex("[a-z0-9_-]{1,40}")));require(routeId==null || (onlineProfileId==null && maxTokens<=1024));require(systemPrompt.length<=4000 && maxTokens in 1..2048 && temperature.isFinite() && temperature in 0f..2f && historyMessages in 0..20)}
 }
 @Serializable data class ChatMessage(val id:String=UUID.randomUUID().toString(),val role:String,val text:String,val usage:ChatTokenUsage?=null)
 @Serializable data class ChatConversation(val id:String=UUID.randomUUID().toString(),val title:String="New chat",
@@ -25,7 +25,7 @@ data class ChatState(val conversations:List<ChatConversation> = emptyList(),val 
     val current get()=conversations.firstOrNull { it.id==selectedId }
 }
 
-class ChatController(private val context:Context,private val coordinator:InferenceCoordinator,private val appScope:CoroutineScope,private val providers:com.meshlit.providers.OnlineProviders,private val router:com.meshlit.routing.ModelRoutes,private val localTools:LocalChatTools,private val memory:PersonalMemory,private val library:com.meshlit.models.ModelLibrary) {
+class ChatController(private val context:Context,private val coordinator:InferenceCoordinator,private val appScope:CoroutineScope,private val providers:com.meshlit.providers.OnlineProviders,private val router:com.meshlit.routing.ModelRoutes,private val localTools:LocalChatTools,private val memory:PersonalMemory,private val library:com.meshlit.models.ModelLibrary,private val colibri:com.meshlit.colibri.ColibriBackend) {
     private val _state=MutableStateFlow(ChatState())
     val state:StateFlow<ChatState> = _state.asStateFlow()
     private val file=File(context.filesDir,"conversations-v1.json")
@@ -68,7 +68,7 @@ class ChatController(private val context:Context,private val coordinator:Inferen
         appScope.launch { runCatching { save() } }
     }
     fun setOptions(options:ChatOptions) {
-        options.validate();com.meshlit.BuildProfile.requireChat(options);check(!_state.value.running)
+        options.validate();com.meshlit.BuildProfile.requireChat(options);check(!_state.value.running);colibri.clearAgentModes()
         if(_state.value.current==null) newChat()
         _state.update{old->old.copy(conversations=old.conversations.map{if(it.id==old.selectedId) it.copy(options=options) else it})}
         appScope.launch{runCatching{save()}.onFailure{error->_state.update{it.copy(error="Cannot save chat options: ${error.javaClass.simpleName}")}}}
@@ -76,9 +76,6 @@ class ChatController(private val context:Context,private val coordinator:Inferen
     fun send(text:String):String? {
         if(!ready.isCompleted || _state.value.running || text.isBlank()) return null
         require(text.length<=12000) { "Message is too long" }
-        if(_state.value.current?.options?.onlineProfileId==null && _state.value.current?.options?.routeId==null && coordinator.state.value !is CoordinatorState.Ready) {
-            _state.update { it.copy(error="Load a model from Models before sending a message") };return null
-        }
         if(_state.value.current==null) newChat()
         val selected=_state.value.selectedId!!
         val user=ChatMessage(role="user",text=text.trim())
@@ -87,7 +84,13 @@ class ChatController(private val context:Context,private val coordinator:Inferen
         try { configured.validate();com.meshlit.BuildProfile.requireChat(configured) } catch(e:Exception) {
             _state.update { it.copy(error=e.message) };return null
         }
-        val decision=budgetDecision(configured)
+        val localRoute=configured.onlineProfileId==null && configured.routeId==null && !configured.usesLocalTools
+        val colibriDecision=if(localRoute) colibri.decision(selected,com.meshlit.workspace.ColibriMode.parse(configured.colibriMode),configured.colibriAgentAllowed,coordinator.state.value is CoordinatorState.Ready) else null
+        if(colibriDecision?.route==com.meshlit.workspace.ColibriRoute.BLOCKED) { _state.update{it.copy(error=colibriDecision.reason)};return null }
+        if(configured.onlineProfileId==null && configured.routeId==null && colibriDecision?.route!=com.meshlit.workspace.ColibriRoute.HOST && coordinator.state.value !is CoordinatorState.Ready) {
+            _state.update { it.copy(error="Load a model from Models before sending a message") };return null
+        }
+        val decision=budgetDecision(if(colibriDecision?.route==com.meshlit.workspace.ColibriRoute.HOST) configured.copy(outputBudgetMode=OutputBudgetMode.MANUAL) else configured)
         val options=configured.copy(maxTokens=decision.limit)
         val history=_state.value.current!!.messages.filter{it.text.isNotBlank()}.takeLast(options.historyMessages)
         _state.update { old -> old.copy(running=true,error=null,generationStartedMs=android.os.SystemClock.elapsedRealtime(),activeOutputLimit=options.maxTokens,conversations=old.conversations.map { c ->
@@ -101,7 +104,11 @@ class ChatController(private val context:Context,private val coordinator:Inferen
                 ready.await();save()
                 androidx.core.content.ContextCompat.startForegroundService(context,
                     android.content.Intent(context,ChatInferenceService::class.java).putExtra("generation",assistant.id))
-                if(options.routeId!=null) {
+                if(colibriDecision?.route==com.meshlit.workspace.ColibriRoute.HOST) {
+                    val (model,reply)=colibri.generate((history+user).map{com.meshlit.core.inference.models.OnlineMessage(it.role,it.text)},options.systemPrompt,options.maxTokens,options.temperature)
+                    _state.update{old->old.copy(conversations=old.conversations.map{c->if(c.id==selected) c.copy(messages=c.messages.map{if(it.id==assistant.id) it.copy(text=reply.text) else it},usageNote="Colibri · $model · buffered text · ${colibriDecision.reason}") else c})}
+                    recordUsage(chatTokenUsage("Colibri host · $model",options.maxTokens,reply.inputTokens,reply.outputTokens,null,android.os.SystemClock.elapsedRealtime()-started,null,null))
+                } else if(options.routeId!=null) {
                     val prompt=buildString {
                         if(options.systemPrompt.isNotBlank()) append("Instructions: ").append(options.systemPrompt).append("\n\n")
                         history.forEach{append(it.role).append(": ").append(it.text.take(4000)).append('\n')}
@@ -172,6 +179,11 @@ class ChatController(private val context:Context,private val coordinator:Inferen
             }
         }
         return assistant.id
+    }
+    fun requestColibriModeByAgent(mode:com.meshlit.workspace.ColibriMode) {
+        val chat=_state.value.current ?: error("Select a user-delegated conversation first")
+        com.meshlit.BuildProfile.requireChat(chat.options)
+        colibri.requestByAgent(chat.id,mode,chat.options.colibriAgentAllowed)
     }
     fun stopIfMatching(id:String?) { if(id!=null && id==generationId) stop() }
     fun stop() { generation?.cancel();coordinator.cancel() }

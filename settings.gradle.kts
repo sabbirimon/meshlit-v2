@@ -61,6 +61,7 @@ include(
     ":core-advanced-engines",
     ":core-gpu",
     ":core-hyperl",
+    ":core-gibberlink",
     ":core-net",
     ":core-observability",
     // Phase 6 — versioned peer-to-peer federation protocol.
@@ -78,5 +79,7 @@ include(
     ":core-agent-memory",
     ":feature-advanced",
     ":feature-ghosty",
+    ":shared-workspace",
+    ":desktopApp",
     ":app"
 )

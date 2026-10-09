@@ -20,6 +20,8 @@ import androidx.compose.ui.semantics.contentDescription
 @Composable fun ChatOptionsDialog(state:ChatState,controller:ChatController,onSearchSettings:()->Unit,onClose:()->Unit) {
     val providers=koinInject<OnlineProviders>();val profiles by providers.profiles.collectAsStateWithLifecycle()
     val router=koinInject<com.meshlit.routing.ModelRoutes>();val routes by router.routes.collectAsStateWithLifecycle()
+    val colibri=koinInject<com.meshlit.colibri.ColibriBackend>()
+    val colibriConfig by colibri.config.collectAsStateWithLifecycle()
     var options by remember{mutableStateOf(state.current?.options ?: ChatOptions())}
     var budget by remember{mutableStateOf(options.maxTokens.toString())}
     val maxOutput=if(options.routeId==null) 2048 else 1024
@@ -31,33 +33,50 @@ import androidx.compose.ui.semantics.contentDescription
     val capacity=(runtime as? com.meshlit.core.inference.CoordinatorState.Ready)?.model?.contextSize?.takeIf{it>0}
     var error by remember{mutableStateOf<String?>(null)}
     ModalBottomSheet(onDismissRequest=onClose,sheetState=rememberModalBottomSheetState(skipPartiallyExpanded=true)) {
-    Column(Modifier.fillMaxWidth().heightIn(max=720.dp).navigationBarsPadding().imePadding().padding(horizontal=20.dp)) {
+    Column(Modifier.fillMaxWidth().heightIn(max=720.dp).navigationBarsPadding().imePadding().padding(horizontal=12.dp)) {
     Text("Conversation settings",style=MaterialTheme.typography.titleLarge)
     Spacer(Modifier.height(12.dp))
     Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).testTag("chat-settings"),verticalArrangement=Arrangement.spacedBy(10.dp)){
         Text("Model and routing",style=MaterialTheme.typography.titleMedium)
-        FilterChip(options.onlineProfileId==null && options.routeId==null,{options=options.copy(onlineProfileId=null,routeId=null)},label={Text("Local · currently loaded model")})
-        profiles.filter{it.enabled && !com.meshlit.BuildProfile.coreCandidate}.forEach{profile->FilterChip(options.onlineProfileId==profile.id && options.routeId==null,{options=options.copy(onlineProfileId=profile.id,routeId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false)},label={Text("Online · ${profile.name} / ${profile.model}")})}
+        FilterChip(options.onlineProfileId==null && options.routeId==null && options.colibriMode=="OFF",{options=options.copy(onlineProfileId=null,routeId=null,colibriMode="OFF")},label={Text("Local · currently loaded model")})
+        profiles.filter{it.enabled && !com.meshlit.BuildProfile.coreCandidate}.forEach{profile->FilterChip(options.onlineProfileId==profile.id && options.routeId==null,{options=options.copy(onlineProfileId=profile.id,routeId=null,colibriMode="OFF",webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,cryptoTools=false,gibberlinkTools=false,remoteTools=false,peerTools=false)},label={Text("Online · ${profile.name} / ${profile.model}")})}
         if(!com.meshlit.BuildProfile.coreCandidate && routes.any{it.enabled}) {
-            FilterChip(options.routeId=="__auto__",{options=options.copy(routeId="__auto__",onlineProfileId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Model router · automatic rules")})
-            routes.filter{it.enabled}.forEach{route->FilterChip(options.routeId==route.id,{options=options.copy(routeId=route.id,onlineProfileId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Route · ${route.name} / ${route.mode}")})}
+            FilterChip(options.routeId=="__auto__",{options=options.copy(routeId="__auto__",onlineProfileId=null,colibriMode="OFF",webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,cryptoTools=false,gibberlinkTools=false,remoteTools=false,peerTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Model router · automatic rules")})
+            routes.filter{it.enabled}.forEach{route->FilterChip(options.routeId==route.id,{options=options.copy(routeId=route.id,onlineProfileId=null,colibriMode="OFF",webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,cryptoTools=false,gibberlinkTools=false,remoteTools=false,peerTools=false,maxTokens=minOf(options.maxTokens,1024))},label={Text("Route · ${route.name} / ${route.mode}")})}
             if(options.routeId!=null) OutlinedTextField(options.routeScenario,{options=options.copy(routeScenario=it.lowercase())},label={Text("Route scenario")})
+        }
+        if(!com.meshlit.BuildProfile.coreCandidate) {
+            Text("Colibri host",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(6.dp)) {
+                com.meshlit.workspace.ColibriMode.entries.forEach{mode->FilterChip(options.colibriMode==mode.name,{options=if(mode==com.meshlit.workspace.ColibriMode.OFF) options.copy(colibriMode=mode.name) else options.copy(colibriMode=mode.name,onlineProfileId=null,routeId=null,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false,nodeTools=false,cryptoTools=false,gibberlinkTools=false,remoteTools=false,peerTools=false)},label={Text(mode.name.lowercase().replaceFirstChar{it.uppercase()})},modifier=Modifier.testTag("chat-colibri-${mode.name}"))}
+            }
+            Text("On needs saved host access and a model refreshed within 5 minutes. Auto keeps local inference unless no local model is ready or you prefer the host. Configure Settings → Colibri host. No automatic download or host-error fallback.",style=MaterialTheme.typography.bodySmall)
+            Row{Text("Allow agent mode requests for this chat",Modifier.weight(1f));Switch(options.colibriAgentAllowed,{options=options.copy(colibriAgentAllowed=it)},enabled=options.colibriAgentAllowed || (colibriConfig.hostAccess && colibriConfig.agentSwitching),modifier=Modifier.testTag("chat-colibri-agent-grant"))}
+            Text("Also requires the saved host agent grant and Models/cloud/automation delegation. Agent requests expire after 30 minutes; local tool conversations retain their on-device route.",style=MaterialTheme.typography.bodySmall)
         }
         Text("Configure API profiles in Settings → Online providers. Online sends this conversation to the selected endpoint and may incur charges. Replies are buffered; local replies stream.")
         if(!com.meshlit.BuildProfile.coreCandidate && options.onlineProfileId==null && options.routeId==null) {
             HorizontalDivider()
             Text("Permissions and tools",style=MaterialTheme.typography.titleMedium)
-            Row{Text("Personal memory tools",Modifier.weight(1f));Switch(options.memoryTools,{options=options.copy(memoryTools=it)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
+            Row{Text("Personal memory tools",Modifier.weight(1f));Switch(options.memoryTools,{options=options.copy(memoryTools=it,gibberlinkTools=false,remoteTools=false,peerTools=false)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
             Text("Requires saved agent management in Memory and personality. Agents can manage switches and facts; recall is applied only to on-device chat.")
-            Row{Text("Local search tools",Modifier.weight(1f));Switch(options.localSearchTools,{options=options.copy(localSearchTools=it)},Modifier.testTag("chat-local-search-tools"))}
+            Row{Text("Local search tools",Modifier.weight(1f));Switch(options.localSearchTools,{options=options.copy(localSearchTools=it,gibberlinkTools=false,remoteTools=false,peerTools=false)},Modifier.testTag("chat-local-search-tools"))}
             Text("The on-device model can search saved app content only after your separate local-content agent grant. No Internet is needed.")
-            Row{Text("Allow web search and page tools",Modifier.weight(1f));Switch(options.webTools,{options=options.copy(webTools=it,nodeTools=if(it) false else options.nodeTools)})}
+            Row{Text("Allow web search and page tools",Modifier.weight(1f));Switch(options.webTools,{options=options.copy(webTools=it,gibberlinkTools=false,remoteTools=false,peerTools=false,nodeTools=if(it) false else options.nodeTools)})}
             Text("The local model can request web_search using your configured Brave API key, Internet switch and agent grant. Queries go to Brave. crawl_url also requires the HTTPS Crawl4AI companion and approved domains; URLs and fetched content go to that host. Neither service is silently enabled.")
             TextButton(onClick=onSearchSettings){Text("Manage search access and articles")}
-            Row{Text("Allow phone tools",Modifier.weight(1f));Switch(options.phoneTools,{options=options.copy(phoneTools=it,nodeTools=if(it) false else options.nodeTools)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
+            Row{Text("Allow phone tools",Modifier.weight(1f));Switch(options.phoneTools,{options=options.copy(phoneTools=it,gibberlinkTools=false,remoteTools=false,peerTools=false,nodeTools=if(it) false else options.nodeTools)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
             Text("Requires saved autonomy, app scope and Android Accessibility in Settings → OpenClaw and autonomy. Install/remove/permission requests use Android human confirmation; no silent OS grant. Wireless ADB and root adapters are not connected to this chat.")
-            Row{Text("Allow VM and SSH node tools",Modifier.weight(1f));Switch(options.nodeTools,{options=options.copy(nodeTools=it,webTools=if(it) false else options.webTools,phoneTools=if(it) false else options.phoneTools)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
+            Row{Text("Allow VM and SSH node tools",Modifier.weight(1f));Switch(options.nodeTools,{options=options.copy(nodeTools=it,gibberlinkTools=false,remoteTools=false,peerTools=false,webTools=if(it) false else options.webTools,phoneTools=if(it) false else options.phoneTools)},enabled=!com.meshlit.BuildConfig.PLAY_REVIEW)}
             Text("Uses only saved node actions and the configured guest, with separate per-key/host and VM agent grants. No agent app/root shell or permission changes. Choose these separately from web/phone tools to keep the tool list bounded. VM/QEMU and remote nodes must actually be available.")
+            Row{Text("Local cryptography tools",Modifier.weight(1f));Switch(options.cryptoTools,{options=options.copy(cryptoTools=it,colibriMode="OFF")})}
+            Text("Requires the saved cryptography agent grant. Keys/tool results are visible to the model and saved chat; keep real credentials in the vault.")
+            Row{Text("GibberLink audio tools",Modifier.weight(1f));Switch(options.gibberlinkTools,{options=options.copy(gibberlinkTools=it,colibriMode="OFF",remoteTools=false,peerTools=false,nodeTools=false,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false)})}
+            Text("Saved audio/agent and Media operation grants plus a visible GibberLink screen are required. Incoming English transcripts never auto-execute.")
+            Row{Text("Multi-node command tools",Modifier.weight(1f));Switch(options.remoteTools,{options=options.copy(remoteTools=it,colibriMode="OFF",gibberlinkTools=false,peerTools=false,nodeTools=false,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false)})}
+            Text("Commands only saved fingerprint-pinned SSH nodes within per-node action grants. Configure Device and cluster commands plus SSH delegation.")
+            Row{Text("P2P chat and command tools",Modifier.weight(1f));Switch(options.peerTools,{options=options.copy(peerTools=it,colibriMode="OFF",gibberlinkTools=false,remoteTools=false,nodeTools=false,webTools=false,phoneTools=false,memoryTools=false,localSearchTools=false)})}
+            Text("Requires the foreground, manually paired peer and saved P2P/agent grants. Receiver approves command scopes independently; native layer inference over Internet is not implemented.")
             Text("Experimental local tool protocol: three calls, 180-second deadline and Stop. A model trained for JSON/tool use is required; invalid output dispatches no action for that step. The starter model is not qualified for reliable autonomy.")
         }
         HorizontalDivider()

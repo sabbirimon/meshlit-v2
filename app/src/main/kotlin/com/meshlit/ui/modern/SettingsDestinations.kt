@@ -7,6 +7,11 @@ object SettingsDestinations {
     val all=listOf(
         SettingsDestination("search","Search access and articles","Offline content search, Internet permission and agent search grants",keywords="global chat articles Brave API key web internet search"),
         SettingsDestination("appearance","Appearance","Dynamic colors, accents, light and dark mode",keywords="theme display wallpaper font motion palette glass typography readability contrast"),
+        SettingsDestination("crypto","Local cryptography","Offline hashes, random keys, HMAC and authenticated encryption",keywords="AES GCM SHA256 SHA512 encrypt decrypt cryptography agent hash keys HMAC"),
+        SettingsDestination("gibberlink","GibberLink and English transcript","Optional foreground agent audio packets with readable text",keywords="ggwave sound modem audio transcript English agent"),
+        SettingsDestination("remotecommands","Device and cluster commands","Scoped multi-node chat commands with human and agent switches",keywords="internet LAN remote SSH cluster multi device commands"),
+        SettingsDestination("p2p","P2P chat and commands","Direct phone-to-phone WebRTC with signed pairing and optional TURN",keywords="peer Internet no VPN STUN TURN WebRTC ICE phone long distance chat"),
+        SettingsDestination("colibri","Colibri host","Optional disk-streaming engine host: Off, On or Auto",keywords="MoE NVMe tokens inference external host disk streaming Colibri"),
         SettingsDestination("models","Models and downloads","Import files, manage downloads and load local models",keywords="hugging face token storage GGUF RAM"),
         SettingsDestination("media","Camera, vision and audio","Real image input, microphone and existing SDK media paths",keywords="CCTV webcam phone camera microphone WAV speech VLM STT TTS"),
         SettingsDestination("configuration","Configuration profiles","Export, review and apply portable device settings",keywords="import backup default custom declarative ansible terraform pulumi IaC"),

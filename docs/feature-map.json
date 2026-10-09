@@ -1012,6 +1012,118 @@
       "docs": [
         "docs/architecture/PRODUCTION_CHANNELS.md"
       ]
+    },
+    {
+      "id": "multiplatform-workspace-contracts",
+      "title": "KMP language, visual and chat contracts with shared JVM reply reader",
+      "status": "implemented; common/JVM and Android compatibility checks; not full shared UI or runtime parity",
+      "sources": [
+        "shared-workspace/src/commonMain/kotlin/com/meshlit/workspace/Workspace.kt",
+        "shared-workspace/src/jvmMain/kotlin/com/meshlit/workspace/ReplyFormatting.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/WorkspaceStrings.kt"
+      ],
+      "limitations": [
+        "English default; Simplified Chinese covers modern chat/model resources; advanced Android tools retain English"
+      ],
+      "docs": [
+        "docs/MULTIPLATFORM_NEXT.md"
+      ]
+    },
+    {
+      "id": "desktop-host-client",
+      "title": "Experimental Compose desktop GUI and JVM CLI for explicit authenticated hosts",
+      "status": "implemented; actual TCP contract and Intel Mac native offscreen tests; live model/Windows/Linux acceptance open",
+      "sources": [
+        "desktopApp/src/main/kotlin/com/meshlit/desktop/Main.kt",
+        "desktopApp/src/main/kotlin/com/meshlit/desktop/HostClient.kt",
+        "desktopApp/src/main/kotlin/com/meshlit/desktop/Cli.kt"
+      ],
+      "limitations": [
+        "No bundled local runtime; remote HTTPS and bearer token; session-only history/credentials; host-reported token usage only"
+      ],
+      "docs": [
+        "docs/MULTIPLATFORM_NEXT.md"
+      ]
+    },
+    {
+      "id": "harmonyos-next-native-preview",
+      "title": "Latest HarmonyOS NEXT 26.0.0 native ArkTS client and N-API capability boundary",
+      "status": "source preview; static JSON/contract checks only; DevEco/NDK/HAP/device unverified",
+      "sources": [
+        "ohosApp/entry/src/main/ets/pages/Index.ets",
+        "ohosApp/entry/src/main/ets/client/HostClient.ets",
+        "ohosApp/entry/src/main/cpp/runtime_capabilities.cpp"
+      ],
+      "limitations": [
+        "NEXT local inference unavailable; no Android APK/JNI fallback; English default/\u7b80\u4f53\u4e2d\u6587 second; complete-response host client; rich-reader parity open"
+      ],
+      "docs": [
+        "docs/MULTIPLATFORM_NEXT.md",
+        "ohosApp/README.md"
+      ]
+    },
+    {
+      "id": "colibri-host",
+      "title": "Optional authenticated Colibri host: Off/On/Auto",
+      "status": "implemented",
+      "sources": [
+        "core-inference/src/main/kotlin/com/meshlit/core/inference/models/ColibriClient.kt",
+        "app/src/main/kotlin/com/meshlit/colibri/ColibriBackend.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/ColibriScreen.kt"
+      ],
+      "authority": [
+        "human saved grants; separate agent and per-chat selection"
+      ]
+    },
+    {
+      "id": "gibberlink-audio",
+      "title": "Experimental real ggwave PCM audio and English transcript",
+      "status": "implemented",
+      "sources": [
+        "core-gibberlink/src/main/cpp/bridge.cpp",
+        "app/src/main/kotlin/com/meshlit/gibberlink/GibberLinkHost.kt",
+        "app/src/main/kotlin/com/meshlit/ui/modern/ConnectedToolsScreens.kt"
+      ],
+      "authority": [
+        "human saved grants; separate agent and per-chat selection"
+      ]
+    },
+    {
+      "id": "local-cryptography",
+      "title": "Built-in local JCA cryptography with separate agent opt-in",
+      "status": "implemented",
+      "sources": [
+        "core-mcp/src/main/kotlin/com/meshlit/core/mcp/crypto/CryptoEngine.kt",
+        "app/src/main/kotlin/com/meshlit/crypto/CryptoHost.kt"
+      ],
+      "authority": [
+        "human saved grants; separate agent and per-chat selection"
+      ]
+    },
+    {
+      "id": "remote-chat-commands",
+      "title": "Scoped multi-node SSH commands exposed to local chat",
+      "status": "implemented",
+      "sources": [
+        "app/src/main/kotlin/com/meshlit/remote/RemoteCommandHost.kt",
+        "app/src/main/kotlin/com/meshlit/chat/LocalChatTools.kt"
+      ],
+      "authority": [
+        "human saved grants; separate agent and per-chat selection"
+      ]
+    },
+    {
+      "id": "p2p-chat-commands",
+      "title": "Foreground signed WebRTC peer chat and scoped commands; device qualification pending",
+      "status": "implemented",
+      "sources": [
+        "app/src/main/assets/p2p/index.html",
+        "app/src/main/kotlin/com/meshlit/p2p/PeerChatHost.kt",
+        "core-mcp/src/main/kotlin/com/meshlit/core/mcp/p2p/PeerWire.kt"
+      ],
+      "authority": [
+        "human saved grants; separate agent and per-chat selection"
+      ]
     }
   ],
   "modules": [
@@ -1027,6 +1139,7 @@
     "core-files",
     "core-firewall",
     "core-flags",
+    "core-gibberlink",
     "core-gpu",
     "core-guardrails",
     "core-hyperl",
@@ -1047,8 +1160,10 @@
     "core-trust",
     "core-tunnel",
     "core-users",
+    "desktopApp",
     "feature-advanced",
-    "feature-ghosty"
+    "feature-ghosty",
+    "shared-workspace"
   ],
   "acceptanceLedger": "PROGRESS.md",
   "phoneProof": false,

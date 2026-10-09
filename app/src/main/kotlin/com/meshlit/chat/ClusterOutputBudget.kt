@@ -13,7 +13,7 @@ fun clusterOutputBudget(options:ChatOptions,engineTag:String,model:ModelInfo?,ev
     val ceiling=options.maxTokens
     fun manual(reason:String)=OutputBudgetDecision(ceiling,reason)
     if(options.outputBudgetMode==OutputBudgetMode.MANUAL) return manual("Manual ceiling: $ceiling tokens")
-    if(options.onlineProfileId!=null || options.routeId!=null || options.webTools || options.phoneTools || options.memoryTools || options.localSearchTools)
+    if(options.colibriMode!="OFF" || options.nodeTools || options.onlineProfileId!=null || options.routeId!=null || options.webTools || options.phoneTools || options.memoryTools || options.localSearchTools)
         return manual("Automatic cluster sizing unavailable for providers, routes or tool loops; using manual ceiling $ceiling")
     if(engineTag!="llama-rpc-layer" || model==null) return manual("No active layer cluster; using manual ceiling $ceiling")
     if(model.contextSize<=0) return manual("Cluster context is unreported; using manual ceiling $ceiling")

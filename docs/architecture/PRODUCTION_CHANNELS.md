@@ -38,6 +38,7 @@ Category is an inventory label, never evidence of executable capabilities:
 | --- | --- |
 | Android phones/tablets | Compatible local text runner; qualified layer workers; explicit storage, camera/audio/sensor/tool adapters. Phone model/Android/ABI/RAM must be measured. |
 | Windows/Linux/macOS PCs and servers | Clients; installed SSH/tool/node companions; compatible measured compute workers. OS, RAM, CPU/accelerator and actual runtime determine eligibility. Windows SSH availability and shell syntax cannot be assumed. |
+| HarmonyOS NEXT phones/tablets/2in1 | Separate native ArkTS 26.0.0 source preview. Host-client source only; no qualified HAP/NDK/local LLM or physical device yet. English/简体中文 and visual settings are independent of Android APKs. |
 | Raspberry Pi/other SBCs | Clients/storage/tools or measured compatible CPU workers; no automatic accelerator claim. |
 | NAS/router/switch/firewall | Only the storage, routing, monitoring or tool interfaces actually installed and approved; enrolment does not install an LLM runtime. |
 | Microcontrollers/sensors/radios | Explicit sensors/actuation/relay adapters; never transformer workers merely because they join. |
@@ -50,3 +51,11 @@ unknown. No device is invented, enrolled, or marked qualified from this list.
 The RunAnywhere development SDK's observed telemetry attempt remains a production
 privacy gate (`remaining-engine-bugs.md`, `PRIVACY_POLICY.md`). Selecting local
 weights or this build channel does not establish zero network traffic.
+
+## Multiplatform preview boundary
+
+Build 39 begins an incremental KMP contract/parser extraction and experimental
+Compose desktop GUI/JVM CLI. It does not promote the app, port Android services
+or qualify a new platform. Native HarmonyOS NEXT is a separate 26.0.0 ArkTS/NDK
+source target. No NEXT SDK/device is available; its local runtime explicitly
+reports unavailable. See ../MULTIPLATFORM_NEXT.md for exact source versus proof.

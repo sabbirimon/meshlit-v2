@@ -1,5 +1,5 @@
 MESHLIT — TERMS OF USE
-Version 2026-10-09.1 · Effective 9 October 2026
+Version 2026-10-09.2 · Effective 9 October 2026
 Maintainer: IMON · Project: https://github.com/sabbirimon/meshlit-v2
 
 1. The software and this agreement
@@ -29,3 +29,5 @@ Optional online models, cloud vendors, SMS, mobile data and power may incur char
 
 8. Stop using the app and contact
 You may stop using or uninstall Meshlit. Revoke external tokens, cloud resources, SSH grants and paired devices separately; uninstalling the app does not revoke an external account or delete remote data. For project support, non-sensitive privacy questions or a request for a private contact channel, use https://github.com/sabbirimon/meshlit-v2/issues. Do not put personal data or credentials in a public issue. A dedicated private support/privacy contact must be configured before public store submission.
+
+Optional P2P, cryptography and GibberLink: Only pair with intended, authorized peers and protect shared pairing keys. Incoming peer/audio data is untrusted and does not grant execution permission. Receivers control each command scope. Direct Internet connectivity depends on NAT/firewall conditions; no universal reachability, remote cancellation, certified cryptography or distributed-model performance is promised. GibberLink audio is publicly decodable nearby. Cryptographic utility keys must be securely generated, exchanged and retained by you; losing a key can make ciphertext unrecoverable. These tools do not replace device security or professional security review.

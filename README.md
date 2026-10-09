@@ -56,9 +56,15 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 | Files and coding | Granted-storage files, AI text inspection, streaming ZIP/unzip and offline CodeMirror workspace | A source editor is not a complete compiler/debugger; large provider-file tests remain |
 | Audit monitoring | Encrypted bounded metadata history, device sampling, actor/outcome filters, JSONL/CSV export and optional OTLP/HTTP traces/metrics | Opt-in. Not a tamper-proof compliance ledger. External Grafana account ingestion needs operator testing |
 | Optional companions | Scoped Crawl4AI bridge, SSH, terminal and optional rootless/Linux VM paths | Separate hosts/binaries/consent required; VM defaults off and root stays human-controlled |
+| Colibri host | Saved Off/On/Auto selection for an explicitly authenticated compatible host; pinned upstream setup companion | Local chat remains preferred unless configured otherwise. CPU build/registry and real HTTP contracts pass; no Colibri model generation or GPU qualification. [Setup](docs/COLIBRI.md) |
+| GibberLink audio | Actual ggwave PCM packets with an English-character transcript, foreground send/listen and separate agent grants | Mac native PCM checks pass; physical microphone/speaker delivery remains unqualified. Received text never runs commands. [Audio boundaries](docs/GIBBERLINK.md) |
+| Peer chat and crypto | Signed manual WebRTC pairing, scoped peer/SSH commands and local SHA/HMAC/AES-GCM tools | Actual same-Mac browser data channels pass. Android WebView, distant-phone NAT/TURN and remote actions need device tests. [Pairing and controls](docs/P2P_AND_CRYPTO.md) |
 
-**Android is the current app target.** Linux, Windows, macOS, HarmonyOS, vendor
-GPU/NPU adapters and IoT companions are future work. Raspberry Pi, ESP32, Arduino,
+**Android remains the working on-device app.** A new experimental Compose desktop
+host client/CLI and a separate **native HarmonyOS NEXT 26.0.0** source target are
+being qualified. NEXT local inference/HAP compilation and Windows/Linux device
+acceptance are unverified. See [platform implementation and build boundaries](docs/MULTIPLATFORM_NEXT.md).
+Vendor GPU/NPU adapters and IoT companions remain future work. Raspberry Pi, ESP32, Arduino,
 NAS and network appliances can eventually contribute storage, sensors, capture,
 preprocessing, routing or tools according to real capability. Listing a device
 category does not imply that it can execute transformer layers.
@@ -72,9 +78,12 @@ and the remaining cluster/integration gates.
 
 ## A calmer mobile workspace
 
-Pale neutral surfaces, blue/cyan accents, a centered welcome, a rounded composer
-and compact settings reduce wasted space. Dynamic colors, light/dark/scheduled
-modes, saved fonts and accessibility scaling remain configurable.
+New installations default to Studio's graphite surfaces, ember accent, thin
+headers, compact icon menus and actionable Models/Agents/Style cards. Existing
+saved themes are preserved. Dynamic colors, light/dark/scheduled modes, saved
+fonts, language and accessibility scaling remain configurable. These earlier
+Android screenshots show the previous palette; current device validation is
+tracked in the evidence ledger.
 
 <table><tr>
 <td><img src="docs/assets/screenshots/chat.png" width="250" alt="Real Meshlit Android emulator chat screen with centered welcome and rounded composer"></td>

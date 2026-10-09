@@ -1,5 +1,7 @@
 package com.meshlit.ui.modern
 
+import com.meshlit.workspace.richtext.ReplyBlock
+
 import org.junit.Assert.*
 import org.junit.Test
 

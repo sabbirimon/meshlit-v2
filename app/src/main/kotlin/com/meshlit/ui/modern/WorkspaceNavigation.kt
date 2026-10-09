@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -152,10 +153,10 @@ internal fun WorkspaceSidebar(state:ChatState,current:String,style:SidebarStyle,
         border=BorderStroke(1.dp,if(selected) colors.primary.copy(alpha=0.55f) else colors.outlineVariant.copy(alpha=0.28f))) {
         if(rows) Row(Modifier.heightIn(min=T.touch).padding(horizontal=T.medium,vertical=T.small),verticalAlignment=Alignment.CenterVertically,
             horizontalArrangement=Arrangement.spacedBy(T.medium)) {
-            Icon(workspaceIcon(entry.id),null,Modifier.size(20.dp),tint=if(selected) colors.primary else colors.onSurfaceVariant)
+            SettingsIconTile(entry.id)
             Text(entry.title,Modifier.weight(1f),style=MaterialTheme.typography.bodyMedium,maxLines=2,overflow=TextOverflow.Ellipsis)
-        } else Column(Modifier.heightIn(min=76.dp).padding(T.medium),verticalArrangement=Arrangement.spacedBy(T.small)) {
-            Icon(workspaceIcon(entry.id),null,Modifier.size(20.dp),tint=if(selected) colors.primary else colors.onSurfaceVariant)
+        } else Column(Modifier.heightIn(min=88.dp).padding(10.dp),verticalArrangement=Arrangement.spacedBy(T.small)) {
+            SettingsIconTile(entry.id)
             Text(entry.title,style=MaterialTheme.typography.labelLarge,maxLines=2,overflow=TextOverflow.Ellipsis)
         }
     }

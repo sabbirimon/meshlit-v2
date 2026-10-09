@@ -60,6 +60,7 @@ open class SettingsRepository(private val context: Context) {
             themeMode = ThemeMode.entries.firstOrNull { it.name == prefs[Keys.themeMode] }
                 ?: MeshlitThemeConfig.Default.themeMode,
             dynamicColors = prefs[Keys.dynamicColors] ?: MeshlitThemeConfig.Default.dynamicColors,
+            uiLanguage = com.meshlit.workspace.WorkspaceLanguage.fromTag(prefs[Keys.uiLanguage]),
             uiFont = com.meshlit.ui.theme.UiFont.entries.firstOrNull{it.name==prefs[Keys.uiFont]} ?: com.meshlit.ui.theme.UiFont.FIGTREE,
             surfaceStyle = com.meshlit.ui.theme.SurfaceStyle.entries.firstOrNull{it.name==prefs[Keys.surfaceStyle]} ?: com.meshlit.ui.theme.SurfaceStyle.SOLID,
             workspaceLayout = com.meshlit.ui.theme.WorkspaceLayout.entries.firstOrNull{it.name==prefs[Keys.workspaceLayout]} ?: com.meshlit.ui.theme.WorkspaceLayout.ADAPTIVE,
@@ -889,6 +890,8 @@ open class SettingsRepository(private val context: Context) {
         store.edit { it[Keys.themeMode] = mode.name }
     }
 
+    suspend fun setUiLanguage(language:com.meshlit.workspace.WorkspaceLanguage) { store.edit { it[Keys.uiLanguage]=language.tag } }
+
     suspend fun setUiFont(font:com.meshlit.ui.theme.UiFont){store.edit{it[Keys.uiFont]=font.name}}
     suspend fun setSurfaceStyle(style:com.meshlit.ui.theme.SurfaceStyle){store.edit{it[Keys.surfaceStyle]=style.name}}
     suspend fun setWorkspaceLayout(layout:com.meshlit.ui.theme.WorkspaceLayout){store.edit{it[Keys.workspaceLayout]=layout.name}}
@@ -992,6 +995,7 @@ open class SettingsRepository(private val context: Context) {
         val basePalette = stringPreferencesKey("theme.base_palette")
         val themeMode = stringPreferencesKey("theme.theme_mode")
         val dynamicColors = booleanPreferencesKey("theme.dynamic_colors")
+        val uiLanguage=stringPreferencesKey("theme.ui_language")
         val uiFont=stringPreferencesKey("theme.ui_font")
         val surfaceStyle=stringPreferencesKey("theme.surface_style")
         val workspaceLayout=stringPreferencesKey("theme.workspace_layout")

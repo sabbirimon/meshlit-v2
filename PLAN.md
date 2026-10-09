@@ -1,9 +1,33 @@
 # Meshlit implementation plan
 
 Previous upstream records are preserved in `docs/history/PLAN-before-2026-10-06.md`; their old build/device claims are historical, not validation of this checkout.
-Updated: 2026-10-06. Follow `AGENTS.md` and `AGENT_BUILD.md` before implementation.
+Updated: 2026-10-09. Follow `AGENTS.md` and `AGENT_BUILD.md` before implementation.
 `PROGRESS.md` is the evidence ledger; `BUILD.md` contains reproducible commands.
 User requirements outrank historical restrictions on layer/pipeline sharding.
+
+## Build 40 continuation
+
+Studio appearance, English/简体中文 contracts, the desktop client, native NEXT
+source project, Colibri host selection, actual ggwave audio, local cryptography
+and foreground paired WebRTC/SSH command paths are implemented. Keep these
+experimental adapters separate from Android Core Candidate and the current
+local chat engine. See the four adapter guides and the current evidence ledger.
+
+- Finish final source packaging/lint and inspect the actual desktop renderer.
+- Reconnect the Samsung through an owner-started USB ADB server; preserve app
+  data, require human acceptance of changed notices, and test current UI/native
+  codec, foreground audio and Stop/revocation. PCM round trips do not establish
+  speaker-to-microphone delivery.
+- Pair Samsung/Xiaomi on LAN and then distinct Internet networks; verify actual
+  direct/relay routes, replay rejection, receiver grants and cancellation. A
+  WebRTC chat channel is separate from native model-layer transport.
+- Test a licensed compatible Colibri model on an explicitly selected host;
+  registry tests and HTTP fixtures do not establish real model generation.
+- Build the native NEXT 26.0.0 project using DevEco/SDK and test a NEXT device
+  before claiming HAP, native-runtime or UI parity. Qualify Windows/Linux clients
+  separately and retain unknown token usage when the host does not report it.
+- Preserve the production priorities below: local Android reliability, genuine
+  multi-device inference/recovery, then governed Internet/heterogeneous fleets.
 
 ## Priority 1 — reliable Android foundation
 - Finish both-flavor compilation, unit tests, lint and emulator UI inspection.

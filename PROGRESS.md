@@ -1,6 +1,6 @@
 # Meshlit progress and evidence
 
-Updated 2026-10-08. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
+Updated 2026-10-09. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
 Current review branch: `codex/hyperl-production-library`; previous publication branch
 `codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
@@ -8,10 +8,33 @@ to `sabbirimon/meshlit-v2` on 2026-10-07, followed by GitHub beta APK release as
 and a separate Play review build. No force push or Play submission is authorized.
 Historical upstream records in `docs/history/` are not current test evidence.
 
-`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **75 feature areas,
-38 durable command operations and 33 modules**. Feature counts do not establish
+`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **88 feature areas,
+38 durable command operations and 37 modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
+
+## Build 40: Studio, host clients and scoped connected tools — 2026-10-09
+
+The current change adds shared Kotlin workspace contracts and a Compose desktop
+host client, native HarmonyOS NEXT project source, compact Studio styling, optional
+Colibri hosting, actual ggwave JNI with English transcripts, offline cryptography
+and scoped peer/node tools. New connected routes remain Experimental and off by
+default. Core Candidate remains separately installed and does not admit those
+routes. Android's normal local model/prompt/history defaults are retained.
+
+All **805 affected JVM cases** pass, as do three APK assemblies and Android lints
+with zero errors/fatal. Actual host JNI PCM round trips, native desktop rendering,
+bundled-runtime trusted/untrusted HTTPS checks and a same-Mac WebRTC browser
+fixture pass within their limited scopes. Corrected APKs verify signatures,
+versionCode 40, full pinned starter, four-ABI native alignment, Core boundaries
+and current help/notices. A discovered stale policy-asset mismatch is corrected;
+the new pre-build guard checks byte identity and version 2026-10-09.2 agreement.
+
+Samsung remains absent from ADB, so build 40 has not been installed or phone tested.
+DevEco/NEXT compilation and hardware, Colibri model generation, physical acoustic
+communication, Internet NAT/relay and independent-device execution remain gates.
+See [build-40 evidence and exact hashes](docs/VALIDATION_BUILD_40.md). Earlier
+ledger entries below preserve their own versions and qualification scopes.
 
 ## Samsung, local tools and permission controls — 2026-10-08
 

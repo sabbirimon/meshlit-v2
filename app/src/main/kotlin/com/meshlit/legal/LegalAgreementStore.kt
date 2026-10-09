@@ -23,5 +23,5 @@ class LegalAgreementStore(context: Context, name: String = "legal-agreement") {
         trySend(accepted())
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }.first { it }
-    companion object { const val VERSION = "2026-10-09.1" }
+    companion object { const val VERSION = "2026-10-09.2" }
 }

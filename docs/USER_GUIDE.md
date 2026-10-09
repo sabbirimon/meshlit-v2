@@ -4,11 +4,35 @@ Updated 2026-10-09. This guide is also packaged offline in Settings → Guide an
 
 ## Start here: what Meshlit does
 
-Meshlit is a phone-first private AI workspace. Run a supported local model on one device; manage files, chats and tasks; explicitly connect providers and owner-approved devices when needed. Android is the current application target. A model catalog, device role claim or installed library does not establish usable inference or training.
+Meshlit is a phone-first private AI workspace. Run a supported local model on one device; manage files, chats and tasks; explicitly connect providers and owner-approved devices when needed. Android is the working on-device target. Experimental desktop and native HarmonyOS NEXT clients are described in docs/MULTIPLATFORM_NEXT.md; NEXT local inference and HAP/device acceptance remain unavailable/unverified. A model catalog, device role claim or installed library does not establish usable inference or training.
 
 Use the drawer to reach Models, Monitoring, Devices and clusters, Task manager, Code workspace, Cloud and credentials, Guide and tutorial, Settings and retained Tools. Settings has Basic/Advanced filters and a search field. Search matches every entered word across names, descriptions and keywords. Advanced exposes optional runtime, forwarding and automation controls.
 
 Implementation status matters. Desktop layer workers have real execution evidence. Oversized-model execution across physical phones, replicated task/session failover and portable distributed KV recovery remain acceptance/implementation gates. This guide explains actual controls and labels future work explicitly. It contains no simulated devices, costs or performance charts.
+
+## Language, appearance and platform previews
+
+Android Settings → Appearance now offers English (default) and 简体中文. Chinese
+covers the modern chat and model-library resource strings; advanced tools retain
+English. Model answers, prompts, memory, inference settings and operation grants
+are unchanged. Monochrome adds a quiet graphite/pearl palette while retaining font
+size and accessibility. Existing custom appearance is never silently reset.
+
+The experimental desktop client supports authenticated OpenAI-compatible host
+models and streaming chat, session-only history/credentials, chat search, persistent
+English/Chinese themes and text size, output limits and reported end-to-end token
+rates. It has no bundled local engine. Explicitly enable access to the selected
+host and configure its exact /v1 URL and client token. The host receives prompts
+and determines local/offline versus provider execution. Remote hosts require
+trusted HTTPS; only literal desktop loopback may use HTTP. Missing token usage
+is shown as unknown. Interrupted replies are excluded from subsequent context.
+
+HarmonyOS NEXT has a separate native ArkTS/ArkUI 26.0.0 source target, with English
+as default, 简体中文, persisted appearance, bounded complete-response HTTPS chat and
+a native capability adapter reporting local LLM inference unavailable. This is
+not an Android APK. No DevEco/NDK/HAP/device test has passed here. Advanced Android
+services, agents, SSH/VM and federation are not automatically available in the new
+clients. See docs/MULTIPLATFORM_NEXT.md for setup and qualification gates.
 
 ## First-run walkthrough
 
@@ -346,3 +370,56 @@ Conversation and token settings → VM and SSH node tools is default off. Per-ch
 VM tools require a compatible installed QEMU executable, trusted bootable guest and verified guest SSH configuration. Path/configuration acceptance is not a successful guest boot. Agent activation remains off by default, with committed human opt-in and revocation. APP/PRoot/chroot modes are not strong arbitrary-code isolation. Check the displayed artifact/state errors; no VM runtime or guest is automatically downloaded or installed.
 
 Details: docs/architecture/PRODUCTION_CHANNELS.md, docs/hyperl/ANDROID_ALPHA6.md and docs/SSH_NODE.md.
+
+
+## Studio, Colibri and connected agent tools — build40
+
+Studio provides graphite surfaces, Ember accents, thin headers, compact spacing,
+settings icons and Models/Agents/Style hero cards. New installs use those defaults;
+saved custom colors/fonts remain. Desktop and NEXT source also offer Studio.
+Changing appearance does not rewrite the local model, prompt or conversation.
+
+Settings → Colibri configures an optional separately operated host. Its key is
+stored encrypted on Android. Save a reviewed exact /v1 endpoint, separately enable
+human host access, and refresh its real model list. Chat can select Off, On or Auto;
+Auto retains a usable local model unless a preferred verified host is requested.
+Agent mode switching needs a separate saved grant and selected local node tools.
+It cannot edit credentials, enable saved host access or download models. Local tool
+conversations retain the on-device route. Host mode sends context to that host;
+Colibri is not bundled as a qualified Android LLM backend. See docs/COLIBRI.md.
+
+Settings → GibberLink audio offers real offline ggwave encoding/decoding with an
+English transcript. Human and agent switches default off. Listen requires Android
+microphone permission and the screen must remain foreground; Stop, revocation or
+backgrounding releases audio. Audible messages are unencrypted and unauthenticated;
+received text is untrusted and never executes as a command. Send confirms local
+playback only, not delivery. See docs/GIBBERLINK.md for limits and qualification.
+
+Settings → Cryptography offers SHA-256/512, random keys, HMAC-SHA256 and AES-256-GCM
+with optional associated data. Clear fields after use. Human offline work does not
+grant agent access. Agent tools require a separate saved opt-in and per-chat
+selection; keys supplied as model tool arguments can enter model context/history.
+Tools cannot read the private credential store. This is separate from stored-secret
+vault operations; Java strings do not provide secure memory erasure.
+
+Settings → Remote commands can address up to eight saved, independently pinned
+SSH nodes sequentially, with at most two active requests. Human enablement,
+separate agent/SSH grants and per-host action allowlists are required. No arbitrary
+shell/root or permission edits are introduced. Transport errors leave outcome
+uncertain; there is no automatic command replay.
+
+Settings → P2P device chat uses a foreground WebRTC data channel. Both owners must
+enable it, exchange a fresh shared pairing key independently, then manually exchange
+signed offer/answer text. Key/transcript state stays in this session. No Internet
+ICE service is enabled by default; add a reviewed STUN server explicitly, or opt
+into an owner-operated TURN fallback. A verified direct or encrypted relay route
+is required before traffic. Carrier NAT can prevent direct connectivity.
+
+Agents can read/send session text only with separate human grants and selected chat
+tools. Peer text is untrusted evidence, not permission. Commands need distinct
+receiver agent/command grants; VM and cluster changes need additional receiver
+scopes. STATUS, VM and existing cluster controls return actual receiver responses;
+P2P does not transport model layers or automatically join an Internet model cluster.
+Disconnect, backgrounding, Stop and revocation end the local channel. A timeout
+cannot prove a remote effect stopped. Core Candidate excludes these experimental
+services; its human offline crypto tools remain separate. See docs/P2P_AND_CRYPTO.md.

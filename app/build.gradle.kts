@@ -49,8 +49,8 @@ android {
         // /v1/health `version` field distinguishes the cluster
         // build from the pre-cluster baseline, and the GitHub
         // dev release gets a fresh version tag.
-        versionCode = 38
-        versionName = "0.2.4-hyperl-alpha6"
+        versionCode = 40
+        versionName = "0.2.6-colibri-studio"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -91,8 +91,8 @@ android {
             applicationIdSuffix = ".v2"
             // Build no. 1 of the new UI. Bump versionCode by 1
             // so Play Store and F-Droid see a fresh artifact.
-            versionName = "2.0.0-v2build38"
-            versionCode = 38
+            versionName = "2.0.0-v2build40"
+            versionCode = 40
             buildConfigField("boolean", "USE_NEW_UI", "true")
             resValue("string", "app_name", "Meshlit v2")
         }
@@ -261,6 +261,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared-workspace"))
     // Project modules (app consumes the orchestration facade)
     implementation(project(":core-orchestration"))
     implementation(project(":core-common"))
@@ -273,6 +274,7 @@ dependencies {
     implementation(project(":core-federation"))
     implementation(project(":core-gpu"))
     implementation(project(":core-hyperl"))
+    implementation(project(":core-gibberlink"))
     implementation(project(":core-cloud-mcp"))
     implementation(project(":core-training"))
     implementation(project(":core-files"))
@@ -439,7 +441,36 @@ val verifyBundledModel by tasks.registering(VerifyBundledModel::class) {
     manifestFile.set(layout.projectDirectory.file("src/main/assets/models/bundled-model.json"))
     assetDirectory.set(layout.projectDirectory.dir("src/main/assets/models"))
 }
-tasks.named("preBuild") { dependsOn(verifyBundledModel) }
+// Consent must display the exact reviewed documents, including material data-flow changes.
+abstract class VerifyOfflinePolicies:DefaultTask() {
+    @get:InputFile abstract val termsDocument:RegularFileProperty
+    @get:InputFile abstract val privacyDocument:RegularFileProperty
+    @get:InputFile abstract val termsAsset:RegularFileProperty
+    @get:InputFile abstract val privacyAsset:RegularFileProperty
+    @get:InputFile abstract val agreementSource:RegularFileProperty
+    @TaskAction fun verify() {
+        val version=Regex("const val VERSION\\s*=\\s*\"([^\"]+)\"")
+            .find(agreementSource.get().asFile.readText())?.groupValues?.get(1)
+            ?: error("Review the legal agreement version before building.")
+        listOf(termsDocument.get().asFile to termsAsset.get().asFile,
+            privacyDocument.get().asFile to privacyAsset.get().asFile).forEach { (document,asset) ->
+            check(document.readBytes().contentEquals(asset.readBytes())) {
+                "Offline agreement differs from ${document.name}. Review and synchronize the legal assets before building."
+            }
+            check(document.readLines().getOrNull(1)?.startsWith("Version $version ·") == true) {
+                "Agreement acceptance version differs from ${document.name}. Review consent renewal before building."
+            }
+        }
+    }
+}
+val verifyOfflinePolicies by tasks.registering(VerifyOfflinePolicies::class) {
+    termsDocument.set(rootProject.layout.projectDirectory.file("docs/TERMS_OF_USE.md"))
+    privacyDocument.set(rootProject.layout.projectDirectory.file("docs/PRIVACY_POLICY.md"))
+    termsAsset.set(layout.projectDirectory.file("src/main/assets/legal/terms.txt"))
+    privacyAsset.set(layout.projectDirectory.file("src/main/assets/legal/privacy.txt"))
+    agreementSource.set(layout.projectDirectory.file("src/main/kotlin/com/meshlit/legal/LegalAgreementStore.kt"))
+}
+tasks.named("preBuild") { dependsOn(verifyBundledModel,verifyOfflinePolicies) }
 
 
 // Original lab companions shipped as data; installation requires an explicit human VM action.

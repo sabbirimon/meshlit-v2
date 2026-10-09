@@ -1,5 +1,7 @@
 package com.meshlit.ui.modern
 
+import com.meshlit.workspace.richtext.ReplyBlock
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
@@ -23,7 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
+import com.meshlit.ui.modern.workspaceStringResource as stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
@@ -92,11 +94,11 @@ fun ModernMeshlitApp() {
             val ownHeader=settingsPage || tab in setOf("media","vision","voice")
             Scaffold(containerColor=if(glass) Color.Transparent else colors.background,
                 contentWindowInsets=if(ownHeader) WindowInsets(0,0,0,0) else ScaffoldDefaults.contentWindowInsets,
-                topBar={if(!ownHeader) TopAppBar(expandedHeight=56.dp,
+                topBar={if(!ownHeader) TopAppBar(expandedHeight=48.dp,
                     title={if(tab=="chat") Column(Modifier.heightIn(min=T.touch).clickable(onClickLabel="Choose model",onClick={select("models")}),verticalArrangement=Arrangement.Center) {
                         Text("Meshlit",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)
                         Row(verticalAlignment=Alignment.CenterVertically) {
-                            Text(if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null)
+                            Text(if(state.current?.options?.colibriMode!="OFF" && state.current?.options?.colibriMode!=null) "Colibri policy · ${state.current?.options?.colibriMode}" else if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null)
                                 selectedProfile?.let{"${it.name} · ${it.model}"} ?: "Online model" else when(val current=runtime) {
                                     is CoordinatorState.Ready -> current.model.modelName
                                     is CoordinatorState.Loading -> stringResource(R.string.modern_loading)
@@ -257,7 +259,7 @@ private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller
                     }
                 }
             }
-            val mode=if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null) "Online provider" else when(engineTag){
+            val mode=if(state.current?.options?.colibriMode!="OFF" && state.current?.options?.colibriMode!=null) "Colibri policy · ${state.current?.options?.colibriMode}" else if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null) "Online provider" else when(engineTag){
                 "runanywhere","onnx-ort","llama-native-local" -> "On-device model"
                 "llama-rpc-layer" -> "Cluster model"
                 else -> "Selected model"

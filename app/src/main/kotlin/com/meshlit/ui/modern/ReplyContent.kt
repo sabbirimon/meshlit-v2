@@ -1,5 +1,7 @@
 package com.meshlit.ui.modern
 
+import com.meshlit.workspace.richtext.ReplyBlock
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -52,7 +54,8 @@ import kotlinx.coroutines.launch
             color=when {run.code->colors.onSecondaryContainer;run.bold->colors.primary;else->androidx.compose.ui.graphics.Color.Unspecified},
             background=if(run.code) colors.secondaryContainer else androidx.compose.ui.graphics.Color.Unspecified)
         withStyle(style) {
-            if(run.url!=null) withLink(LinkAnnotation.Url(run.url,TextLinkStyles(style=SpanStyle(color=colors.primary,textDecoration=TextDecoration.Underline)))){append(run.text)}
+            val url=run.url
+            if(url!=null) withLink(LinkAnnotation.Url(url,TextLinkStyles(style=SpanStyle(color=colors.primary,textDecoration=TextDecoration.Underline)))){append(run.text)}
             else append(run.text)
         }
     }}}
