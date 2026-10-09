@@ -16,7 +16,8 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-MODULES = "java.base,java.desktop,java.net.http,java.prefs,java.management,jdk.management,jdk.crypto.ec,jdk.unsupported"
+# jdeps over the complete packaged classpath, plus reflective TLS/management use.
+MODULES = "java.base,java.desktop,java.instrument,java.logging,java.net.http,java.prefs,java.rmi,java.security.jgss,java.management,jdk.management,jdk.crypto.ec,jdk.unsupported"
 
 
 def run(*args):
@@ -173,8 +174,11 @@ def main():
     (staging / "Applications").symlink_to("/Applications", target_is_directory=True)
     shutil.copy2(repo / "docs/MACOS_PREVIEW_INSTALL.txt", staging / "INSTALL.txt")
     dmg = args.output / (stem + ".dmg")
-    run("/usr/bin/hdiutil", "create", "-srcfolder", staging, "-volname",
-        "Meshlit Intel Preview", "-format", "UDZO", dmg)
+    # File-based HFS creation avoids a temporary mounted disk/device dependency.
+    hybrid = args.scratch / "meshlit-hfs.dmg"
+    run("/usr/bin/hdiutil", "makehybrid", "-hfs", "-hfs-volume-name",
+        "Meshlit Intel Preview", "-o", hybrid, staging)
+    run("/usr/bin/hdiutil", "convert", hybrid, "-format", "UDZO", "-o", dmg)
     run("/usr/bin/hdiutil", "verify", dmg)
     shutil.copy2(repo / "docs/MACOS_PREVIEW_INSTALL.txt", args.output / "INSTALL.txt")
     shutil.copy2(args.runtime_provenance, args.output / "RUNTIME_SOURCE.json")

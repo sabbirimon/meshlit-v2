@@ -27,7 +27,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "MeshlitPreview"
             packageVersion = "1.0.0"
-            modules("java.net.http", "java.prefs", "java.management", "jdk.management", "jdk.crypto.ec", "jdk.unsupported")
+            modules("java.instrument", "java.logging", "java.net.http", "java.prefs", "java.rmi", "java.security.jgss", "java.management", "jdk.management", "jdk.crypto.ec", "jdk.unsupported")
             description = "Experimental Meshlit desktop studio with bundled offline CPU inference and optional host connections"
             vendor = "Sabbir Hassan Imon"
         }
