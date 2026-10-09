@@ -81,5 +81,8 @@ include(
     ":feature-ghosty",
     ":shared-workspace",
     ":desktopApp",
+    ":desktop-hyperl",
+    ":desktop-ssh",
+    ":desktop-engine",
     ":app"
 )

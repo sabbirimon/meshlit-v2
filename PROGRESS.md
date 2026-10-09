@@ -1,6 +1,6 @@
 # Meshlit progress and evidence
 
-Updated 2026-10-09. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
+Updated 2026-10-10. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
 Current review branch: `codex/hyperl-production-library`; previous publication branch
 `codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
@@ -12,6 +12,41 @@ Historical upstream records in `docs/history/` are not current test evidence.
 38 durable command operations and 37 modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
+
+## Desktop/server continuation — 2026-10-10
+
+The owner requests desktop/server management dashboards, Android feature parity,
+containers/Kubernetes, security/firewall tools, recovery, permitted full-auto
+agents/hooks/MCP, terminal, Ghostty and both Dolphin speech/chat families.
+[Full requested scope](docs/DESKTOP_FEATURE_TRACKER.md),
+[43-old/49-current Android menu comparison](docs/ANDROID_DESKTOP_PARITY.md) and
+[build update ledger](docs/DESKTOP_BUILD_LOG.md) now distinguish real code,
+contract checks, package/runtime qualification and missing backends.
+
+Working desktop sources add grouped Basic/Advanced menus, model references/HF,
+saved nodes, live local OSHI monitor/process controls, crypto, scoped bidirectional
+SSH, native CPU HyperL adapter, human shell and optional external Ghostty.
+The system-role serialization bug was corrected and passed both serializer
+contracts and actual offline generation. Global scoped search and the compact
+seven-category management overview are implemented and rendered. The shared
+sharding planner admits integer whole-layer counts against per-worker memory,
+with bounded manual placement and weak optional worker exclusion. Desktop local
+context/CPU/batching/KV/idle options, memory admission and native context identity
+are implemented. Native f16/q8_0/q4_0 controls produce text and verify context;
+q4_0 produced a poor arithmetic reply, so it is excluded from normal settings.
+Auto AVX2 generates a real 82-token reply at 16.047 end-to-end tokens/sec during
+background lint; this is not a matched speed comparison. Authentication rejection
+and owned-process Unload pass. Targeted current
+JVM executions total 324 (30 desktop, 12 desktop shared engine, 4 SSH, 4 workspace,
+274 Android inference), without failures/errors/skips on this Intel Mac; duplicate
+shared-source executions are not independent device proof. Actual OSHI local
+sampling, HF metadata and all 12 HyperL JNI CPU recipes pass. Broader agent automation,
+OS firewall, container/Kubernetes, VM, cloud vault/billing and full repair remain
+pending. No new desktop package or release publication is claimed in this entry.
+Android starter/local defaults are retained. Shared planner and inference module
+API-24 desugaring/voice permission-error handling changed; Android full builds and
+lints are being rerun. Desktop RPC worker execution, independent-device speed,
+production acceptance and other platform hardware remain unqualified.
 
 ## Build 40: Studio, host clients and scoped connected tools — 2026-10-09
 

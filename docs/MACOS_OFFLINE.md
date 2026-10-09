@@ -1,50 +1,70 @@
 # Intel Mac offline desktop preview
 
 Updated 2026-10-10. Desktop-only addition to build40. Android's bundled SmolLM2
-starter, prompt and inference path remain unchanged. The earlier host-only Mac
-preview is superseded by the installer payload described here.
+starter and local inference defaults remain unchanged. The shared worker-admission
+planner adds bounded whole-layer allocation; both Android flavor Kotlin compilations pass. The earlier host-only Mac preview is being replaced by a desktop studio;
+new installer/native acceptance is recorded in [DESKTOP_BUILD_LOG.md](DESKTOP_BUILD_LOG.md).
 
 The desktop bundle includes the publisher's Qwen2.5 1.5B Instruct Q4_K_M GGUF,
 1,117,320,736 bytes, Apache-2.0. The immutable revision, source URL and full
 SHA-256 are in `desktopApp/distribution/bundled-model.json`. `LocalEngine` checks
-the full hash before loading the built-in file. Imported files get structural
-admission, not a claim that their publisher or compatibility has been verified.
+the full hash before loading the built-in file. The model manager records imported file SHA-256 and rechecks it on managed load.
+This integrity admission does not certify the publisher or model compatibility.
 
 The unmodified pinned standalone llama.cpp CPU server is built with static
-libraries, system Accelerate, no Metal, CURL, OpenSSL, OpenMP or native AVX flags.
-It uses only system dynamic dependencies. It starts only after a user Load, on
+libraries and system Accelerate, without Metal, CURL, OpenSSL or OpenMP. Two
+explicit Intel builds provide SSE4.2 and AVX2/FMA/F16C; BMI2 and AVX512 are disabled.
+A hash-verified native CPUID/XGETBV probe confirms both CPU and OS vector support
+before Auto selects the optimized build. Compatible CPU can be selected explicitly;
+forced AVX2 fails on unsupported hardware. Only system dynamic dependencies are used.
+It starts after a human Load or Send on an unloaded local model, on
 127.0.0.1 with a fresh 256-bit bearer in a private 0600 temporary file. One worker,
-4,096 context tokens and up to four CPU threads are configured. The owner-only
+4,096 context tokens and up to four generation threads are the defaults. Context,
+threads, batching, KV keys and idle unloading are configurable in Inference engine.
+The owner-only
 process stops on Unload, window disposal, JVM shutdown, source switch or Stop
-during generation. Stale load callbacks cannot attach a superseded model.
+during generation. Five-minute idle unloading never interrupts an active request.
+The full GGUF hash, available-memory/KV admission and native model/context readback
+must pass. Stale load callbacks cannot attach a superseded model.
 
-Load takes at most two minutes. Chat uses the existing bounded SSE transport and
+Server-readiness polling has a deadline; full file hashing and setup add time. Chat uses the existing bounded SSE transport and
 reports actual server completion tokens divided by total request time. This is
 end-to-end throughput, not a decode-only benchmark. A large chat/context can fail;
 there is no automatic summarization, cloud fallback or fake response. This model
 is useful for compact text/chat/code tasks but is not a frontier-quality model,
 vision model or autonomous tool executor.
 
-Settings -> Local offline -> Select GGUF selects a local file up to 32 GiB without
-copying it; model/architecture/RAM compatibility is established at load time by the
-engine. Download GGUFs through the publisher's browser page first. Direct in-app
-search/downloads, a durable model registry, idle unloading, agents, RAG and GPU
-adapters are the separate milestones in [DESKTOP_STUDIO_PLAN.md](DESKTOP_STUDIO_PLAN.md).
-Switching local/remote clears session history. Appearance remains persisted.
+Settings → Models manages bundled and imported GGUF references; imported weights
+are not copied. Discover models searches Hugging Face after an explicit service
+opt-in and admits revision-pinned single-file GGUFs only after full size/SHA checks.
+Interrupted transfers are removed; resume is not yet implemented. Basic/Advanced
+settings are grouped; monitor/process, crypto, terminal, SSH and optional native
+CPU HyperL have desktop adapters. These are narrower than Android feature parity.
+See [scope](DESKTOP_FEATURE_TRACKER.md) and [Android comparison](ANDROID_DESKTOP_PARITY.md).
+
+Switching local/remote clears session history. Keys, prompts and grants are session-only;
+appearance, navigation mode, model references and saved node addresses persist.
+Custom or model-native local response instructions do not change remote host policies.
 
 ## Build and package
 
 1. Verify the desktop model against its pinned manifest and obtain a checked
    portable Eclipse Temurin 21 Intel JDK and matching full upstream sources.
 2. Build Kotlin desktop classes with `:desktopApp:test :desktopApp:createDistributable`.
+   Use `-Pmeshlit.packagingJdk=<portable-jdk>/Contents/Home` for the Compose image.
    Only the application input/resources are reused; the packager replaces the
    Homebrew-dependent runtime and launcher with Temurin's jlink/jpackage output.
-3. Run `python3 scripts/build-desktop-llama.py --output <scratch>/llama-cpu --jobs 2`.
+3. Run `python3 scripts/build-desktop-llama.py --output <scratch>/llama-cpu --jobs 2 --variant baseline`
+   and the same command with `--output <scratch>/llama-cpu-avx2 --variant avx2`.
+   Compile the original Meshlit `desktopApp/native/cpu_features.c` probe with
+   `clang -O2 -std=c11 -Wall -Wextra -Werror -arch x86_64 -mmacosx-version-min=11.0
+   desktopApp/native/cpu_features.c -o <scratch>/cpu-features`.
 4. Run `python3 scripts/package-macos-preview.py --app-image <MeshlitPreview.app>
    --jdk-home <portable-jdk>/Contents/Home --output <new-delivery-dir>
    --scratch <new-scratch-dir> --runtime-provenance <runtime-provenance.json>
    --runtime-source <matching-source.tar.gz> --model <pinned-model.gguf>
-   --server <llama-cpu>/bin/llama-server` (one command).
+   --server <llama-cpu>/bin/llama-server --fast-server <llama-cpu-avx2>/bin/llama-server
+   --cpu-probe <scratch>/cpu-features --hyperl-library <libmeshlit_hyperl.dylib>` (one command).
 
 The packager preserves licences, validates all native files are Intel and rejects
 absolute dynamic dependencies outside system library paths. It creates an ad-hoc

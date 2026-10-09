@@ -42,6 +42,55 @@ class HostClientTest {
             assertEquals("你好 🌍", text.toString()); assertEquals(7L, usage.outputTokens); assertTrue(usage.tokensPerSecond!! > 0)
         }
     }
+    @Test fun localSystemPromptIsSerializedSeparatelyFromSharedChatTurns() = host { server, address ->
+        val requests = java.util.concurrent.CopyOnWriteArrayList<String>()
+        server.createContext("/v1/chat/completions") { e ->
+            requests += e.requestBody.bufferedReader().readText()
+            val data = "data: {\"choices\":[{\"delta\":{\"content\":\"contract fixture\"}}]}\n\ndata: [DONE]\n\n".toByteArray()
+            e.responseHeaders.add("Content-Type", "text/event-stream"); e.sendResponseHeaders(200, data.size.toLong())
+            e.responseBody.use { it.write(data) }
+        }
+        HostClient(HostEndpoint.parse(address), "").use { client ->
+            client.generateConfigured("fixture", listOf(ChatTurn("user", "hello")), GenerationBudget(128), "local instructions") {}
+            client.generateConfigured("fixture", listOf(ChatTurn("user", "hello")), GenerationBudget(128), null) {}
+        }
+        assertTrue(requests[0].contains("\"role\":\"system\",\"content\":\"local instructions\""))
+        assertFalse(requests[1].contains("\"role\":\"system\""))
+        assertFailsWith<IllegalArgumentException> { ChatTurn("system", "not a user conversation turn") }
+    }
+    @Test fun benchmarkSamplingIsExplicitAndLocalOnly() = host { server, address ->
+        val requests = java.util.concurrent.CopyOnWriteArrayList<String>()
+        server.createContext("/v1/chat/completions") { e ->
+            requests += e.requestBody.bufferedReader().readText()
+            val data = "data: {\"choices\":[{\"delta\":{\"content\":\"sampling fixture\"}}]}\n\ndata: [DONE]\n\n".toByteArray()
+            e.responseHeaders.add("Content-Type", "text/event-stream"); e.sendResponseHeaders(200,data.size.toLong())
+            e.responseBody.use {it.write(data)}
+        }
+        val turns=listOf(ChatTurn("user","hello"));val budget=GenerationBudget(128)
+        HostClient(HostEndpoint.parse(address),"test-key").use { client ->
+            client.generate("fixture",turns,budget) {}
+            client.generateDeterministic("fixture",turns,budget) {}
+        }
+        assertFalse(requests[0].contains("temperature"));assertFalse(requests[0].contains("seed"))
+        assertTrue(requests[1].contains("\"temperature\":0"));assertTrue(requests[1].contains("\"seed\":42"))
+        HostClient(HostEndpoint.parse("https://host/v1"),"scoped-key").use {client ->
+            assertFailsWith<IllegalArgumentException> {client.generateDeterministic("fixture",turns,budget) {}}
+        }
+    }
+    @Test fun meshlitNodeRequestsBufferedReplyAndKeepsUnknownTokenUsage() = host { server, address ->
+        server.createContext("/v1/chat/completions") { e ->
+            val body = e.requestBody.bufferedReader().readText()
+            assertTrue(body.contains("\"stream\":false")); assertFalse(body.contains("stream_options"))
+            val data = "{\"choices\":[{\"message\":{\"content\":\"buffered contract\"}}]}".toByteArray()
+            e.responseHeaders.add("Content-Type", "application/json"); e.sendResponseHeaders(200, data.size.toLong()); e.responseBody.use { it.write(data) }
+        }
+        val endpoint = HostEndpoint.parse(address, HostProtocol.MESHLIT)
+        assertFails { HostClient(endpoint, "") }
+        HostClient(endpoint, "scoped-node-key").use { client ->
+            val out = StringBuilder(); val usage = client.generate("node-model", listOf(ChatTurn("user", "hello")), GenerationBudget(128)) { out.append(it) }
+            assertEquals("buffered contract", out.toString()); assertNull(usage.outputTokens)
+        }
+    }
     @Test fun openWebuiUsesItsDistinctAuthenticatedApiRoutes() = host { server, address ->
         val base = address.removeSuffix("/v1") + "/api"
         assertFails { HostEndpoint.parse(base) }

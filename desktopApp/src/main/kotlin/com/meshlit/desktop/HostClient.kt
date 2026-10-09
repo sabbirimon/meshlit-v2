@@ -14,7 +14,9 @@ import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** System TLS, no redirects, no background discovery, no persisted bearer secrets. */
-enum class HostProtocol(val basePath: String) { OPENAI("/v1"), OPEN_WEBUI("/api") }
+enum class HostProtocol(val basePath: String, val label: String, val streaming: Boolean = true) {
+    OPENAI("/v1", "OpenAI compatible"), OPEN_WEBUI("/api", "Open WebUI"), MESHLIT("/v1", "Meshlit buffered node", false)
+}
 class HostEndpoint private constructor(val base: URI, val protocol: HostProtocol) {
     val loopback: Boolean get() = base.host in setOf("127.0.0.1", "::1", "[::1]")
     fun route(path: String): URI = URI(base.toString().trimEnd('/') + "/" + path)
@@ -34,7 +36,7 @@ class HostClient(private val endpoint: HostEndpoint, private val token: String) 
     init {
         require(token.length <= 8192 && token.none { it.isISOControl() })
         require(endpoint.loopback || token.isNotBlank()) { "A remote host requires a client token." }
-        require(endpoint.protocol != HostProtocol.OPEN_WEBUI || token.isNotBlank()) { "Open WebUI requires its account API token." }
+        require(endpoint.protocol == HostProtocol.OPENAI || token.isNotBlank()) { "This host protocol requires its client/account API token." }
     }
 
     private val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15))
@@ -71,6 +73,15 @@ class HostClient(private val endpoint: HostEndpoint, private val token: String) 
             synchronized(lifecycle) { body = null; active = null; timeout.cancel(false) }
         }
     }
+    internal fun localProperties(): JsonObject {
+        require(endpoint.loopback && token.isNotBlank())
+        val request = HttpRequest.newBuilder(endpoint.base.resolve("/props")).timeout(Duration.ofSeconds(15))
+            .header("Authorization", "Bearer $token").GET().build()
+        return response(request) { stream, _ ->
+            val bytes = stream.readNBytes(262145); require(bytes.size <= 262144)
+            boundedJson(bytes.decodeToString(throwOnInvalidSequence = true))
+        }
+    }
     fun models(): List<String> = response(request("models").GET().build()) { stream, _ ->
         val bytes = stream.readNBytes(262145)
         require(bytes.size <= 262144) { "Model list exceeds 256 KiB." }
@@ -80,17 +91,43 @@ class HostClient(private val endpoint: HostEndpoint, private val token: String) 
         list.map { it.jsonObject["id"]?.jsonPrimitive?.content ?: error("Missing model id") }
             .onEach { require(it.length in 1..512 && it.none(Char::isISOControl)) }.distinct()
     }
-    fun generate(model: String, turns: List<ChatTurn>, budget: GenerationBudget, onText: (String) -> Unit): GenerationUsage {
+    fun generate(model: String, turns: List<ChatTurn>, budget: GenerationBudget, onText: (String) -> Unit): GenerationUsage =
+        generateConfigured(model, turns, budget, null, onText)
+    fun generateConfigured(model: String, turns: List<ChatTurn>, budget: GenerationBudget, systemPrompt: String?, onText: (String) -> Unit): GenerationUsage =
+        generateRequest(model, turns, budget, systemPrompt, false, onText)
+    /** Opt-in local developer benchmark only; ordinary chat retains provider sampling defaults. */
+    internal fun generateDeterministic(model: String, turns: List<ChatTurn>, budget: GenerationBudget, onText: (String) -> Unit): GenerationUsage {
+        require(endpoint.loopback && token.isNotBlank() && endpoint.protocol == HostProtocol.OPENAI)
+        return generateRequest(model, turns, budget, null, true, onText)
+    }
+    private fun generateRequest(model: String, turns: List<ChatTurn>, budget: GenerationBudget, systemPrompt: String?, deterministic: Boolean, onText: (String) -> Unit): GenerationUsage {
+        require(systemPrompt == null || systemPrompt.isNotBlank() && systemPrompt.length <= 8192)
         require(model.length in 1..512 && model.none(Char::isISOControl))
-        require(turns.size in 1..64 && turns.last().role == "user" && turns.sumOf { it.content.length.toLong() } <= 131072)
+        require((turns.size + if (systemPrompt == null) 0 else 1) in 1..64 && turns.last().role == "user" && turns.sumOf { it.content.length.toLong() } + (systemPrompt?.length ?: 0) <= 131072)
         val payload = buildJsonObject {
-            put("model", model); put("stream", true); put("max_tokens", budget.maxOutputTokens)
-            putJsonObject("stream_options") { put("include_usage", true) }
-            putJsonArray("messages") { turns.forEach { t -> add(buildJsonObject { put("role", t.role); put("content", t.content) }) } }
+            put("model", model); put("stream", endpoint.protocol.streaming); put("max_tokens", budget.maxOutputTokens)
+            if (deterministic) { put("temperature", 0); put("seed", 42) }
+            if (endpoint.protocol.streaming) putJsonObject("stream_options") { put("include_usage", true) }
+            putJsonArray("messages") {
+                systemPrompt?.let { add(buildJsonObject { put("role", "system"); put("content", it) }) }
+                turns.forEach { t -> add(buildJsonObject { put("role", t.role); put("content", t.content) }) } }
         }.toString()
         val start = System.nanoTime()
         return response(request("chat/completions").header("Content-Type", "application/json")
-            .header("Accept", "text/event-stream").POST(HttpRequest.BodyPublishers.ofString(payload)).build()) { stream, type ->
+            .header("Accept", if (endpoint.protocol.streaming) "text/event-stream" else "application/json").POST(HttpRequest.BodyPublishers.ofString(payload)).build()) { stream, type ->
+            if (!endpoint.protocol.streaming) {
+                require(type.substringBefore(';').trim().lowercase() == "application/json")
+                val bytes = stream.readNBytes(262145); require(bytes.size <= 262144)
+                val root = boundedJson(bytes.decodeToString(throwOnInvalidSequence = true))
+                require(root["error"] == null)
+                val choices = root["choices"]!!.jsonArray; require(choices.size == 1)
+                val text = choices.single().jsonObject["message"]!!.jsonObject["content"]!!.jsonPrimitive.content
+                require(text.isNotBlank() && text.length <= 131072)
+                val tokens = (root["usage"] as? JsonObject)?.get("completion_tokens")?.jsonPrimitive?.longOrNull
+                require(tokens == null || tokens in 0..10_000_000)
+                onText(text)
+                return@response GenerationUsage(tokens, System.nanoTime() - start)
+            }
             require(type.substringBefore(';').trim().lowercase() == "text/event-stream") { "Host did not return a token stream." }
             var total = 0; var outputSize = 0; var tokens: Long? = null; var finished = false
             val event = StringBuilder()
@@ -111,9 +148,10 @@ class HostClient(private val endpoint: HostEndpoint, private val token: String) 
                 return false
             }
             val line = StringBuilder()
+            val buffered = stream.buffered(8192)
             while (!finished) {
                 if (closed.get() || Thread.currentThread().isInterrupted) throw CancellationException("Request cancelled")
-                val c = stream.read()
+                val c = buffered.read()
                 if (c == -1) { if (line.isNotEmpty() || event.isNotEmpty()) error("Incomplete token stream"); break }
                 require(++total <= 2_097_152) { "Token stream exceeds 2 MiB." }
                 // Preserve UTF-8 bytes until the complete line; no per-byte Unicode decoding.

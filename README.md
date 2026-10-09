@@ -34,6 +34,7 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 
 [Start building](#build-and-run) · [App guide](docs/USER_GUIDE.md) ·
 [Current evidence](PROGRESS.md) · [Feature map](FEATURE_MAP.md) ·
+[Desktop/server tracker](docs/DESKTOP_FEATURE_TRACKER.md) · [Android parity](docs/ANDROID_DESKTOP_PARITY.md) · [Desktop build log](docs/DESKTOP_BUILD_LOG.md) ·
 [Agent instructions](AGENTS.md) · [Roadmap](BUILD_MILESTONES.md) ·
 [Audit setup](docs/AUDIT_TELEMETRY.md) · [Contribute](CONTRIBUTING.md)
 

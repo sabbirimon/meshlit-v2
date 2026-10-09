@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Package an already compiled Intel desktop client using a portable JDK.
 
-No downloads, installation, elevated privileges, signing, or publication occur.
+No downloads, installation, elevated privileges, Developer ID signing or publication occur.
+Local integrity is ad-hoc signed; these experimental packages are not notarised.
 The output and scratch directories must be new to avoid replacing user files.
 """
 import argparse
@@ -15,7 +16,7 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-MODULES = "java.base,java.desktop,java.net.http,java.prefs,jdk.crypto.ec,jdk.unsupported"
+MODULES = "java.base,java.desktop,java.net.http,java.prefs,java.management,jdk.management,jdk.crypto.ec,jdk.unsupported"
 
 
 def run(*args):
@@ -37,9 +38,14 @@ def main():
     parser.add_argument("--runtime-source", type=Path, required=True)
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--server", type=Path, required=True)
+    parser.add_argument("--fast-server", type=Path)
+    parser.add_argument("--cpu-probe", type=Path)
+    parser.add_argument("--hyperl-library", type=Path, required=True)
     args = parser.parse_args()
     if platform.system() != "Darwin" or platform.machine() != "x86_64":
         parser.error("This preview packager requires an Intel Mac.")
+    if bool(args.fast_server) != bool(args.cpu_probe):
+        parser.error("Optimized engine and CPU probe must be supplied together")
     repo = Path(__file__).resolve().parents[1]
     app_input = args.app_image.resolve() / "Contents/app"
     jars = list(app_input.glob("desktopApp-*.jar"))
@@ -63,17 +69,20 @@ def main():
         "--input", clean_input, "--runtime-image", runtime, "--name", "MeshlitPreview",
         "--main-jar", jars[0].name, "--main-class", "com.meshlit.desktop.MainKt",
         "--app-version", "2.0.40", "--vendor", "Sabbir Hassan Imon",
-        "--description", "Experimental Meshlit authenticated host client",
+        "--description", "Experimental Meshlit desktop studio with offline CPU inference",
         "--mac-package-identifier", "com.meshlit.desktop",
         "--icon", args.app_image / "Contents/Resources/MeshlitPreview.icns",
         "--java-options", "-Dcompose.application.resources.dir=$APPDIR/resources",
         "--java-options", "-Dcompose.application.configure.swing.globals=true",
-        "--java-options", "-Dskiko.library.path=$APPDIR")
+        "--java-options", "-Dskiko.library.path=$APPDIR",
+        "--java-options", "-Djava.library.path=$APPDIR/resources/local")
+    # The native HyperL bridge is loaded only by an explicit enabled CPU action.
     app = image_dir / "MeshlitPreview.app"
     plist = app / "Contents/Info.plist"
     metadata = plistlib.loads(plist.read_bytes())
     # Conservative distribution floor; only macOS 15.8.1 is physically qualified.
     metadata["LSMinimumSystemVersion"] = "11.0"
+    metadata["CFBundleVersion"] = "40.1"
     plist.write_bytes(plistlib.dumps(metadata))
     resources = app / "Contents/Resources"
     notices = resources / "licenses"
@@ -90,6 +99,12 @@ def main():
     (local_resources / "local").mkdir(parents=True, exist_ok=True)
     (local_resources / "models").mkdir(parents=True, exist_ok=True)
     shutil.copy2(args.server, local_resources / "local/llama-server")
+    if args.fast_server:
+        shutil.copy2(args.fast_server, local_resources / "local/llama-server-avx2")
+        shutil.copy2(args.cpu_probe, local_resources / "local/cpu-features")
+    shutil.copy2(args.hyperl_library, local_resources / "local/libmeshlit_hyperl.dylib")
+    for filename in ("LICENSE", "NOTICE", "LICENSE_HISTORY.md"):
+        shutil.copy2(repo / "core-hyperl/src/main/assets/hyperl" / filename, notices / ("HYPERL-" + filename))
     shutil.copy2(args.model, local_resources / "models" / model_manifest["filename"])
     shutil.copy2(repo / "desktopApp/distribution/bundled-model.json", local_resources / "models/bundled-model.json")
     (local_resources / "local/engine.json").write_text(json.dumps({
@@ -134,13 +149,23 @@ def main():
     engine_file = local_resources / "local/engine.json"
     engine_metadata = json.loads(engine_file.read_text())
     engine_metadata["sha256"] = digest(local_resources / "local/llama-server")
+    if args.fast_server:
+        engine_metadata["avx2"] = {"sha256": digest(local_resources / "local/llama-server-avx2"),
+            "requiredFeatures": ["AVX2", "FMA", "F16C", "OS XSAVE XMM/YMM"], "bmi2": False}
+        engine_metadata["cpuProbeSha256"] = digest(local_resources / "local/cpu-features")
     engine_file.write_text(json.dumps(engine_metadata, indent=2) + "\n", encoding="utf-8")
+    (local_resources / "local/hyperl-engine.json").write_text(json.dumps({
+        "sha256": digest(local_resources / "local/libmeshlit_hyperl.dylib"),
+        "runtime": "hyperl-cpu/1", "backend": "CPU", "license": "LicenseRef-HyperL-Community-1.0"
+    }, indent=2) + "\n", encoding="utf-8")
     run("/usr/bin/codesign", "--force", "--sign", "-", app)
     run("/usr/bin/codesign", "--verify", "--deep", "--strict", app)
-    stem = "MeshlitPreview-2.0.40-macos-intel"
+    stem = "MeshlitPreview-2.0.40-studio.1-macos-intel"
     pkg = args.output / (stem + ".pkg")
-    run("/usr/bin/pkgbuild", "--component", app, "--install-location", "/Applications",
-        "--identifier", "com.meshlit.desktop.preview.pkg", "--version", "2.0.40",
+    # Root packaging does not depend on LaunchServices recognizing a new bundle.
+    # image_dir contains exactly this app; no scripts or other install payloads.
+    run("/usr/bin/pkgbuild", "--root", image_dir, "--install-location", "/Applications",
+        "--identifier", "com.meshlit.desktop.preview.pkg", "--version", "2.0.40.1",
         "--ownership", "recommended", pkg)
     staging = args.scratch / "dmg-root"
     staging.mkdir()
@@ -159,7 +184,8 @@ def main():
               "externalNativeDependencies": [], "developerIdSigned": False,
               "notarized": False, "appSignature": "ad-hoc", "installerScripts": False,
               "runtime": provenance, "bundledModel": model_manifest,
-              "applicationSourceCommit": provenance["applicationSourceCommit"]}
+              "applicationSourceCommit": provenance["applicationSourceCommit"],
+              "cpuVariants": ["SSE4.2", "AVX2/FMA/F16C"] if args.fast_server else ["SSE4.2"]}
     (args.output / "PACKAGING.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     assets = sorted(p for p in args.output.iterdir() if p.is_file())
     (args.output / "SHA256SUMS").write_text(

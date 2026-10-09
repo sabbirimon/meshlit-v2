@@ -26,7 +26,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - name: KMP contracts, actual TCP failures and native offscreen UI
         shell: bash
-        run: ./gradlew :shared-workspace:jvmTest :desktopApp:test --no-daemon --max-workers=2
+        run: ./gradlew :shared-workspace:jvmTest :desktop-engine:test :desktop-ssh:test :desktopApp:test --no-daemon --max-workers=2
       - name: NEXT static project boundaries (not a HAP build)
         shell: bash
         run: python3 scripts/check-next-preview.py

@@ -109,3 +109,6 @@ ohosApp/signing-config*.json5
 *.p7b
 *.hap
 *.app
+
+# JVM crash dumps can contain memory-resident secrets and are never source.
+*.hprof

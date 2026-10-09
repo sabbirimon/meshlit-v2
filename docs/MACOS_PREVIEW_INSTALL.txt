@@ -1,4 +1,4 @@
-Meshlit Intel Mac desktop preview - application version 2.0.40, build40 client
+Meshlit Intel Mac desktop preview - application version 2.0.40, desktop Studio build40.1
 
 Choose ONE installation method:
 DMG: open the disk image and drag MeshlitPreview.app onto Applications.
@@ -18,22 +18,24 @@ Gatekeeper or other system security globally. A public production distribution
 still needs Developer ID signing, notarization and clean target-Mac validation.
 
 The desktop app bundles Qwen2.5 1.5B Instruct Q4_K_M (1,117,320,736 bytes) and a
-llama.cpp CPU engine. Choose Load in the header, then Send to chat offline.
+llama.cpp CPU engine with verified Auto AVX2 selection and an SSE4.2 fallback.
+Choose Load in the header, then Send to chat offline, or Send to load automatically.
 Load verifies the pinned full model hash before starting its private authenticated
 127.0.0.1 process. No Internet request or model download is required. Unload/quit
 stops that process. Stop during generation also unloads it; click Load to resume.
-Settings -> Local offline -> Select GGUF lets you use a compatible local file.
-Download trusted .gguf files in your browser; direct in-app downloads are planned.
+Settings -> Models -> Local offline -> Select GGUF lets you use a compatible local file.
+Discover models provides opt-in Hugging Face search and verified revision-pinned
+single-file GGUF downloads. Gated files need your legitimate account access.
 The selected file stays in place; it is not copied into a model cache.
 
 Remote host mode connects to a host you explicitly select with a separate network
 opt-in. HTTPS is required except numeric loopback. Prompts and the session bearer
 token are sent to that host. Tokens and chat history are kept in memory; closing
-the app clears them. Appearance persists. Switching between local and remote
+the app clears them. Appearance, engine options and saved model/device references persist. Switching between local and remote
 clears the chat to avoid sending local history to another host.
 This preview does not provide the Android app's complete node/agent/voice features.
 
-Settings -> Remote host offers LM Studio (127.0.0.1:1234/v1), Ollama
+Settings -> Providers -> Remote host offers LM Studio (127.0.0.1:1234/v1), Ollama
 (127.0.0.1:11434/v1) and Open WebUI (127.0.0.1:3000/api) presets. These must already
 be installed/running by you. Presets reset prior credentials/network opt-in.
 For Open WebUI use its account API key; its administrator must enable API access.
@@ -55,3 +57,9 @@ components listed by repository-wide notices are not bundled in this client.
 
 Source: https://github.com/sabbirimon/meshlit-v2
 Contact: sabbirimon@gmail.com
+
+Management groups settings by type. Global search covers settings, current chat,
+saved models and devices. Browser web search has its own switch and human button.
+Inference engine controls CPU threads/context/batches/f16 or q8_0 KV keys and idle unload (5 minutes
+by default). Send on an unloaded local model loads it before generation. No new
+agent, VM, OS-firewall or desktop worker enrollment is implied by these controls.

@@ -1,5 +1,8 @@
 package com.meshlit.desktop
 
+import com.meshlit.core.inference.models.GgufMetadata
+import kotlinx.serialization.json.*
+import oshi.SystemInfo
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.http.HttpClient
@@ -26,7 +29,7 @@ internal object DesktopStarter {
         "where helpful. Say when you do not know. You cannot access the Internet or execute tools."
 }
 
-internal data class LocalSession(val endpoint: HostEndpoint, val token: String)
+internal data class LocalSession(val endpoint: HostEndpoint, val token: String, val context: Int, val admission: EngineAdmission, val backend: String)
 
 /** Owns only the bundled CPU process. No downloads, persistent listener or remote fallback. */
 internal class LocalEngine(private val resources: Path = Path.of(
@@ -41,16 +44,46 @@ internal class LocalEngine(private val resources: Path = Path.of(
     fun available() = Files.isExecutable(resources.resolve("local/llama-server")) &&
         Files.isRegularFile(resources.resolve("models/${DesktopStarter.filename}"))
 
-    fun start(customModel: Path? = null): LocalSession {
+    fun start(customModel: Path? = null, expectedModelSha256: String? = null, options: EngineOptions = EngineOptions()): LocalSession {
+        options.validate()
         stop()
         val expectedRevision = synchronized(lock) { revision }
-        val server = resources.resolve("local/llama-server").toAbsolutePath()
+        var server = resources.resolve("local/llama-server").toAbsolutePath()
         check(Files.isExecutable(server)) { "Packaged local engine is unavailable" }
         val model = (customModel ?: resources.resolve("models/${DesktopStarter.filename}")).toAbsolutePath()
         validateModel(model, customModel == null) { checkCurrent(expectedRevision) }
+        if (expectedModelSha256 != null) {
+            require(expectedModelSha256.matches(Regex("[0-9a-f]{64}")))
+            check(hash(model) { checkCurrent(expectedRevision) } == expectedModelSha256) { "Imported model changed since verification" }
+        }
+        val metadata = GgufMetadata.read(model.toFile())
+        val admission = options.admission(Files.size(model), metadata, SystemInfo().hardware.memory.available)
+        checkCurrent(expectedRevision)
         val engineManifest = boundedJson(Files.readString(resources.resolve("local/engine.json")))
         val serverHash = engineManifest["sha256"]?.toString()?.trim('"') ?: error("Missing engine checksum")
         check(hash(server) { checkCurrent(expectedRevision) } == serverHash) { "Local engine checksum mismatch" }
+        val fast = engineManifest["avx2"] as? JsonObject
+        val probeHash = engineManifest["cpuProbeSha256"]?.jsonPrimitive?.contentOrNull
+        var features = "baseline"
+        if (probeHash != null) {
+            require(probeHash.matches(Regex("[0-9a-f]{64}")))
+            val probe = resources.resolve("local/cpu-features").toAbsolutePath()
+            check(Files.isExecutable(probe) && hash(probe) {checkCurrent(expectedRevision)} == probeHash) {"CPU feature probe integrity failed"}
+            val child = ProcessBuilder(probe.toString()).redirectError(ProcessBuilder.Redirect.DISCARD).start()
+            try {
+                check(child.waitFor(3,TimeUnit.SECONDS)) {"CPU probe timed out"}
+                val bytes=child.inputStream.readNBytes(65);require(bytes.size<=64 && child.exitValue()==0) {"Unsupported CPU"}
+                features=bytes.decodeToString(throwOnInvalidSequence=true).trim()
+            } finally {child.destroyForcibly();child.inputStream.close()}
+        }
+        val variant=selectCpuVariant(options.cpuMode,features,fast!=null)
+        if (variant=="llama-server-avx2") {
+            server=resources.resolve("local/$variant").toAbsolutePath()
+            val fastHash=fast!!["sha256"]?.jsonPrimitive?.content ?: error("Optimized engine checksum missing")
+            check(Files.isExecutable(server) && hash(server) {checkCurrent(expectedRevision)}==fastHash) {"Optimized engine integrity failed"}
+        }
+        checkCurrent(expectedRevision)
+        val backend=if(variant=="llama-server-avx2") "CPU AVX2/FMA/F16C" else "CPU SSE4.2"
         val token = ByteArray(32).also { SecureRandom().nextBytes(it) }
             .let { Base64.getUrlEncoder().withoutPadding().encodeToString(it) }
         val port = ServerSocket(0, 1, InetAddress.getByName("127.0.0.1")).use { it.localPort }
@@ -64,13 +97,13 @@ internal class LocalEngine(private val resources: Path = Path.of(
                 PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")))
             Files.writeString(secret, token + "\n")
             try {
-                process = ProcessBuilder(server.toString(), "--model", model.toString(),
+                val builder = ProcessBuilder(listOf(server.toString(), "--model", model.toString(),
                     "--host", "127.0.0.1", "--port", port.toString(), "--api-key-file", secret.toString(),
-                    "--alias", DesktopStarter.alias, "--ctx-size", "4096", "--parallel", "1",
-                    "--threads", Runtime.getRuntime().availableProcessors().coerceIn(1, 4).toString(),
-                    "--n-gpu-layers", "0", "--offline", "--no-webui")
-                    .redirectOutput(ProcessBuilder.Redirect.DISCARD)
-                    .redirectError(ProcessBuilder.Redirect.DISCARD).start()
+                    "--alias", DesktopStarter.alias, "--parallel", "1") + options.nativeArgs())
+                    .redirectOutput(ProcessBuilder.Redirect.DISCARD).redirectError(ProcessBuilder.Redirect.DISCARD)
+                // Explicit app options win over inherited llama/ggml runtime variables.
+                builder.environment().keys.removeIf { it.startsWith("LLAMA_") || it.startsWith("GGML_") }
+                process = builder.start()
             } catch (error: Exception) { stop(); throw error }
         }
         val http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2))
@@ -87,7 +120,14 @@ internal class LocalEngine(private val resources: Path = Path.of(
                     response.statusCode() == 200 && response.body().length <= 262144 &&
                         HostClient(host, token).use { DesktopStarter.alias in it.models() }
                 }.getOrDefault(false)
-                if (ready) { checkCurrent(expectedRevision); return LocalSession(host, token) }
+                if (ready) {
+                    val props = HostClient(host, token).use { it.localProperties() }
+                    val effectiveContext = props["default_generation_settings"]?.jsonObject?.get("n_ctx")?.jsonPrimitive?.intOrNull
+                    check(effectiveContext == options.context) { "Native context differs from configured capacity" }
+                    val effectiveModel = props["model_path"]?.jsonPrimitive?.content ?: error("Native model identity missing")
+                    check(Path.of(effectiveModel).toRealPath() == model.toRealPath()) { "Native runtime loaded another model" }
+                    checkCurrent(expectedRevision); return LocalSession(host, token, options.context, admission, backend)
+                }
                 Thread.sleep(150)
             }
             error("Local model loading exceeded two minutes")
@@ -100,6 +140,7 @@ internal class LocalEngine(private val resources: Path = Path.of(
     private fun checkCurrent(expected: Long) {
         if (revision != expected || Thread.currentThread().isInterrupted) throw CancellationException("Local load cancelled")
     }
+    fun isRunning() = synchronized(lock) { process?.isAlive == true }
     fun stop() {
         val owned = synchronized(lock) {
             revision++

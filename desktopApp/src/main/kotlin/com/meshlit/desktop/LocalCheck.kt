@@ -13,14 +13,17 @@ internal fun localCheck(output: String) {
         val start = System.nanoTime()
         val session = engine.start()
         val loadSeconds = (System.nanoTime() - start) / 1_000_000_000.0
-        check(runCatching { HostClient(session.endpoint, "").use { it.models() } }.isFailure) {
-            "Local model API accepted a missing token"
+        // llama.cpp intentionally exposes model metadata on loopback without a key.
+        // Generation is the protected operation, so verify that actual route.
+        check(runCatching { HostClient(session.endpoint, "").use {
+            it.generate(DesktopStarter.alias, listOf(ChatTurn("user", "Hello")), GenerationBudget(64)) {}
+        } }.isFailure) {
+            "Local generation accepted a missing token"
         }
         val reply = StringBuilder()
         val usage = HostClient(session.endpoint, session.token).use { client ->
-            client.generate(DesktopStarter.alias, listOf(ChatTurn("system", DesktopStarter.prompt),
-                ChatTurn("user", "Explain in three short bullet points why backups help.")),
-                GenerationBudget(128)) { reply.append(it) }
+            client.generateConfigured(DesktopStarter.alias, listOf(ChatTurn("user", "Explain in three short bullet points why backups help.")),
+                GenerationBudget(128), DesktopStarter.prompt) { reply.append(it) }
         }
         check(reply.isNotBlank() && (usage.outputTokens ?: 0) > 0) { "No real output/token usage" }
         engine.stop()
@@ -30,10 +33,11 @@ internal fun localCheck(output: String) {
         }
         val result = buildJsonObject {
             put("model", DesktopStarter.label); put("modelSha256", DesktopStarter.sha256)
-            put("engine", "llama.cpp CPU"); put("loadSeconds", loadSeconds)
+            put("engine", "llama.cpp "+session.backend);put("nativeContextVerified",session.context); put("loadSeconds", loadSeconds)
             put("answer", reply.toString()); put("outputTokens", checkNotNull(usage.outputTokens))
             put("endToEndTokensPerSecond", checkNotNull(usage.tokensPerSecond))
-            put("missingTokenRejected", true); put("unloadStoppedListener", true)
+            put("generationWithoutTokenRejected", true); put("loopbackModelMetadataPublic", true)
+            put("unloadStoppedListener", true)
             put("scope", "Real bundled model generation on Intel Mac; no cloud, GPU, other-device or broad quality benchmark")
         }
         Files.writeString(Path.of(output), Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), result) + "\n")
