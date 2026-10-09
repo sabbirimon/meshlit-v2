@@ -128,3 +128,20 @@ claimed. Build daemons were stopped before the matched CPU timing trial.
 
 The relocatable unmodified HyperL library then passes all twelve real native CPU
 recipes and precise reduction. See `evidence/hyperl-relocatable-host-check.json`.
+
+The first matched-timing harness aborted before collecting a trial because its
+16-token warm-up violated the existing shared 64–4,096 output-budget contract.
+The harness was corrected to a 64-token cap and rebuilt; no comparison or gain
+was attributed to that aborted run. Ordinary chat budgets were unchanged.
+
+## Matched Intel CPU case — four native trials
+
+Same pinned model/prompt, 1,024 context, four generation/eight prompt threads,
+512/128 batch/micro-batch, f16 KV, temperature 0, seed 42, 128-token cap, short
+warm-up and SSE/AVX2/AVX2/SSE order. All trials report **128 native completion
+tokens** and pass. SSE4.2 rates: **7.100, 2.499** end-to-end tokens/sec; AVX2 rates:
+**17.409, 12.052**. AVX2 is faster in these cases, but wide run-to-run variation
+precludes a stable speed multiplier. OS/thermal conditions are not isolated;
+this is one small model and one host, not general performance or cluster proof.
+Loading is measured separately; no build/packaging jobs ran during these trials.
+Raw settings, outputs and hashes: `evidence/cpu-benchmark-host-check.json`.

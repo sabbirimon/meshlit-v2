@@ -85,3 +85,9 @@ stream coalescing, provider streams and cancellation. Actual local starter gener
 context readback and owned-process unload are separate runtime checks. Physical
 multi-device execution and a before/after controlled sharding benchmark remain
 required before claiming a speed gain. More CPU threads are not automatically faster.
+
+Current matched Intel case records AVX2 at 12.052–17.409 end-to-end tokens/sec
+versus SSE4.2 at 2.499–7.100 across two observations per backend, each 128 native
+tokens with equal settings. Variance is substantial; no stable multiplier is
+claimed. See [raw evidence](evidence/cpu-benchmark-host-check.json) and the
+[build ledger](../DESKTOP_BUILD_LOG.md). This does not qualify physical sharding.

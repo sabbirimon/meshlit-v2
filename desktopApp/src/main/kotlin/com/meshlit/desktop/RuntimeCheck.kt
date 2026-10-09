@@ -82,10 +82,11 @@ internal fun cpuBenchmarkCheck(output: String) {
             val loadNanos = System.nanoTime()-started
             val reply = StringBuilder()
             val usage = HostClient(session.endpoint,session.token).use { client ->
-                client.generateDeterministic(DesktopStarter.alias,listOf(com.meshlit.workspace.ChatTurn("user","What is two plus two?")),com.meshlit.workspace.GenerationBudget(16)) {}
+                client.generateDeterministic(DesktopStarter.alias,listOf(com.meshlit.workspace.ChatTurn("user","What is two plus two?")),com.meshlit.workspace.GenerationBudget(64)) {}
                 client.generateDeterministic(DesktopStarter.alias,listOf(com.meshlit.workspace.ChatTurn("user",prompt)),com.meshlit.workspace.GenerationBudget(128)) {reply.append(it)}
             }
             check(reply.isNotBlank() && (usage.outputTokens ?: 0)>0 && session.context==1024)
+            println("CPU trial ${trial+1}/4 · ${session.backend} · ${usage.outputTokens} reported tokens · ${usage.tokensPerSecond} end-to-end tokens/sec")
             results += buildJsonObject {
                 put("trial",trial+1);put("backend",session.backend);put("loadSeconds",loadNanos/1e9)
                 put("outputTokens",checkNotNull(usage.outputTokens));put("endToEndTokensPerSecond",checkNotNull(usage.tokensPerSecond))
