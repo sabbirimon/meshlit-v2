@@ -1,4 +1,8 @@
 # Meshlit review and implementation plan
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Reviewed 2026-10-06 against Meshlit `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Historical baseline review. Later implementations and proofs are recorded in

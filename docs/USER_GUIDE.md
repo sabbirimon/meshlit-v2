@@ -1,6 +1,10 @@
 # Meshlit full app guide and configuration tutorial
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-09. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
+Updated 2026-10-10. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
 
 ## Start here: what Meshlit does
 
@@ -18,14 +22,13 @@ English. Model answers, prompts, memory, inference settings and operation grants
 are unchanged. Monochrome adds a quiet graphite/pearl palette while retaining font
 size and accessibility. Existing custom appearance is never silently reset.
 
-The experimental desktop client supports authenticated OpenAI-compatible host
-models and streaming chat, session-only history/credentials, chat search, persistent
-English/Chinese themes and text size, output limits and reported end-to-end token
-rates. It has no bundled local engine. Explicitly enable access to the selected
-host and configure its exact /v1 URL and client token. The host receives prompts
-and determines local/offline versus provider execution. Remote hosts require
-trusted HTTPS; only literal desktop loopback may use HTTP. Missing token usage
-is shown as unknown. Interrupted replies are excluded from subsequent context.
+Intel Studio 40.1 bundles Qwen2.5 1.5B Q4_K_M, a private Java runtime and an owned CPU engine. Use either the DMG or PKG; both contain the same application. No extra JDK or Ollama installation is needed for its starter. In Chat choose local mode, Load or Send, then Stop/Unload when needed. Settings → Inference engine controls context, generation/prompt threads, batching, f16/q8_0 key cache, CPU selection and idle unloading. Auto selects AVX2 only after verified CPU and OS support; SSE4.2 remains available. q4_0 key cache is held out after a poor arithmetic test; it is different from Q4_K_M model weights.
+
+Settings opens seven management categories. Basic and Advanced menus differ; typed search also finds advanced/pending destinations. Global search includes settings/features, current chat and saved model/node references, with separate settings/chat scopes. Web search is an explicit browser handoff, not automatic article retrieval. Models and downloads records validated GGUF imports; Discover models uses optional Hugging Face metadata and a bounded revision/hash-pinned single-file download. Desktop download resume and paid/gated entitlement verification remain pending.
+
+The local monitor samples actual CPU/RAM/processes with charts/history. The human terminal is a bounded batch shell, not an embedded interactive PTY. SSH includes pinned outbound exec, a public-key status-only inbound node and optional external Ghostty handoff. HyperL CPU execution needs its separate terms. Saved node/API addresses are not enrolled layer workers; no desktop RPC controller or full automatic recovery is delivered by these menus. Android agent/MCP/A2A, voice/memory, cloud vault, firewall, VM/container and recovery screens are separate ports, labelled pending.
+
+Compatible remote hosts require explicit access and their exact endpoint/token. Prompts go to that selected host; only literal loopback may use HTTP. Desktop chats/provider credentials are session-only; appearance, engine options, imported model references and saved node labels/addresses persist. Reported token usage stays unknown when unavailable. Both Intel installer launchers pass recovered-payload checks, but clean-machine installation, signing/notarization and other platforms remain separate gates. See [desktop install guide](MACOS_OFFLINE.md) and [feature tracker](DESKTOP_FEATURE_TRACKER.md).
 
 HarmonyOS NEXT has a separate native ArkTS/ArkUI 26.0.0 source target, with English
 as default, 简体中文, persisted appearance, bounded complete-response HTTPS chat and

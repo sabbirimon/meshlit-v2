@@ -1,4 +1,8 @@
 # Declarative deployment and federated clusters
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-06. User-authorized direction: Android first, phone-first genuine
 layer execution, human and autonomous-agent operations, mixed devices, portable

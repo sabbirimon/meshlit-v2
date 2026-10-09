@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-10-10",
+  "applicationSourceCommit": "12bd20a",
+  "sourceEvidenceCheckpoint": "630cba2",
+  "review": "https://github.com/sabbirimon/meshlit-v2/pull/2",
+  "releaseTag": "v2.0.0-macos-intel-build40.1",
+  "releaseState": "uploading-draft",
+  "productionQualified": false,
+  "workstreams": [
+    {
+      "name": "Local core engine",
+      "state": "Host/payload verified; Experimental",
+      "nextGate": "Clean-machine, lifecycle/stress, wider quality and hardware"
+    },
+    {
+      "name": "Shared sharding",
+      "state": "Contract-tested planner; desktop executor pending",
+      "nextGate": "Live paired-worker controller and independent-device oversized-model/peer-loss proof"
+    },
+    {
+      "name": "Desktop management",
+      "state": "Partial source and scoped host qualification",
+      "nextGate": "Remaining real category controllers and operational acceptance"
+    },
+    {
+      "name": "Android reliability",
+      "state": "Current build/lint gate passes; older device proof dated",
+      "nextGate": "Current Samsung/Xiaomi/Windows category device qualification"
+    },
+    {
+      "name": "Governed agents and fleet",
+      "state": "Android reference; desktop authority/audit port pending",
+      "nextGate": "Common permission/controller/audit bridge before autonomous MCP/A2A/hooks"
+    },
+    {
+      "name": "Platform and distribution",
+      "state": "Intel recovered payloads pass; upload pending; no production promotion",
+      "nextGate": "Remote digests/publication, clean-target signing/privacy and independent OS/device gates"
+    }
+  ]
+}

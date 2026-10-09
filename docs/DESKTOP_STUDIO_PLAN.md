@@ -1,7 +1,10 @@
 # Meshlit desktop Studio implementation plan
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: desktop/server; individual acceptance gates apply. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-10. Scope: desktop only; preserve Android's existing starter,
-inference mechanism, UI and data. This document distinguishes the current Intel
+Updated 2026-10-10. Scope: desktop/server expansion; preserve Android's existing starter and user data. Shared planning/desugaring/voice-error fixes have their own Android regression checks. This document distinguishes the current Intel
 offline installer work from future milestones; it does not claim feature parity.
 
 ## Repository review and reuse
@@ -43,7 +46,10 @@ genuine multi-node layer execution; remote hosts are not pooled RAM by default.
 
 ## Sequential milestones and acceptance
 
-1. **Offline Intel installer foundation (in progress).** Bundle verified Qwen2.5
+Current checkpoint: both recovered Intel DMG/PKG launchers pass real starter generation, authentication rejection, Unload and native HyperL CPU checks using their own runtime. Seven management categories and local scoped search render; actual OSHI samples and HF metadata pass. The shared planner has bounded automatic/manual layer proportions; a live desktop worker controller is pending. Full details, failed attempts and publication are in DESKTOP_BUILD_LOG.md. Milestones 2–6 remain partial/planned, not completed by the installer.
+
+
+1. **Offline Intel installer foundation (payload-qualified; distribution tracked separately).** Bundle verified Qwen2.5
    1.5B Instruct Q4_K_M (~1.12 GB), portable Java and CPU engine. Load/unload,
    local GGUF selection, authenticated loopback and full close/Stop lifecycle.
    Qualify real generation and native token usage from both DMG and PKG payloads.

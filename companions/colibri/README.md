@@ -1,4 +1,8 @@
 # Optional Colibri host
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../../PLAN.md) · [Progress](../../PROGRESS.md) · [Document status](../../docs/DOCUMENTATION_STATUS.md).
+Scope: optional host/schema/reference; not a bundled qualified service. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Meshlit connects to a separately operated Colibri host. This does not install a
 frontier model on a phone, combine phone VRAM, or qualify any GPU backend.

@@ -1,4 +1,8 @@
 # Meshlit build and validation
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Read `AGENT_BUILD.md` for architecture and handoff details. Android Studio Opus checkout
 is separate: `/Users/code/AndroidStudioProjects/mllm`. This checkout has not modified it.
@@ -86,3 +90,17 @@ Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
 contracts. Android synthetic gradients are removed; phone autograd reports
 unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
 remain acceptance gates. Keep phone inference layer sharding/recovery primary.
+
+## Desktop/server contracts and Intel packaging
+
+```sh
+./gradlew :shared-workspace:jvmTest :desktop-engine:test :desktop-ssh:test :desktopApp:test
+./gradlew :desktopApp:createDistributable -Pmeshlit.packagingJdk=/absolute/portable/jdk-home
+python3 scripts/build-desktop-llama.py --help
+python3 scripts/build-desktop-hyperl.py --help
+python3 scripts/package-macos-preview.py --help
+python3 scripts/update-doc-tracking.py --check
+python3 scripts/validate-feature-map.py
+```
+
+Follow docs/MACOS_OFFLINE.md for pinned starter/native/JDK inputs. The checked packager creates Intel DMG/PKG with full model/native provenance, portable Java, ad-hoc integrity signing and no elevated install scripts. It requires fresh output/scratch paths. Recover both payloads and run actual `--local-check`, `--hyperl-check`, `--monitor-check` and render checks with external Java environment removed. See docs/DESKTOP_BUILD_LOG.md for current successes/failures and remaining clean-target/notarization gates. Docs-only changes do not imply a fresh APK or independent hardware run.

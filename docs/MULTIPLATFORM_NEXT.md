@@ -1,6 +1,10 @@
 # Meshlit desktop and native HarmonyOS NEXT preview
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: platform preview; NEXT device/build acceptance remains open. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-09. This is an incremental migration, not a replacement of the
+Updated 2026-10-10. This is an incremental migration, not a replacement of the
 working Android engine. New clients are Experimental; the separately installed
 Android Core Candidate keeps its existing operation restrictions.
 
@@ -27,7 +31,7 @@ desktop-only expansion is tracked in [DESKTOP_STUDIO_PLAN.md](DESKTOP_STUDIO_PLA
   text where the host streams it, bounds context/output, presents headings/bold/code/tables and explicitly
   supplied chart data, provides chat search/copy and retains session history only
   in memory. English/简体中文, four themes and text size persist independently.
-  No local model/runtime is bundled. Starting the client makes no network request.
+  Intel Studio 40.1 additionally bundles the verified compact model/CPU runtime and exposes engine/management controls. Other platform packages need their own native bundle and hardware qualification. Starting the client makes no model-provider request.
 - `desktopApp:cli` uses the same authenticated transport and bounds. It is a JVM
   CLI, not a Kotlin/Native executable. The desktop distribution can bundle its JVM
   on the build host. Cross-platform native inference and standalone Native CLI
@@ -64,7 +68,7 @@ phone/cluster or forwards to a provider is determined by the host's configuratio
 the client does not label an arbitrary host as an offline model. Host permission,
 model loading and client-token issuance remain separate existing controls.
 Neither preview stores tokens or chats in preferences or exports them to logs.
-Appearance alone persists. Closing the app clears the session. Optional network
+Desktop appearance, engine options and model/node references persist; provider secrets/chat remain session-only. NEXT persists appearance only. Closing the app clears the chat session. Optional network
 and agent permissions are never changed by a language/theme choice.
 
 The current Meshlit phone compatibility server returns a buffered SSE completion;

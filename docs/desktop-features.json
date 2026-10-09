@@ -16,7 +16,7 @@
       "area": "Offline starter and local execution",
       "requested": "Compact bundled desktop-only model; verified import, load, unload, generation and context/CPU/KV options",
       "status": "Partial source",
-      "boundary": "Pinned Qwen plus owned CPU process, shared GGUF memory admission/native context readback, CPU/batch/f16-q8_0 key-cache controls and idle unloading. Verified CPU/OS AVX2 dispatch with SSE4.2 fallback is implemented; q4_0 is held out after a poor arithmetic smoke reply. New packaged acceptance pending.",
+      "boundary": "Pinned Qwen plus owned CPU process, shared GGUF memory admission/native context readback, CPU/batch/f16-q8_0 key-cache controls and idle unloading. Verified CPU/OS AVX2 dispatch with SSE4.2 fallback is implemented; q4_0 is held out after a poor arithmetic smoke reply. Both recovered Intel DMG/PKG starter generation/authentication/unload checks pass; clean-target/lifecycle/quality acceptance remains.",
       "source": "desktopApp/src/main/kotlin/com/meshlit/desktop/LocalEngine.kt"
     },
     {
@@ -120,7 +120,7 @@
       "area": "Built-in HyperL",
       "requested": "Native recipes, precision, memory accounting, datasets; eventual heterogeneous sharding and device runtime selection",
       "status": "Partial source",
-      "boundary": "All twelve JNI CPU recipes and precise reduction passed on the Intel host. New installer payload acceptance pending; no GPU/NPU/full-LLM claim.",
+      "boundary": "All twelve JNI CPU recipes and precise reduction passed on the Intel host. Both recovered installer JNI checks pass; no GPU/NPU/full-LLM claim.",
       "source": "desktopApp/src/main/kotlin/com/meshlit/desktop/DesktopHyperL.kt"
     },
     {
@@ -328,7 +328,7 @@
       "area": "Delivery and storage hygiene",
       "requested": "GitHub source/review/release, verified packages/checksums/provenance, retain recovery build; remove only known generated duplicates",
       "status": "In progress",
-      "boundary": "No new desktop studio package/release published yet. User models and historical evidence must not be deleted as build junk.",
+      "boundary": "Intel Studio DMG/PKG payloads are verified; source/review pushed, asset upload/publication tracked in RELEASE_EVIDENCE.md. About 5 GiB duplicate scratch reclaimed. User models and historical evidence must not be deleted as build junk.",
       "source": "docs/DESKTOP_BUILD_LOG.md"
     }
   ]

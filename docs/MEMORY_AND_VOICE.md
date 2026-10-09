@@ -1,4 +1,8 @@
 # Memory, personality, recovery and speech adapters
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-08. These are optional additions to the current chat controller.
 They do not restore the historical Android Studio UI or response pipeline.

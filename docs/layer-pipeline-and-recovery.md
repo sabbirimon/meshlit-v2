@@ -1,4 +1,8 @@
 # Layer execution, heterogeneous devices and recovery
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 User direction, 2026-10-06: implement genuine layer/pipeline sharding, local
 RunAnywhere inference by default, optional VM, a hive of mixed devices and

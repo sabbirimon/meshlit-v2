@@ -1,4 +1,8 @@
 # Final beta lint evidence (2026-10-07)
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Both Full flavors: **0 fatal/errors, 348 warnings, 17 hints each**.
 Play Review: **0 fatal/errors, 351 warnings, 17 hints**. Fatal/error gating stays

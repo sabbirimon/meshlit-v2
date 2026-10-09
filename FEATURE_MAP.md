@@ -1,4 +1,8 @@
 # Meshlit structured feature and architecture map
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-09. This is the map of the separate Codex implementation, not the
 old Android checkout. `PROGRESS.md` records evidence; `PLAN.md` records unfinished
@@ -391,7 +395,7 @@ execution remain unverified. Full red/blue tool adapters remain future acceptanc
 
 ## 2026-10-08 continuation
 
-Current inventory: **75 feature areas, 38 durable operations, 33 modules**.
+Earlier continuation inventory: **75 feature areas, 38 durable operations, 33 modules** (historical snapshot).
 Counts describe source/plans, not completion. New areas include manual replica
 metadata, MCP/A2A connectors, Terraform saved-plan and storage/DSP companions,
 managed stop/capacity dashboard, unified routing, SDK/topology probes, platform/native
@@ -421,4 +425,8 @@ for NEXT 26.0.0; source supports English/Chinese themes and bounded complete-res
 HTTPS chat. Local NEXT LLM reports unavailable. Not full shared UI/runtime parity
 or production/device certification. See docs/MULTIPLATFORM_NEXT.md.
 
-Current continuation inventory: **83 feature areas, 38 durable operations, 36 Gradle modules**. The separate NEXT Stage project is not a Gradle module. Counts include preview/unverified work and do not imply production support.
+Build-40 continuation inventory: **83 feature areas, 38 durable operations, 36 Gradle modules** (historical snapshot). The separate NEXT Stage project is not a Gradle module. Counts include preview/unverified work and do not imply production support.
+
+## Current inventory and desktop scope — 2026-10-10
+
+Machine-readable inventory: **88 feature areas, 38 durable operations and 39 registered Gradle modules**. core-stable-diffusion is a source directory outside the current settings.gradle.kts includes; it is not counted as an active module. The separate desktop/server tracker has **41 requested areas**, overlapping this inventory rather than adding 41 completed features. Shared GGUF/sharding, desktop SSH and separately licensed HyperL modules are included. Both Intel recovered payloads have scoped execution evidence; production, physical cluster and other platform acceptance remain open. Documentation state and workstream phases: docs/DOCUMENTATION_STATUS.md.

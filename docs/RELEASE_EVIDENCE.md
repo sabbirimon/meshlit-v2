@@ -1,4 +1,23 @@
-# Beta publication evidence
+# Release publication and qualification evidence
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
+
+Updated 2026-10-10. Source review and release assets have separate states.
+
+## Intel Studio build 40.1
+
+Application/native packaging source: 12bd20a; source/evidence checkpoint 630cba2 pushed to codex/hyperl-production-library. Draft PR: https://github.com/sabbirimon/meshlit-v2/pull/2.
+
+Tag: v2.0.0-macos-intel-build40.1. Release ID: 408390281. Current state: **draft; large installer upload in progress**. Public download links are established only after all asset digests match. Source push succeeded; this is not a claim that the installer upload has completed.
+
+Both DMG/PKG are built, verified/extracted and their launcher uses its own portable Java runtime. Actual native generation/authentication rejection/Unload and HyperL CPU pass; PKG sampling/render pass. Both recovered payloads match the signed app, executable bits, starter and sealed native hashes. DMG OS mounting failed, so HFS+ extraction was file-based. App ad-hoc signed; PKG unsigned; no notarization or clean-machine certification. The final assets include PACKAGING.json, VALIDATION.json, RUNTIME_SOURCE.json, matching Java sources and SHA256SUMS. Full records: DESKTOP_BUILD_LOG.md and desktop/evidence.
+
+Current local valid JVM files total 521 executions and crawler 9 cases; both current Full Android assemblies/lints pass. GitHub CI on checkpoint 630cba2 is observed separately; Ubuntu/macOS contracts and Android V1 pass; Windows has a path-fixture failure corrected for rerun, with two explicit POSIX execution skips. Android V2 was still running at the snapshot. No fresh phone build/install or physical cluster proof is inferred from this desktop release.
+
+## Historical Android beta.1 publication
+
 
 Release: [https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-beta.1](https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-beta.1)
 

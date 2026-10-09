@@ -1,4 +1,8 @@
 # HyperL experimental foundation
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 HyperL began on `codex/hyperl-experimental` and the owner merged its source into
 `main` through [PR #1](https://github.com/sabbirimon/meshlit-v2/pull/1), merge

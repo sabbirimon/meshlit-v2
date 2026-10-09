@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-10-09",
+  "updated": "2026-10-10",
   "operations": [
     "SETTINGS_READ",
     "SETTINGS_PATCH",
@@ -1154,12 +1154,14 @@
     "core-role",
     "core-sandbox",
     "core-ssh",
-    "core-stable-diffusion",
     "core-terminal",
     "core-training",
     "core-trust",
     "core-tunnel",
     "core-users",
+    "desktop-engine",
+    "desktop-hyperl",
+    "desktop-ssh",
     "desktopApp",
     "feature-advanced",
     "feature-ghosty",
@@ -1167,5 +1169,8 @@
   ],
   "acceptanceLedger": "PROGRESS.md",
   "phoneProof": false,
-  "oversizedModelProof": false
+  "oversizedModelProof": false,
+  "unregisteredModuleDirectories": [
+    "core-stable-diffusion"
+  ]
 }

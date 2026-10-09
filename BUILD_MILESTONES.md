@@ -1,6 +1,10 @@
 # Sequential implementation and acceptance ledger
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-06. User requested these milestones in this order. Implementation
+Updated 2026-10-10. User requested these milestones in this order. Implementation
 and acceptance evidence are separate; dependencies do not establish completion.
 No overall percentage is inferred.
 
@@ -14,7 +18,7 @@ No overall percentage is inferred.
 | 6 | Future adapters | Existing capability interfaces and truthful unavailable states | Working CCTV/audio/radio/MCU hardware connectors, vendor backend builds, other OS clients and fenced cross-cluster deployment |
 | 7 | Polish/release | Shared modern screens, new recovery and Cloud/vault screens, corrected lint errors and fatal error gate | Interactive tutorial, full chat export, remaining legacy redesign/full IDE, physical UX and release checks; reference UI passes both builds/128 app tests per flavor/zero lint errors |
 
-## Continue without fabricating missing hardware
+## Historical environment observations — 2026-10-06
 
 - Samsung is visible in macOS USB inventory but not in `adb devices`. The current
   ADB USB interface fails with e00002be. Resolve this in a normal Android Studio/Mac
@@ -27,6 +31,18 @@ No overall percentage is inferred.
   SSH configuration is modified. No successful SSH evidence is recorded yet.
 - Training/provider/hardware tests must use actual supplied runtimes/credentials,
   not a dummy successful adapter. Preserve unavailable/blocked results.
+
+## Current desktop/core workstreams — 2026-10-10
+
+| Gate | Implementation | Qualification and next acceptance |
+| --- | --- | --- |
+| Intel local engine | Verified starter, CPU dispatch/options, lazy load and idle unload, memory/native context checks | Both recovered installer generation/unload pass; clean-machine/lifecycle/quality/stress remain |
+| Shared sharding | Same portable sources on Android/JVM, integer/manual capacity admission and weak-worker exclusion | Contract-tested; desktop RPC controller and physical workers are next |
+| Management | Seven Basic/Advanced groups, scoped global/settings/chat/model/node search and live monitor | Render/sampling pass; category backends remain individually pending |
+| Release | Source/review pushed; DMG/PKG created, recovered, hashes/signatures checked | Asset upload/remote digests/publication tracked in docs/RELEASE_EVIDENCE.md |
+| Production | Restricted Android Core Candidate separate from Experimental | Privacy/signing/device/fleet/OS gates outstanding; no production promotion |
+
+No unified phase number is declared. PLAN.md and docs/DOCUMENTATION_STATUS.md carry current workstream tracking; dated sections below retain their original scopes.
 
 ## Next cluster recovery build
 
@@ -53,7 +69,7 @@ request budgets and dashboard provenance are documented in
 and OAuth login/refresh are future adapters; real account tests need local
 operator credentials. Do not use this workstream to claim phone sharding proof.
 
-## Latest validated continuation
+## Earlier validated continuation — see PROGRESS for latest
 
 Read PROGRESS.md: final debug APKs, unit checks, full fatal lint and seven emulator
 integration checks pass. Native local checkpoint prompt reuse is measured, SDK
@@ -89,4 +105,4 @@ Phones are one client; current Android artifacts remain Android-only. See
 HFT-inspired AI-networking milestones and their qualification gates. The owner
 merged HyperL experimental source via PR #1 at `851576b`; CPU/reference and source
 emitter code now lives in `main`. Native runtime integration, conformance, hardware
-and benchmark qualification remain open. Physical-device tests remain paused.
+and benchmark qualification remain open. Physical-device status and dated build-37 evidence are tracked in PROGRESS.md; no current-build phone/cluster qualification is inferred.

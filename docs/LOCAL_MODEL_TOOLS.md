@@ -1,4 +1,8 @@
 # Local model internet tools and Android control
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-08. Source implementation and acceptance evidence are separate.
 See [device qualification](DEVICE_TESTING_2026-10-08.md).

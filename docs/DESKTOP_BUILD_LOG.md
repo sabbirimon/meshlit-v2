@@ -1,4 +1,8 @@
 # Desktop/server build update ledger
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: desktop/server; individual acceptance gates apply. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-10. Source implementation, tests, native/package execution and
 hardware/production acceptance are separate columns. Append corrections and
@@ -187,3 +191,43 @@ carry PACKAGING.json, VALIDATION.json, matching Java sources and SHA256SUMS.
 These are same-host recovered-payload checks, not clean-machine installation or
 OS-mounted DMG acceptance. The app is ad-hoc signed, PKG unsigned, neither
 notarized. macOS 11 is the declared packaging floor; only macOS 15.8.1 was tested.
+
+After preserving the verified installers, signed working app and evidence,
+generated extracted payloads, HFS staging and duplicate reduced runtime/input
+were removed. Observed free-space increase: **5,363,302,400 bytes** (about 5 GiB).
+Primary model/JDK/native sources and Java source archive were retained.
+
+## Documentation reconciliation — 2026-10-10
+
+The owner requests Markdown plan/progress/phase tracking. Active PLAN/TODO/
+REQUESTS/BUGS/handoff, architecture, release gates, build instructions, platform/
+user guides and desktop feature state were reconciled; earlier versions are
+retained as dated history. Offline help's desktop chapter matches the new guide.
+All tracked Markdown is classified: 153 including the generated index, 118 active
+guides refreshed, 19 historical, 8 protected legal/attribution, one PR template
+and six third-party documents. Protected text is not relicensed or version-bumped.
+
+Independent named workstreams replace a misleading global phase/completion
+percentage. Registered Gradle inventory is 39 (core-stable-diffusion is an
+unregistered source directory), with 88 feature areas/38 operations and a
+separate overlapping 41-area desktop tracker. The generator is idempotent;
+`update-doc-tracking.py --check` and feature-map validation pass. This is source/
+documentation work, not a new APK installation or change to qualified installer
+model/native bytes. Release progress remains independently observed.
+
+## Remote CI follow-up
+
+At source/evidence checkpoint 630cba2, Ubuntu/macOS host contracts and Android V1
+pass; Windows reports one Ghostty argument-contract failure and two explicit
+POSIX execution skips. The fixture used `/tmp`/`/Applications` paths, which are
+not absolute drive-qualified Paths on Windows. It now uses native absolute temp
+paths while retaining host-key pin, literal key-with-spaces, forwarding denial
+and relative-path rejection checks. No production controller/policy changes,
+no extra skip and no Windows Ghostty execution claim. Local suite/rerun results
+are recorded after completion; installer application source remains 12bd20a.
+
+After the portable fixture correction, the Intel local desktop suite passes
+all 30 cases in a 14-second run. Current runtime/model binaries did not change.
+Documentation links, generator idempotence, unchanged protected text/archive
+identity, feature/source references and 39 registered Gradle modules also pass
+their checks. GitHub platform rerun is a separate observed gate.

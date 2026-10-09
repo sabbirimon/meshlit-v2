@@ -5,9 +5,13 @@
 </picture></p>
 
 # Meshlit v2 — adaptive AI workspace and experimental distributed compute
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 **Many nodes. One mind.** AI runtime, agent gateway and distributed-compute research.
-Current installable application: Android. Optional source companions: operator-owned hosts.
+Installable applications: Android and an Experimental Intel Mac desktop preview. Optional source companions: operator-owned hosts.
 
 **A project by IMON** · [@sabbirimon](https://github.com/sabbirimon)
 
@@ -35,7 +39,7 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 [Start building](#build-and-run) · [App guide](docs/USER_GUIDE.md) ·
 [Current evidence](PROGRESS.md) · [Feature map](FEATURE_MAP.md) ·
 [Desktop/server tracker](docs/DESKTOP_FEATURE_TRACKER.md) · [Android parity](docs/ANDROID_DESKTOP_PARITY.md) · [Desktop build log](docs/DESKTOP_BUILD_LOG.md) ·
-[Agent instructions](AGENTS.md) · [Roadmap](BUILD_MILESTONES.md) ·
+[Documentation status](docs/DOCUMENTATION_STATUS.md) · [Agent instructions](AGENTS.md) · [Roadmap](BUILD_MILESTONES.md) ·
 [Audit setup](docs/AUDIT_TELEMETRY.md) · [Contribute](CONTRIBUTING.md)
 
 ## What you can do
@@ -61,10 +65,7 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 | GibberLink audio | Actual ggwave PCM packets with an English-character transcript, foreground send/listen and separate agent grants | Mac native PCM checks pass; physical microphone/speaker delivery remains unqualified. Received text never runs commands. [Audio boundaries](docs/GIBBERLINK.md) |
 | Peer chat and crypto | Signed manual WebRTC pairing, scoped peer/SSH commands and local SHA/HMAC/AES-GCM tools | Actual same-Mac browser data channels pass. Android WebView, distant-phone NAT/TURN and remote actions need device tests. [Pairing and controls](docs/P2P_AND_CRYPTO.md) |
 
-**Android remains the working on-device app.** A new experimental Compose desktop
-host client/CLI and a separate **native HarmonyOS NEXT 26.0.0** source target are
-being qualified. NEXT local inference/HAP compilation and Windows/Linux device
-acceptance are unverified. See [platform implementation and build boundaries](docs/MULTIPLATFORM_NEXT.md).
+**Android and Intel desktop have separate qualified scopes.** Intel Studio 40.1 bundles Qwen2.5 1.5B Q4_K_M and a verified SSE4.2/AVX2 CPU engine, seven searchable management groups, local health/process views, human tools and HyperL CPU recipes. Both installer payloads pass same-host runtime checks. [Intel install/build guide](docs/MACOS_OFFLINE.md) · [release evidence](docs/RELEASE_EVIDENCE.md). Clean-machine acceptance, production signing and full Android feature parity remain gates. The separate **native HarmonyOS NEXT 26.0.0** source target has no DevEco/HAP/device proof; Windows/Linux hardware acceptance is unverified. See [platform implementation and build boundaries](docs/MULTIPLATFORM_NEXT.md).
 Vendor GPU/NPU adapters and IoT companions remain future work. Raspberry Pi, ESP32, Arduino,
 NAS and network appliances can eventually contribute storage, sensors, capture,
 preprocessing, routing or tools according to real capability. Listing a device

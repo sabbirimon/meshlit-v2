@@ -1,4 +1,8 @@
 # Remaining model-engine correctness gates
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-07. Real bundled generation now passes on the API35 x86_64
 emulator; this document records unresolved correctness work, not fake failures.

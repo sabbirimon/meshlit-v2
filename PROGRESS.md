@@ -1,4 +1,8 @@
 # Meshlit progress and evidence
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-10. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
@@ -9,7 +13,7 @@ and a separate Play review build. No force push or Play submission is authorized
 Historical upstream records in `docs/history/` are not current test evidence.
 
 `FEATURE_MAP.md` and `docs/feature-map.json` current inventory **88 feature areas,
-38 durable command operations and 37 modules**. Feature counts do not establish
+38 durable command operations and 39 registered Gradle modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
 
@@ -42,7 +46,7 @@ JVM executions total 324 (30 desktop, 12 desktop shared engine, 4 SSH, 4 workspa
 shared-source executions are not independent device proof. Actual OSHI local
 sampling, HF metadata and all 12 HyperL JNI CPU recipes pass. Broader agent automation,
 OS firewall, container/Kubernetes, VM, cloud vault/billing and full repair remain
-pending. No new desktop package or release publication is claimed in this entry.
+pending. Intel Studio 40.1 DMG/PKG now pass recovered-payload checks with their own Java runtime, real local generation/authentication/unload, matching signed app/native/model hashes and all HyperL CPU recipes. The PKG additionally passes actual monitor sampling and inspected management rendering. The first trimmed-runtime failure and correction are recorded in the build ledger. These remain experimental, ad-hoc/unsigned and not notarized; clean-machine installation is unqualified. Publication status is recorded in that ledger.
 Android starter/local defaults are retained. Shared planner and inference module
 API-24 desugaring/voice permission-error handling changed; Both Android Full V1/V2 debug assemblies and lints pass in the serial regression
 run (13m34s): zero errors, 374 warnings each; core inference lint zero errors,

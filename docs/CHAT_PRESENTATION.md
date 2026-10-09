@@ -1,4 +1,8 @@
 # Reply presentation and token controls
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Requested 2026-10-08. The owner's Claude/ChatGPT/Gemini screenshots are visual
 references from another phone, not Meshlit runtime or provider-account evidence.

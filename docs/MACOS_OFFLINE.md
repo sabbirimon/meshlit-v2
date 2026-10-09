@@ -1,4 +1,8 @@
 # Intel Mac offline desktop preview
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: desktop/server; individual acceptance gates apply. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-10. Desktop-only addition to build40. Android's bundled SmolLM2
 starter and local inference defaults remain unchanged. The shared worker-admission
