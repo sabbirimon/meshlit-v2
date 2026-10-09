@@ -94,8 +94,11 @@ Core Candidate is not an OS sandbox or a minimal independent binary.
 
 Verified universal installers and the device-test APK are retained outside the
 checkout with SHA-256 checksums. Removing nine preliminary build-39 installers
-and duplicate generated ABI splits reclaimed **1,694,822,255 bytes (1.58 GiB)**.
-The build-38 fallback, source, model, private keys and validation evidence remain.
+and duplicate generated ABI splits reclaimed 1,694,822,255 bytes. Removing four
+regenerable native/asset merge-copy directories after packaging reclaimed another
+3,447,212,051 bytes: **5,142,034,306 bytes (4.79 GiB)** total. Compiled classes/dex,
+the bundled desktop image, build-38 fallback, source, model, private keys and
+validation evidence remain. Gradle recreates removed payload copies when needed.
 
 ## Device and production gates
 
