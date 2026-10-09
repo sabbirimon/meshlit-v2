@@ -74,7 +74,7 @@ in-process Kotlin strategy rather than writing outside the workspace.
 - [x] Actual host HyperL JNI runs all bounded native CPU recipes and precise sums; recovered-package check pending.
 - [x] Monitor samples actual host CPU/RAM/processes; no fabricated gauges or costs.
 - [ ] HF actual metadata/verified transfer and cancellation acceptance recorded.
-- [ ] New DMG and PKG created, recovered and payload-tested; native hashes and provenance match.
+- [x] New DMG and PKG created, recovered and payload-tested; native hashes and provenance match.
 - [ ] Intel Mac install/open accepted; unsigned/ad-hoc/notarisation status explicit.
 - [ ] Source/review and release publication URLs/checksums verified on GitHub.
 - [ ] Windows, Linux, independent phones, server daemon and other platform proof separately recorded.
@@ -145,3 +145,45 @@ precludes a stable speed multiplier. OS/thermal conditions are not isolated;
 this is one small model and one host, not general performance or cluster proof.
 Loading is measured separately; no build/packaging jobs ran during these trials.
 Raw settings, outputs and hashes: `evidence/cpu-benchmark-host-check.json`.
+
+## Installer runtime regression and correction
+
+The first extracted Studio PKG failed before inference because its trimmed Java
+runtime omitted `java.logging`, needed by OSHI/JNA. This was caught by launching
+the recovered application with `JAVA_HOME`, `JDK_HOME` and `CLASSPATH` unset.
+Those failed generated installer/scratch copies were removed; no working release,
+source or primary model was deleted. `jdeps` over all packaged jars identified
+logging, instrumentation, RMI and GSS modules, now included alongside explicit
+TLS/management modules in both desktop packaging paths. The desktop distribution
+rebuild passes with unchanged application contracts.
+
+`hdiutil create -srcfolder` also failed with “Device not configured.” File-based
+HFS creation followed by UDZO conversion and verification succeeds; this is now
+the reproducible DMG path. The intermediate HFS file receives a `.dmg` extension
+from hdiutil, which must be used as the conversion input. Final recovered-payload
+checks and publication are tracked below when completed.
+
+## Intel Studio 40.1 recovered-payload acceptance
+
+Application source `12bd20a` packages both `MeshlitPreview-2.0.40-studio.1-macos-intel`
+DMG and PKG, with private Temurin runtime, starter weights, both CPU variants,
+verified CPU probe and relocatable HyperL JNI. `pkgutil --expand-full` recovers
+the PKG. macOS refused the read-only DMG mount with “Device not configured”;
+official [7-Zip 26.04](https://www.7-zip.org/download.html) directly extracted HFS+
+instead (developer-only tool, not shipped; archive SHA verified against its
+GitHub release digest). `hdiutil verify` passes.
+
+Both recovered applications match the signed image file-for-file, including
+executable bits, model and sealed native checksums. Strict/deep ad-hoc signature
+verification passes on both. With external Java environment removed, each
+launcher generates a real starter reply, reports native usage, rejects missing
+generation authentication, unloads its listener, and passes twelve native HyperL
+recipes plus precise reduction. The PKG launcher additionally passes actual
+OSHI sampling and management rendering; the rendered PNG was inspected.
+See `desktop/evidence/{pkg,dmg}-local-check.json`, corresponding HyperL checks,
+`pkg-monitor-check.json` and `installer-integrity-check.json`. Download assets
+carry PACKAGING.json, VALIDATION.json, matching Java sources and SHA256SUMS.
+
+These are same-host recovered-payload checks, not clean-machine installation or
+OS-mounted DMG acceptance. The app is ad-hoc signed, PKG unsigned, neither
+notarized. macOS 11 is the declared packaging floor; only macOS 15.8.1 was tested.

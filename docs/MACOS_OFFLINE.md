@@ -86,3 +86,10 @@ renderer. These checks do not prove a physical click-through installation on a
 clean Mac or qualify other OS/GPU targets. Only macOS 15.8.1 Intel is currently
 tested; the configured OS floor is 11.0. Production signing/notarization and a
 second clean Mac remain release qualification work.
+
+Studio 40.1 uses file-based HFS creation followed by UDZO compression, avoiding
+a temporary mounted-device dependency during build. The reduced Java runtime
+includes modules from full-classpath jdeps plus explicit TLS/management modules.
+Both installer payloads pass actual bundled-runtime generation, unload and
+HyperL JNI checks; DMG extraction was file-based because mounting was unavailable
+in this build session. See the desktop build ledger and release VALIDATION.json.
