@@ -8,6 +8,10 @@ Read `AGENT_BUILD.md` for architecture and handoff details. Android Studio Opus 
 is separate: `/Users/code/AndroidStudioProjects/mllm`. This checkout has not modified it.
 Do not overwrite another agent's changes when porting these files.
 
+## Detailed stabilization guide
+
+See [desktop stabilization build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md) for portable Java/model/native inputs, bounded Gradle commands, Intel DMG/PKG packaging, recovered-payload checks, Android regression/device preparation and troubleshooting. The linked [milestone plan](docs/desktop/STABILIZATION_PLAN.md) defines future acceptance; the current planning update does not run those tests or implement missing features.
+
 ## Android
 Requires JDK 21, Android SDK platform 37, build tools and NDK 28.2.13676358.
 Use your own cache directories when the normal user cache is restricted.

@@ -7,6 +7,10 @@ Scope: desktop/server; individual acceptance gates apply. Phase labels in older 
 Updated 2026-10-10. Scope: desktop/server expansion; preserve Android's existing starter and user data. Shared planning/desugaring/voice-error fixes have their own Android regression checks. This document distinguishes the current Intel
 offline installer work from future milestones; it does not claim feature parity.
 
+## Proposed next milestone
+
+The owner selected detailed plan refinement before implementation. Follow [S0–S6 stabilization](desktop/STABILIZATION_PLAN.md) and its [build/acceptance guide](desktop/STABILIZATION_BUILD_GUIDE.md) for the next proposed delivery sequence. The broader milestones below remain scope and backlog; their existence does not imply completion or authorization to start implementation during planning.
+
 ## Repository review and reuse
 
 LM Studio's desktop application is proprietary. Its published interfaces can be

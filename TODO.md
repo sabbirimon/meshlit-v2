@@ -16,6 +16,18 @@ Updated 2026-10-10. This list tracks current user requests; older task IDs and p
 - [x] Current Full Android V1/V2 assemblies/lints and 521 valid JVM executions; existing warnings retained. Nine crawler contracts pass separately.
 - [x] Source pushed and draft PR #2 updated; installer publication tracked independently in docs/RELEASE_EVIDENCE.md.
 
+## Proposed stabilization milestone — planning complete, implementation not started
+
+[Detailed acceptance plan](docs/desktop/STABILIZATION_PLAN.md) · [Build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md). These unchecked gates supersede the broad queue as the proposed next priority; prior evidence remains scoped to its original build.
+
+- [ ] S0: freeze baseline inputs, measurements and disposable acceptance fixtures.
+- [ ] S1: durable protected sessions and interrupted-turn recovery; engine Stop/reload; 20-cycle/two-hour lifecycle acceptance.
+- [ ] S2: real import/download/verify/activate, resume validation, cancellation and storage failures.
+- [ ] S3: timestamped/stale monitor data, bounded charts and real disposable-process Stop.
+- [ ] S4: common action scopes, secret references, durable redacted audit, expiry/revocation and denied-action cases.
+- [ ] S5: two independent devices with actual layer contribution, measured allocation/output/timing, peer loss and explicit safe retry.
+- [ ] S6: installed-app workflows, separate local/cluster release gates and qualified bounded agent adapters.
+
 ## Immediate acceptance
 
 - [x] Intel Experimental release published; all eight GitHub asset names/sizes/states/SHA-256 digests match local files.

@@ -8,6 +8,10 @@ Updated 2026-10-10, Asia/Dhaka. Current work is authorized by the owner; the old
 
 Repository: /Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit. Review branch: codex/hyperl-production-library. Publication remote: sabbirimon/meshlit-v2. Draft review: https://github.com/sabbirimon/meshlit-v2/pull/2. Do not force-push, merge or submit to Play without the applicable owner instruction.
 
+## Latest owner direction — plan first
+
+The owner chose detailed stabilization planning before implementation and requested a build guide. Read [stabilization plan](desktop/STABILIZATION_PLAN.md) and [build guide](desktop/STABILIZATION_BUILD_GUIDE.md). S0–S6 are proposed gates; no milestone implementation or new release was performed for this refinement. Prior source/runtime evidence below remains dated. Resume implementation only when the owner requests it.
+
 ## Current checkpoint
 
 Intel Studio build 40.1 application source is 12bd20a; evidence/source checkpoint 630cba2 is followed by the portable test fixture and documentation checkpoint c1f2d60, now the published release source. It adds a compact offline starter, verified baseline/AVX2 engine, lifecycle/resource controls, shared memory-aware layer planning and categorized/searchable management. The current owner asks to reconcile all Markdown plans/progress/phase tracking; this documentation update does not alter native/model bytes in the qualified installers.

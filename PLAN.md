@@ -21,14 +21,17 @@ No single project-wide phase number or completion percentage is used. The workst
 | Governed agents and fleet | Android typed controls/grants/audit and optional gateways are references; desktop shared agent dispatch remains pending | One common authority/controller layer, durable redacted audit, scopes/budgets/revocation/Stop, then MCP/A2A/hooks and controlled automation |
 | Platform and release | Intel DMG/PKG recovered-payload qualification; source/review pushed; all eight public asset digests verified | Experimental release published with matching digests; Developer ID/notarization and independent OS/device acceptance precede production |
 
-## Ordered implementation queue
+## Proposed stabilization priority — awaiting implementation decision
 
-1. Intel release publication is verified; finish model/library operational acceptance. Retain one working build and remove only known generated duplicates.
-2. Add genuine desktop worker enrollment/execution to the shared planner. Distinguish remote model API/job routing from pooled-memory layer execution. Use pinned identities, exact revision/model hash, fresh capability offers and bounded failure/Stop.
-3. Build the common desktop agent permission and audit foundation before unattended jobs. Human root/credential/policy edits stay human-controlled; model responses and received messages do not grant authority.
-4. Port agent/MCP/A2A/hooks, optional memory/personality/voice and document workspaces through real controllers. Ship unsupported controls as pending, not successful stubs.
-5. Implement qualified OS firewall/capture, container/VM/Kubernetes, cloud vault/billing, measured power/costs and bounded repair/rollback in their own categories. Each needs real native/runtime/account evidence.
-6. Qualify independent Windows/Linux/Apple Silicon and HarmonyOS NEXT/iOS paths. NEXT has no DevEco/device proof; GPU/NPU capability requires an actual backend, driver and device, not a label.
+The owner selected detailed plan refinement before implementation. The [stabilization plan](docs/desktop/STABILIZATION_PLAN.md) defines S0–S6 acceptance gates; the [build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md) maps existing commands to evidence and identifies missing future harnesses. This documentation does not promote any runtime capability.
+
+1. S0: freeze source, inputs, device inventory and repeatable baseline measurements.
+2. S1–S3: durable offline chat/engine lifecycle, reliable model import/download and accurate monitoring with real process-control acceptance.
+3. S4: shared action authority, protected credential references, durable audit and revocation; extend the session key-provider boundary introduced in S1.
+4. S5: pair two independent compatible physical devices, execute positive model-layer contributions on both, measure capacity/performance and qualify safe worker-loss failure/retry.
+5. S6: make separate local-desktop and cluster-Experimental release decisions, and admit bounded agent adapters only for already qualified actions. Local release assessment may proceed after S4; cluster acceptance requires S5.
+
+Broader agent workflows, voice/personality, RAG, VM/container/Kubernetes, OS firewall/capture, cloud billing, new accelerators/platforms and transparent cluster failover remain in the existing backlog. The detailed plan defines stop conditions, device dependencies and evidence requirements without promising a calendar deadline or production certification.
 
 ## Core distributed acceptance
 

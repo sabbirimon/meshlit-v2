@@ -4,9 +4,11 @@ Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [D
 Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
 <!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-10. User requested these milestones in this order. Implementation
-and acceptance evidence are separate; dependencies do not establish completion.
-No overall percentage is inferred.
+Updated 2026-10-10. The table below preserves the earlier implementation sequence.
+The proposed next priority is the [S0–S6 stabilization plan](docs/desktop/STABILIZATION_PLAN.md),
+with an [executable build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md).
+Implementation has not started under that refined plan. Source and acceptance
+evidence remain separate; no overall percentage is inferred.
 
 | Order | Milestone | Current implementation | Remaining acceptance |
 | --- | --- | --- | --- |

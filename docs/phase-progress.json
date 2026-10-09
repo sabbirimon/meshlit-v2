@@ -40,5 +40,25 @@
     }
   ],
   "releaseUrl": "https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-macos-intel-build40.1",
-  "releaseSourceCommit": "c1f2d60ffeff043ef2da210c552ccaf73b65ea8a"
+  "releaseSourceCommit": "c1f2d60ffeff043ef2da210c552ccaf73b65ea8a",
+  "proposedMilestone": {
+    "name": "Desktop stabilization",
+    "state": "plan-refined; implementation not started",
+    "plan": "docs/desktop/STABILIZATION_PLAN.md",
+    "buildGuide": "docs/desktop/STABILIZATION_BUILD_GUIDE.md",
+    "baselineSourceCommit": "80077834cfd9421da6f650f0ff51525337b29735",
+    "gateStates": {
+      "S0": "planned",
+      "S1": "planned",
+      "S2": "planned",
+      "S3": "planned",
+      "S4": "planned",
+      "S5": "planned",
+      "S6": "planned"
+    },
+    "releaseDecisions": [
+      "Local desktop preview after S0\u2013S4 and package/clean-target acceptance",
+      "Cluster Experimental preview additionally requires S5 physical-device evidence"
+    ]
+  }
 }

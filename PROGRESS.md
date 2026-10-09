@@ -17,6 +17,12 @@ Historical upstream records in `docs/history/` are not current test evidence.
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
 
+## Stabilization planning refinement — 2026-10-10
+
+The owner requested a detailed plan and build guide before implementation. [S0–S6](docs/desktop/STABILIZATION_PLAN.md) now defines durable chat/lifecycle, model transfers, accurate monitoring, shared action authority/audit and physical two-device acceptance. [The build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md) documents current source commands, input verification, Intel packaging, Android checks, evidence and environment blockers. Initial worker-loss recovery means visible failure and explicit retry; transparent distributed failover remains a separate gate. Local desktop and cluster preview release decisions are independent.
+
+This is documentation refinement only. No new runtime, installer, device qualification or production promotion is claimed. Milestone implementation awaits the next implementation decision. Current documentation coverage is generated in docs/DOCUMENTATION_STATUS.md.
+
 ## Desktop/server continuation — 2026-10-10
 
 The owner requests desktop/server management dashboards, Android feature parity,

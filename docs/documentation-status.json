@@ -4,7 +4,7 @@
   "index": "docs/DOCUMENTATION_STATUS.md",
   "phaseLedger": "docs/phase-progress.json",
   "countsExcludingGeneratedIndex": {
-    "active": 118,
+    "active": 120,
     "historical": 19,
     "protected": 8,
     "template": 1,
@@ -86,14 +86,14 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit build and validation",
-      "contentSha256WithoutTrackingBlock": "f6d4df8e3dd1ebc47e8462814410f6cfd4f6cd0e96b993ad90b7bf734f30afa0"
+      "contentSha256WithoutTrackingBlock": "f50b29410650aed6ccd00122bcdeb02d53c305aacce44a5c1cf568bf3bab63cf"
     },
     {
       "path": "BUILD_MILESTONES.md",
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Sequential implementation and acceptance ledger",
-      "contentSha256WithoutTrackingBlock": "5129848b77b6a0181f274784e69e021224ff19a862c145c6da000bea4eb33d23"
+      "contentSha256WithoutTrackingBlock": "d3983aef68d9e3b2e3eb02fdee336e6991d6c0df6585cf520d089fafa693ffe1"
     },
     {
       "path": "CLAUDE.md",
@@ -128,14 +128,14 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit implementation and qualification plan",
-      "contentSha256WithoutTrackingBlock": "8dedcd9c19235fe1305f8f2ae21fea1f7740743467ba6aadf038d6f0f0819c11"
+      "contentSha256WithoutTrackingBlock": "bb2a1a0d5ba7054414a17e02dc536e403fc92a735d72775a00474d5c435ab9dc"
     },
     {
       "path": "PROGRESS.md",
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit progress and evidence",
-      "contentSha256WithoutTrackingBlock": "8f30c11d36c962363cff3343339b7771b5dd242754ee07763b7c8e88ca0bade7"
+      "contentSha256WithoutTrackingBlock": "b1edb9696be93d1e0ed2410c05c6bf0420f496e2001fe2afe1f612fc719a2325"
     },
     {
       "path": "README.md",
@@ -170,7 +170,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit current implementation and acceptance queue",
-      "contentSha256WithoutTrackingBlock": "54c57f54be19bc41ea2cefd21807d1887628c6ef3e89e0ea66697747a890fdf2"
+      "contentSha256WithoutTrackingBlock": "5e8f1c304fd1031da48a9ffc9c4703fee74578c65f4810c91b9d5f98f4a6ba5d"
     },
     {
       "path": "app/BUILD_GUIDE.md",
@@ -415,7 +415,7 @@
       "class": "active",
       "scope": "desktop/server; individual acceptance gates apply",
       "title": "Meshlit desktop Studio implementation plan",
-      "contentSha256WithoutTrackingBlock": "dbc78c98def29598ffd309793b67ec7bf98b8efffe09f9e666d0fa49787eb529"
+      "contentSha256WithoutTrackingBlock": "4eeba03915088dc1fb9066ce27c522653438a4381999ebf336b656655c34a198"
     },
     {
       "path": "docs/DEVICE_COMPATIBILITY.md",
@@ -548,7 +548,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit current session handoff",
-      "contentSha256WithoutTrackingBlock": "35b93b4fd0ba2c139fd5b415b197ab3b4a4a2bebc4c42defa128ee03165c2800"
+      "contentSha256WithoutTrackingBlock": "a9859df72f3b0a99fd743ac162cb394eb7b886b29f0f89c6061d04c6ccddfd29"
     },
     {
       "path": "docs/SSH_NODE.md",
@@ -724,6 +724,20 @@
       "scope": "desktop/server; individual acceptance gates apply",
       "title": "Desktop/server security, automation, VM and container design",
       "contentSha256WithoutTrackingBlock": "d0e6fd9e51634db3becc05ccd2a022fe0d11efb55fe03061b822d66e7f19b672"
+    },
+    {
+      "path": "docs/desktop/STABILIZATION_BUILD_GUIDE.md",
+      "class": "active",
+      "scope": "desktop/server; individual acceptance gates apply",
+      "title": "Stabilization build and acceptance guide",
+      "contentSha256WithoutTrackingBlock": "a0f0259bbbbb59db29b8835143e41b2ce2c9b0477f929fcee704d1b2b3a93e01"
+    },
+    {
+      "path": "docs/desktop/STABILIZATION_PLAN.md",
+      "class": "active",
+      "scope": "desktop/server; individual acceptance gates apply",
+      "title": "Desktop stabilization milestone \u2014 proposed plan",
+      "contentSha256WithoutTrackingBlock": "c4cc6de813d0e3c23e5a5fc5f139150b743f7219869c3c201519e4d775e10be6"
     },
     {
       "path": "docs/desktop/TERMINAL.md",
