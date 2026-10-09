@@ -14,4 +14,6 @@ source=(root/'core-mcp/src/main/kotlin/com/meshlit/core/mcp/control/AgentCommand
 operations=re.findall(r'\b[A-Z][A-Z_]+\b',source.split('enum class AgentOperation {',1)[1].split('}',1)[0])
 assert data['operations']==operations, 'Update feature-map operation inventory'
 assert (root/data['acceptanceLedger']).is_file()
+registered=sorted(set(re.findall(r'"(:[\w-]+)"',(root/'settings.gradle.kts').read_text())))
+assert data['modules']==[m[1:] for m in registered], 'Update registered Gradle module inventory'
 print(f'Feature map valid: {len(ids)} features, {len(operations)} operations, {len(data["modules"])} modules')

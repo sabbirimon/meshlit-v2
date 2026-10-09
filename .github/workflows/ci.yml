@@ -26,7 +26,7 @@ jobs:
           log-accepted-android-sdk-licenses: false
       - name: Android platform
         run: |
-          sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
+          sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0' 'ndk;28.2.13676358' 'cmake;3.22.1'
           test -f "$ANDROID_HOME/platforms/android-37.0/android.jar"
       - name: Gradle cache
         uses: actions/cache@v4
@@ -39,11 +39,29 @@ jobs:
       - name: Prepare real pinned starter model
         run: python3 scripts/prepare-bundled-model.py
       - name: Validate feature references
-        run: python3 scripts/validate-feature-map.py
+        run: |
+          python3 scripts/validate-feature-map.py
+          python3 scripts/check-hyperl-port.py
+          python3 scripts/check-hyperl-alpha6.py
+      - name: Real host JNI and sanitized native contracts
+        run: |
+          mkdir -p "$RUNNER_TEMP/hyperl-native"
+          clang -std=c99 -ffp-contract=off -Wall -Wextra -Werror -shared -fPIC -Icore-hyperl/src/main/cpp/include -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" core-hyperl/src/main/cpp/cpu.c core-hyperl/src/main/cpp/android_jni.c -o "$RUNNER_TEMP/hyperl-native/libmeshlit_hyperl.so" -lm
+          for test in cpu_test cpu_contract_stress; do
+            clang -std=c99 -ffp-contract=off -Wall -Wextra -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -Icore-hyperl/src/main/cpp/include core-hyperl/src/main/cpp/cpu.c "core-hyperl/src/main/cpp/$test.c" -o "$RUNNER_TEMP/hyperl-native/$test" -lm
+            "$RUNNER_TEMP/hyperl-native/$test"
+          done
+          cmake -S core-gibberlink/src/main/cpp -B "$RUNNER_TEMP/gibberlink-native" -DCMAKE_BUILD_TYPE=Release
+          cmake --build "$RUNNER_TEMP/gibberlink-native" --parallel 2
       - name: Assemble, unit checks and fatal lint
         env:
           FLAVOR: ${{ matrix.flavor }}
-        run: ./gradlew ":app:assemble${FLAVOR}Debug" ":app:test${FLAVOR}DebugUnitTest" ":app:lint${FLAVOR}Debug" :core-common:testDebugUnitTest :core-gpu:testDebugUnitTest :core-observability:testDebugUnitTest :core-inference:testDebugUnitTest :core-mcp:testDebugUnitTest :core-cloud-mcp:testDebugUnitTest :core-net:testDebugUnitTest :core-federation:testDebugUnitTest :core-sandbox:testDebugUnitTest --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
+        run: ./gradlew ":app:assemble${FLAVOR}Debug" ":app:test${FLAVOR}DebugUnitTest" ":app:lint${FLAVOR}Debug" :core-common:testDebugUnitTest :core-ssh:testDebugUnitTest :core-gpu:testDebugUnitTest :core-hyperl:testDebugUnitTest :core-gibberlink:testDebugUnitTest :core-observability:testDebugUnitTest :core-inference:testDebugUnitTest :core-mcp:testDebugUnitTest :core-cloud-mcp:testDebugUnitTest :core-net:testDebugUnitTest :core-federation:testDebugUnitTest :core-sandbox:testDebugUnitTest -PhyperlHostLibraryDir="$RUNNER_TEMP/hyperl-native" -PgibberlinkHostLibraryDir="$RUNNER_TEMP/gibberlink-native" --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
+      - name: Separate Core candidate boundary
+        if: matrix.flavor == 'MeshlitV2'
+        run: |
+          ./gradlew :app:assembleMeshlitV2ProductionCandidate :app:lintMeshlitV2ProductionCandidate :app:testMeshlitV2ProductionCandidateUnitTest --tests com.meshlit.BuildProfileTest --no-daemon --max-workers=2 -Pkotlin.compiler.execution.strategy=in-process
+          python3 scripts/check-core-candidate.py --apk app/build/outputs/apk/meshlitV2/productionCandidate/app-meshlitV2-universal-productionCandidate.apk --output app/build/reports/core-candidate.json
       - name: Original companion tests
         run: |
           python3 -m unittest discover -s companions/cyber/tests -v

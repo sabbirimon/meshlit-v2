@@ -1,4 +1,8 @@
 # Claude Code instructions
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: workflow guidance; current owner instructions and scoped evidence govern. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Read and follow `AGENTS.md` at the repository root, the canonical shared guide.
 Read `docs/improvement-and-stryker-plan.md` for the review and feature priorities,

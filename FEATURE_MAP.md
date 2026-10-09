@@ -1,6 +1,10 @@
 # Meshlit structured feature and architecture map
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-08. This is the map of the separate Codex implementation, not the
+Updated 2026-10-09. This is the map of the separate Codex implementation, not the
 old Android checkout. `PROGRESS.md` records evidence; `PLAN.md` records unfinished
 acceptance. Machine-readable companion: `docs/feature-map.json`.
 
@@ -391,13 +395,38 @@ execution remain unverified. Full red/blue tool adapters remain future acceptanc
 
 ## 2026-10-08 continuation
 
-Current inventory: **74 feature areas, 38 durable operations, 33 modules**.
+Earlier continuation inventory: **75 feature areas, 38 durable operations, 33 modules** (historical snapshot).
 Counts describe source/plans, not completion. New areas include manual replica
 metadata, MCP/A2A connectors, Terraform saved-plan and storage/DSP companions,
 managed stop/capacity dashboard, unified routing, SDK/topology probes, platform/native
 contracts and authenticated network measurements. See
 [continuation](docs/CONTINUATION_2026_10_08.md) and
 [platform plan](docs/PLATFORM_ADAPTER_PLAN.md) for explicit acceptance boundaries.
-HyperL remains on the separate `codex/hyperl-experimental` branch; no HyperL runtime
-is integrated into this application build. Meshlit's intended scope is AI software
+HyperL foundation was owner-merged through PR #1. The production-library port adds
+a human-only Settings workbench, twelve CPU recipes, memory admission and controlled
+source generation. [Workflow/provenance](docs/hyperl/APP_AND_LIBRARY.md) records its
+boundaries; mobile GPU/model execution is not implemented by this screen. Meshlit's intended scope is AI software
 across hosts and clusters; current APK installation remains Android-only.
+
+## Android alpha.6 integration
+
+The shared workbench now uses the separately licensed `core-hyperl` module for
+Kotlin/native C99 execution, precise sums and encrypted dataset operations. The
+old Apache `core-gpu` port is preserved. Read the [alpha.6 integration guide](docs/hyperl/ANDROID_ALPHA6.md) for licence opt-in, Android/API limits, safety boundaries and validation.
+
+## Multiplatform / latest HarmonyOS NEXT continuation (2026-10-09)
+
+`shared-workspace` adds KMP common settings/contracts and the existing bounded JVM
+reply parser; Android consumes it without changing on-device prompts/history.
+English/简体中文 modern resources and Monochrome appearance persist. `desktopApp`
+adds the experimental authenticated host-client GUI/CLI with real SSE streaming,
+chat search, output bounds and reported token rates. `ohosApp` is native ArkTS/ArkUI
+for NEXT 26.0.0; source supports English/Chinese themes and bounded complete-response
+HTTPS chat. Local NEXT LLM reports unavailable. Not full shared UI/runtime parity
+or production/device certification. See docs/MULTIPLATFORM_NEXT.md.
+
+Build-40 continuation inventory: **83 feature areas, 38 durable operations, 36 Gradle modules** (historical snapshot). The separate NEXT Stage project is not a Gradle module. Counts include preview/unverified work and do not imply production support.
+
+## Current inventory and desktop scope — 2026-10-10
+
+Machine-readable inventory: **88 feature areas, 38 durable operations and 39 registered Gradle modules**. core-stable-diffusion is a source directory outside the current settings.gradle.kts includes; it is not counted as an active module. The separate desktop/server tracker has **41 requested areas**, overlapping this inventory rather than adding 41 completed features. Shared GGUF/sharding, desktop SSH and separately licensed HyperL modules are included. Both Intel recovered payloads have scoped execution evidence; production, physical cluster and other platform acceptance remain open. Documentation state and workstream phases: docs/DOCUMENTATION_STATUS.md.

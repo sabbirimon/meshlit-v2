@@ -1,4 +1,8 @@
 # vendored/
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](../docs/DOCUMENTATION_STATUS.md).
+Scope: optional host/schema/reference; not a bundled qualified service. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Dependency pins, documentation and notices are tracked. Third-party source
 trees are intentionally **not tracked** (see `.gitignore`). This directory

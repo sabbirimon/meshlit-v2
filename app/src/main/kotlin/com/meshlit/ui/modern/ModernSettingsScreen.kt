@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meshlit.di.koinInject
 import com.meshlit.settings.SettingsRepository
@@ -28,16 +30,24 @@ import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun ModernSettingsScreen(initialDestination:String?=null,onExit:(()->Unit)?=null,onMenu:(()->Unit)?=null,onDestinationChanged:(String?)->Unit={}) {
-    var destination by rememberSaveable{mutableStateOf(initialDestination)}
+    var destination by rememberSaveable{mutableStateOf(initialDestination?.takeIf { com.meshlit.BuildProfile.routeAllowed(it) })}
     var query by rememberSaveable{mutableStateOf("")}
     LaunchedEffect(destination){onDestinationChanged(destination)}
+    val sidebarStyle=LocalMeshlitThemeConfig.current.sidebarStyle
     val context=LocalContext.current
     val prefs=remember{context.getSharedPreferences("settings-navigation",0)}
     var advanced by rememberSaveable{mutableStateOf(prefs.getBoolean("advanced",false))}
     val repository=koinInject<SettingsRepository>()
     val back={destination=null}
     BackHandler(destination!=null){destination=null}
+    if(destination=="crypto"){CryptoScreen(back);return}
+    if(destination=="gibberlink"){GibberLinkScreen(back);return}
+    if(destination=="remotecommands"){RemoteCommandsScreen(back);return}
+    if(destination=="p2p"){PeerChatScreen(back);return}
+    if(destination=="colibri"){ColibriScreen(back);return}
+    if(destination=="search"){SearchAccessScreen(back);return}
     if(destination=="legal"){com.meshlit.legal.LegalDocumentsScreen(back);return}
+    if(destination=="personalization"){PersonalizationScreen(back);return}
     if(destination=="behavior"){LocalBehaviorScreen(back,{destination="models"});return}
     if(destination=="help"){HelpTutorialScreen(back);return}
     if(destination=="cloud"){CloudManagementScreen(back);return}
@@ -62,6 +72,7 @@ import kotlinx.coroutines.*
     if(destination=="files"){FileManagerScreen(back);return}
     if(destination=="termux"){ExistingTermuxSettings(back);return}
     if(destination=="ide"){com.meshlit.ide.CodeWorkspaceScreen(back);return}
+    if(destination=="hyperl"){HyperLScreen(back);return}
     if(destination=="permissions"){com.meshlit.permissions.PermissionSetupScreen(back);return}
     if(destination=="openclaw"){OpenClawScreen(back);return}
     if(destination=="audit"){AuditTelemetryScreen(back);return}
@@ -72,14 +83,14 @@ import kotlinx.coroutines.*
     if(destination=="automation"){com.meshlit.ui.screens.cloud.AndroidAutomationSettingsScreen(repository,back);return}
     if(destination=="hooks"){com.meshlit.ui.screens.settings.HooksScreen(back,{destination="hook:$it"});return}
     if(destination?.startsWith("hook:")==true){com.meshlit.ui.screens.settings.HookEditorScreen(destination!!.removePrefix("hook:"),{destination="hooks"});return}
-    Scaffold(topBar={TopAppBar(colors=TopAppBarDefaults.topAppBarColors(containerColor=Color.Transparent),title={Text(SettingsDestinations.all.firstOrNull{it.id==destination}?.title ?: "Settings")},
+    Scaffold(topBar={TopAppBar(expandedHeight=48.dp,colors=TopAppBarDefaults.topAppBarColors(containerColor=Color.Transparent),title={Text(SettingsDestinations.all.firstOrNull{it.id==destination}?.title ?: "Settings",style=MaterialTheme.typography.titleMedium)},
         navigationIcon={if(destination!=null || onExit!=null) IconButton(onClick={if(destination!=null) destination=null else onExit?.invoke()}){
-            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")} else if(onMenu!=null) IconButton(onClick=onMenu){Icon(Icons.Default.Menu,"Open menu")}})}){padding ->
+            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back")} else if(onMenu!=null) IconButton(onClick=onMenu){Icon(Icons.Default.Menu,"Menu")}})}){padding ->
         when(destination){
             "appearance" -> AppearanceSettings(Modifier.padding(padding))
             "device" -> Box(Modifier.padding(padding)){com.meshlit.ui.screens.settings.DeviceScreen(back)}
             "monitor" -> Box(Modifier.padding(padding)){ModernMonitorScreen()}
-            else -> LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),
+            else -> LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax).testTag("settings-list"),contentPadding=PaddingValues(12.dp),
                 verticalArrangement=Arrangement.spacedBy(T.medium)) {
                 when(destination){
                     "runtime" -> item{com.meshlit.ui.screens.cloud.RuntimeDashboardCard()}
@@ -92,12 +103,14 @@ import kotlinx.coroutines.*
                     }}}
                     "about" -> item{Card{Column(Modifier.padding(T.large),verticalArrangement=Arrangement.spacedBy(T.small)){
                         Text("Meshlit ${com.meshlit.BuildConfig.VERSION_NAME}",style=MaterialTheme.typography.titleLarge)
-                        Text("Local inference: RunAnywhere llama.cpp. Layer execution: optional experimental RPC workers. Linux and Crawl4AI require separately installed companions.")
+                        Text("Channel: ${com.meshlit.BuildProfile.name}")
+                        Text(if(com.meshlit.BuildProfile.coreCandidate) "Local chat, models and user-selected files. Separate package and storage from Experimental. Device endurance, SDK network privacy and release signing are still qualification gates." else "Local inference: RunAnywhere llama.cpp. Layer execution: optional experimental RPC workers. Linux and Crawl4AI require separately installed companions.")
                         Text("Legacy settings for account tiers, automatic model download, custom GPU layer counts and transport policy are not connected by this menu. They are not presented as functioning switches.")
                         Text("Project and third-party notices are maintained in the repository LICENSE and vendored source notices.")
                     }}}
                     else -> {
-                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth(),singleLine=true,placeholder={Text("Search settings")},
+                        if(query.isBlank() && sidebarStyle==SidebarStyle.CARDS) item {SettingsHeroCards{destination=it}}
+                        item {OutlinedTextField(query,{query=it},Modifier.fillMaxWidth().testTag("settings-search"),singleLine=true,placeholder={Text("Search settings")},
                             leadingIcon={Icon(Icons.Default.Search,null)},trailingIcon={if(query.isNotEmpty()) IconButton(onClick={query=""}){Icon(Icons.Default.Close,"Clear search")}},shape=RoundedCornerShape(28.dp))}
                         item {Row(horizontalArrangement=Arrangement.spacedBy(T.small)){
                             FilterChip(!advanced,{advanced=false;prefs.edit().putBoolean("advanced",false).apply()},label={Text("Basic")})
@@ -107,8 +120,8 @@ import kotlinx.coroutines.*
                         if(results.isEmpty()) item{Text("No matching settings. Advanced includes runtime, networking and automation controls.")}
                         items(results,key={it.id}){entry -> Card(shape=RoundedCornerShape(20.dp),onClick={destination=entry.id},modifier=Modifier.fillMaxWidth(),
                             colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainerLow)){
-                            Row(Modifier.padding(T.large),horizontalArrangement=Arrangement.spacedBy(T.medium),verticalAlignment=Alignment.CenterVertically){
-                                Icon(settingsIcon(entry.id),null,tint=MaterialTheme.colorScheme.onSurfaceVariant)
+                            Row(Modifier.padding(horizontal=12.dp,vertical=10.dp),horizontalArrangement=Arrangement.spacedBy(T.medium),verticalAlignment=Alignment.CenterVertically){
+                                SettingsIconTile(entry.id)
                                 Column(Modifier.weight(1f)){Text(entry.title,style=MaterialTheme.typography.titleMedium);Text(entry.description,
                                     style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}
                                 Icon(Icons.Default.ChevronRight,null)
@@ -128,8 +141,38 @@ import kotlinx.coroutines.*
     val scope=rememberCoroutineScope()
     var error by remember{mutableStateOf<String?>(null)}
     fun write(action:suspend()->Unit){scope.launch{try{action()}catch(e:CancellationException){throw e}catch(e:Exception){error=e.message}}}
-    LazyColumn(modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.large)){
+    LazyColumn(modifier.fillMaxSize().widthIn(max=T.contentMax),contentPadding=PaddingValues(12.dp),verticalArrangement=Arrangement.spacedBy(T.large)){
+        item {
+            Text(config.uiLanguage.text("Interface language", "界面语言"),style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                com.meshlit.workspace.WorkspaceLanguage.entries.forEach { language ->
+                    FilterChip(config.uiLanguage==language,{write{settings.setUiLanguage(language)}},
+                        modifier=Modifier.testTag("workspace-language-${language.tag}"),label={Text(language.label)})
+                }
+            }
+            Text(config.uiLanguage.text("English is the default. Chinese covers the main chat and model library; advanced tools currently retain English. Model replies and prompts are unchanged.",
+                "默认使用英语。中文覆盖主要聊天和模型库，高级工具目前仍使用英语。模型回复和提示词不受影响。"),style=MaterialTheme.typography.bodySmall)
+        }
         item {Text("Colors, type and display",style=MaterialTheme.typography.bodyMedium,color=MaterialTheme.colorScheme.onSurfaceVariant)}
+        item {Text("Workspace themes",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                AppearancePreset.entries.forEach { preset -> FilterChip(preset.matches(config),{write{settings.applyAppearance(preset)}},
+                    modifier=Modifier.testTag("appearance-preset-${preset.name}"),label={Text(preset.label)},
+                    leadingIcon={Icon(Icons.Default.Circle,null,tint=buildColorScheme(config.copy(basePalette=preset.base,accentHue=preset.accent,customPalette=CustomPalette.None)).primary)}) }
+            }
+            Text("Presets retain font size, high contrast and operation permissions.",style=MaterialTheme.typography.bodySmall)
+        }
+        item {Text("Workspace layout",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                WorkspaceLayout.entries.forEach { layout -> FilterChip(config.workspaceLayout==layout,{write{settings.setWorkspaceLayout(layout)}},label={Text(layout.label)}) }
+            }
+            Text("Adaptive keeps a sidebar in wide windows. Focus uses an on-demand menu. Phones always keep the content width.",style=MaterialTheme.typography.bodySmall)
+        }
+        item {Text("Side menu",style=MaterialTheme.typography.titleMedium)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)) {
+                SidebarStyle.entries.forEach { style -> FilterChip(config.sidebarStyle==style,{write{settings.setSidebarStyle(style)}},label={Text(style.label)}) }
+            }
+        }
         item {OutlinedButton(onClick={write{settings.applyReferenceAppearance()}},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(24.dp)){
             Icon(Icons.Default.AutoAwesome,null);Spacer(Modifier.width(T.small));Text("Reference blue · light theme")}}
         item {Text("Display mode",style=MaterialTheme.typography.titleMedium);FlowRow(horizontalArrangement=Arrangement.spacedBy(T.small)){
@@ -182,19 +225,25 @@ import kotlinx.coroutines.*
 }
 
 /** The same icon vocabulary is used in settings and the app drawer. */
-private fun settingsIcon(id:String)=when(id){
-    "appearance"->Icons.Default.Palette
-    "models","router","acceleration"->Icons.Default.Storage
-    "cloud","providers"->Icons.Default.Cloud
-    "network","peers","ssh","firewall"->Icons.Default.Wifi
-    "agents","openclaw","automation"->Icons.Default.SmartToy
-    "tasks"->Icons.Default.Checklist
-    "files","configuration"->Icons.Default.FolderOpen
-    "media"->Icons.Default.PermMedia
-    "power"->Icons.Default.BatteryChargingFull
-    "help"->Icons.Default.HelpOutline
-    "logs","monitor","audit"->Icons.Default.Insights
-    "permissions"->Icons.Default.Security
-    "ide","termux","runtime","hooks"->Icons.Default.Code
-    else->Icons.Default.Settings
+internal fun settingsIcon(id:String)=when(id){
+    "chat"->Icons.Outlined.ChatBubbleOutline
+    "voice","gibberlink"->Icons.Outlined.GraphicEq
+    "vision"->Icons.Outlined.CameraAlt
+    "structured"->Icons.Outlined.DataObject
+    "crypto"->Icons.Outlined.EnhancedEncryption
+    "remotecommands","p2p"->Icons.Outlined.Hub
+    "appearance"->Icons.Outlined.Palette
+    "models","router","acceleration","colibri"->Icons.Outlined.Storage
+    "cloud","providers"->Icons.Outlined.Cloud
+    "network","peers","ssh","firewall"->Icons.Outlined.Wifi
+    "agents","openclaw","automation"->Icons.Outlined.SmartToy
+    "tasks"->Icons.Outlined.Checklist
+    "files","configuration"->Icons.Outlined.FolderOpen
+    "media"->Icons.Outlined.PermMedia
+    "power"->Icons.Outlined.BatteryChargingFull
+    "help"->Icons.Outlined.HelpOutline
+    "logs","monitor","audit"->Icons.Outlined.Insights
+    "permissions"->Icons.Outlined.Security
+    "ide","hyperl","termux","runtime","hooks"->Icons.Outlined.Code
+    else->Icons.Outlined.Settings
 }

@@ -6,6 +6,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.OpenInFull
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import com.meshlit.chat.ChatTokenUsage
+import kotlinx.coroutines.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -26,16 +32,34 @@ internal fun shareGeneratedFile(context:Context,file:File) {
     context.startActivity(Intent.createChooser(send,"Share output"))
 }
 
-@Composable internal fun MessageActions(text:String) {
+@Composable internal fun MessageActions(text:String,usage:ChatTokenUsage?=null) {
     val clipboard=LocalClipboardManager.current
     val context=LocalContext.current
     var error by remember{mutableStateOf<String?>(null)}
+    var reader by remember{mutableStateOf(false)}
+    var menu by remember{mutableStateOf(false)}
+    var details by remember{mutableStateOf(false)}
+    var busy by remember{mutableStateOf(false)}
+    val scope=rememberCoroutineScope()
+    val export=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/markdown")){uri->if(uri!=null) scope.launch {
+        busy=true
+        try{withContext(Dispatchers.IO){context.contentResolver.openOutputStream(uri,"wt")?.bufferedWriter()?.use{it.write(text)} ?: error("Cannot write selected document")}}
+        catch(c:CancellationException){throw c}catch(e:Exception){error="Response export failed: ${e.javaClass.simpleName}"}finally{busy=false}
+    }}
+    if(reader) ReplyReader(text){reader=false}
+    if(details) TokenUsageDetails(usage){details=false}
     Row {
         IconButton(onClick={clipboard.setText(AnnotatedString(text))}){Icon(Icons.Default.ContentCopy,"Copy response")}
         IconButton(onClick={try {
             context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain")
                 .putExtra(Intent.EXTRA_TEXT,text),"Share response"))
         }catch(e:Exception){error="No sharing app is available"}}){Icon(Icons.Default.Share,"Share response")}
+        IconButton(onClick={reader=true}){Icon(Icons.Default.OpenInFull,"Read full response")}
+        IconButton(onClick={menu=true}){Icon(Icons.Default.MoreVert,"Response actions")}
+        DropdownMenu(menu,{menu=false}) {
+            DropdownMenuItem(text={Text("Save response as Markdown")},enabled=!busy,onClick={menu=false;export.launch("meshlit-response.md")})
+            DropdownMenuItem(text={Text("Response token details")},onClick={menu=false;details=true})
+        }
     }
     error?.let{AlertDialog(onDismissRequest={error=null},title={Text("Cannot share")},text={Text(it)},
         confirmButton={TextButton(onClick={error=null}){Text("OK")}})}

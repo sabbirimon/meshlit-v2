@@ -14,6 +14,9 @@ val meshlitSigningFile = providers.gradleProperty("meshlit.signingProperties").o
 
 android {
     signingConfigs {
+        getByName("debug") {
+            providers.gradleProperty("meshlit.debugKeystore").orNull?.let { storeFile = rootProject.file(it) }
+        }
         create("release") {
             if (meshlitSigningFile.exists()) {
                 val props = Properties().apply { meshlitSigningFile.inputStream().use { load(it) } }
@@ -31,6 +34,7 @@ android {
     defaultConfig {
         applicationId = "com.meshlit"
         buildConfigField("boolean", "PLAY_REVIEW", "false")
+        buildConfigField("boolean", "CORE_CANDIDATE", "false")
         // Floor = API 24 (Android 7.0). The RunAnywhere SDK 0.20.12
         // ships `libllama.so` with API 24+ symbol requirements (and
         // uses java.time on cold paths); `:core-inference` already
@@ -45,8 +49,8 @@ android {
         // /v1/health `version` field distinguishes the cluster
         // build from the pre-cluster baseline, and the GitHub
         // dev release gets a fresh version tag.
-        versionCode = 3
-        versionName = "0.2.3"
+        versionCode = 40
+        versionName = "0.2.6-colibri-studio"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -87,8 +91,8 @@ android {
             applicationIdSuffix = ".v2"
             // Build no. 1 of the new UI. Bump versionCode by 1
             // so Play Store and F-Droid see a fresh artifact.
-            versionName = "2.0.0-v2build1"
-            versionCode = (defaultConfig.versionCode ?: 1) + 1
+            versionName = "2.0.0-v2build40"
+            versionCode = 40
             buildConfigField("boolean", "USE_NEW_UI", "true")
             resValue("string", "app_name", "Meshlit v2")
         }
@@ -141,6 +145,15 @@ android {
         isDebuggable = false
         signingConfig = signingConfigs.getByName("debug")
         buildConfigField("boolean", "PLAY_REVIEW", "true")
+    }
+
+    // Separate package and app data; not a claim of production qualification.
+    buildTypes.create("productionCandidate") {
+        initWith(buildTypes.getByName("playReview"))
+        matchingFallbacks += listOf("debug")
+        applicationIdSuffix = ".production"
+        versionNameSuffix = "-core-candidate"
+        buildConfigField("boolean", "CORE_CANDIDATE", "true")
     }
 
     // Phase 1.0 — Lean APK (debug only). The Debug variant ships
@@ -239,6 +252,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Preserve both SSH modules' metadata, alongside their offline licence assets.
+            merges += setOf("META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/NOTICE")
         }
     }
 
@@ -246,6 +261,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared-workspace"))
     // Project modules (app consumes the orchestration facade)
     implementation(project(":core-orchestration"))
     implementation(project(":core-common"))
@@ -257,6 +273,8 @@ dependencies {
     implementation(project(":core-mcp"))
     implementation(project(":core-federation"))
     implementation(project(":core-gpu"))
+    implementation(project(":core-hyperl"))
+    implementation(project(":core-gibberlink"))
     implementation(project(":core-cloud-mcp"))
     implementation(project(":core-training"))
     implementation(project(":core-files"))
@@ -303,6 +321,9 @@ dependencies {
     implementation(libs.androidx.window.core)
     implementation(libs.androidx.compose.material.icons)
     implementation(libs.androidx.navigation.compose)
+    // Parse replies to native Compose blocks; never execute model HTML/scripts.
+    implementation(libs.commonmark)
+    implementation(libs.commonmark.tables)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Logging — slf4j-api alone gives us NOP; logback-android binds it
@@ -420,7 +441,36 @@ val verifyBundledModel by tasks.registering(VerifyBundledModel::class) {
     manifestFile.set(layout.projectDirectory.file("src/main/assets/models/bundled-model.json"))
     assetDirectory.set(layout.projectDirectory.dir("src/main/assets/models"))
 }
-tasks.named("preBuild") { dependsOn(verifyBundledModel) }
+// Consent must display the exact reviewed documents, including material data-flow changes.
+abstract class VerifyOfflinePolicies:DefaultTask() {
+    @get:InputFile abstract val termsDocument:RegularFileProperty
+    @get:InputFile abstract val privacyDocument:RegularFileProperty
+    @get:InputFile abstract val termsAsset:RegularFileProperty
+    @get:InputFile abstract val privacyAsset:RegularFileProperty
+    @get:InputFile abstract val agreementSource:RegularFileProperty
+    @TaskAction fun verify() {
+        val version=Regex("const val VERSION\\s*=\\s*\"([^\"]+)\"")
+            .find(agreementSource.get().asFile.readText())?.groupValues?.get(1)
+            ?: error("Review the legal agreement version before building.")
+        listOf(termsDocument.get().asFile to termsAsset.get().asFile,
+            privacyDocument.get().asFile to privacyAsset.get().asFile).forEach { (document,asset) ->
+            check(document.readBytes().contentEquals(asset.readBytes())) {
+                "Offline agreement differs from ${document.name}. Review and synchronize the legal assets before building."
+            }
+            check(document.readLines().getOrNull(1)?.startsWith("Version $version ·") == true) {
+                "Agreement acceptance version differs from ${document.name}. Review consent renewal before building."
+            }
+        }
+    }
+}
+val verifyOfflinePolicies by tasks.registering(VerifyOfflinePolicies::class) {
+    termsDocument.set(rootProject.layout.projectDirectory.file("docs/TERMS_OF_USE.md"))
+    privacyDocument.set(rootProject.layout.projectDirectory.file("docs/PRIVACY_POLICY.md"))
+    termsAsset.set(layout.projectDirectory.file("src/main/assets/legal/terms.txt"))
+    privacyAsset.set(layout.projectDirectory.file("src/main/assets/legal/privacy.txt"))
+    agreementSource.set(layout.projectDirectory.file("src/main/kotlin/com/meshlit/legal/LegalAgreementStore.kt"))
+}
+tasks.named("preBuild") { dependsOn(verifyBundledModel,verifyOfflinePolicies) }
 
 
 // Original lab companions shipped as data; installation requires an explicit human VM action.
@@ -444,4 +494,7 @@ val generateLabAssets by tasks.registering(GenerateLabAssets::class) {
 }
 androidComponents.onVariants { variant ->
     variant.sources.assets?.addGeneratedSourceDirectory(generateLabAssets,GenerateLabAssets::outputDirectory)
+}
+androidComponents.beforeVariants(androidComponents.selector().withBuildType("productionCandidate")) { variant ->
+    checkNotNull(variant.hostTests[com.android.build.api.variant.HostTestBuilder.UNIT_TEST_TYPE]).enable = true
 }

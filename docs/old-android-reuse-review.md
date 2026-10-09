@@ -1,4 +1,8 @@
 # Existing Android project reuse review — 2026-10-06
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Source reviewed read-only: `/Users/code/AndroidStudioProjects/mllm`.
 Both checkouts started at `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.

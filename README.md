@@ -5,9 +5,13 @@
 </picture></p>
 
 # Meshlit v2 — adaptive AI workspace and experimental distributed compute
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 **Many nodes. One mind.** AI runtime, agent gateway and distributed-compute research.
-Current installable application: Android. Optional source companions: operator-owned hosts.
+Installable applications: Android and an Experimental Intel Mac desktop preview. Optional source companions: operator-owned hosts.
 
 **A project by IMON** · [@sabbirimon](https://github.com/sabbirimon)
 
@@ -34,36 +38,54 @@ areas; unsupported platforms and accelerators are not advertised as ready.
 
 [Start building](#build-and-run) · [App guide](docs/USER_GUIDE.md) ·
 [Current evidence](PROGRESS.md) · [Feature map](FEATURE_MAP.md) ·
-[Agent instructions](AGENTS.md) · [Roadmap](BUILD_MILESTONES.md) ·
+[Desktop/server tracker](docs/DESKTOP_FEATURE_TRACKER.md) · [Android parity](docs/ANDROID_DESKTOP_PARITY.md) · [Desktop build log](docs/DESKTOP_BUILD_LOG.md) ·
+[Documentation status](docs/DOCUMENTATION_STATUS.md) · [Agent instructions](AGENTS.md) · [Roadmap](BUILD_MILESTONES.md) ·
 [Audit setup](docs/AUDIT_TELEMETRY.md) · [Contribute](CONTRIBUTING.md)
 
 ## What you can do
 
 | Area | Source behavior | Evidence and practical boundary |
 | --- | --- | --- |
-| Local AI chat | Real bundled SmolLM2 135M Instruct Q4_K_M; saved chats, model selector, selectable text, Copy/Share, keyboard-aware composer | Real emulator load and generation observed. The 101 MiB starter tests installation; it is not a strong general-purpose agent or vision model |
+| Local AI chat | Real bundled SmolLM2 135M Instruct Q4_K_M; saved chats, model selector, native Markdown/tables/code, full response reader, output-token controls and keyboard-aware composer | Real emulator load and generation observed. The 101 MiB starter tests installation; it is not a strong general-purpose agent or vision model |
 | Model management | RunAnywhere/verified HTTPS downloads, pinned Hugging Face artifacts, resumable transfers, multi-file import, validation, load/unload and startup policy | Download completion is separate from validated installation and usable generation; account access to gated weights remains required |
 | Phone layer sharding | Native CPU coordinator/workers, memory-aware layer placement and pinned authenticated TLS tunnels | Real two-worker **desktop** execution exists. Oversized-model execution across physical phones remains an acceptance gate |
 | Context and KV cache | Native context/thread/cache controls and encrypted local CPU KV checkpoints | Backend capabilities differ; distributed/portable KV recovery and replicated failover remain unfinished |
 | Agent and task tools | Typed human/agent commands, saved delegation scopes, encrypted durable jobs, cancellation/retry and task/subtask management | Planning status is separate from execution; direct legacy adapters have separate coverage |
 | Online AI and routing | Encrypted compatible provider profiles, explicit offline/online selection, scenario recipes, model chains and comparisons | Paid provider calls need credentials; public catalogs do not establish free inference or account entitlement |
+| Local model tools | Default-off web-page and scoped phone tools through a bounded JSON planning loop; permission Manage buttons and Android package confirmation workflows | Requires a suitable model and separate saved/OS grants. No silent app administration or in-app ADB adapter. [Setup and limits](docs/LOCAL_MODEL_TOOLS.md) |
+| Memory and voice | Optional encrypted preference recall, personality and one local native retry; separately selected offline/online speech adapters | Default off; real microphone/provider conversation acceptance and wider voice packs remain. [Setup](docs/MEMORY_AND_VOICE.md) |
+| Client hub | Scoped expiring client keys for buffered model/MCP/A2A endpoints | Loopback, screen-bound; remote encrypted transport and web companion require operator setup. [Client guide](docs/CLIENT_HUB.md) |
 | Devices and integrations | Pairing/enrollment, QR/manual verification, SSH host pins, OpenClaw adapter, scoped Android automation, browser sessions | Live host/device integration gates remain. A web/SSH member is not automatically a transformer worker |
 | Cloud and credentials | AWS, Azure, GCP, DigitalOcean, OpenRouter and custom **read** adapters; resource/cost views; reusable encrypted environments | Full vendor administration, automatic IaC deployments and authenticated account validation are not complete |
+| HyperL libraries | Twelve recipes, explicit Kotlin/native C99 CPU, precise sums, bounded AES-GCM datasets and key rotation | Human-only opt-in; separate HyperL licence, API 26+ datasets; GPU/full-model execution remains unavailable. [Alpha.6 guide](docs/hyperl/ANDROID_ALPHA6.md) |
 | Files and coding | Granted-storage files, AI text inspection, streaming ZIP/unzip and offline CodeMirror workspace | A source editor is not a complete compiler/debugger; large provider-file tests remain |
 | Audit monitoring | Encrypted bounded metadata history, device sampling, actor/outcome filters, JSONL/CSV export and optional OTLP/HTTP traces/metrics | Opt-in. Not a tamper-proof compliance ledger. External Grafana account ingestion needs operator testing |
 | Optional companions | Scoped Crawl4AI bridge, SSH, terminal and optional rootless/Linux VM paths | Separate hosts/binaries/consent required; VM defaults off and root stays human-controlled |
+| Colibri host | Saved Off/On/Auto selection for an explicitly authenticated compatible host; pinned upstream setup companion | Local chat remains preferred unless configured otherwise. CPU build/registry and real HTTP contracts pass; no Colibri model generation or GPU qualification. [Setup](docs/COLIBRI.md) |
+| GibberLink audio | Actual ggwave PCM packets with an English-character transcript, foreground send/listen and separate agent grants | Mac native PCM checks pass; physical microphone/speaker delivery remains unqualified. Received text never runs commands. [Audio boundaries](docs/GIBBERLINK.md) |
+| Peer chat and crypto | Signed manual WebRTC pairing, scoped peer/SSH commands and local SHA/HMAC/AES-GCM tools | Actual same-Mac browser data channels pass. Android WebView, distant-phone NAT/TURN and remote actions need device tests. [Pairing and controls](docs/P2P_AND_CRYPTO.md) |
 
-**Android is the current app target.** Linux, Windows, macOS, HarmonyOS, vendor
-GPU/NPU adapters and IoT companions are future work. Raspberry Pi, ESP32, Arduino,
+**Android and Intel desktop have separate qualified scopes.** Intel Studio 40.1 bundles Qwen2.5 1.5B Q4_K_M and a verified SSE4.2/AVX2 CPU engine, seven searchable management groups, local health/process views, human tools and HyperL CPU recipes. Both installer payloads pass same-host runtime checks. [Intel install/build guide](docs/MACOS_OFFLINE.md) · [release evidence](docs/RELEASE_EVIDENCE.md). Clean-machine acceptance, production signing and full Android feature parity remain gates. The separate **native HarmonyOS NEXT 26.0.0** source target has no DevEco/HAP/device proof; Windows/Linux hardware acceptance is unverified. See [platform implementation and build boundaries](docs/MULTIPLATFORM_NEXT.md).
+Vendor GPU/NPU adapters and IoT companions remain future work. Raspberry Pi, ESP32, Arduino,
 NAS and network appliances can eventually contribute storage, sensors, capture,
 preprocessing, routing or tools according to real capability. Listing a device
 category does not imply that it can execute transformer layers.
 
+[Reply reader and token controls](docs/CHAT_PRESENTATION.md) explains formatting,
+theme highlights, export and measured versus unavailable token rates.
+
+[Samsung single-phone test record](docs/DEVICE_TESTING_2026-10-08.md) separates
+actual app execution, UI checks and benchmarks from standalone GPU experiments
+and the remaining cluster/integration gates.
+
 ## A calmer mobile workspace
 
-Pale neutral surfaces, blue/cyan accents, a centered welcome, a rounded composer
-and compact settings reduce wasted space. Dynamic colors, light/dark/scheduled
-modes, saved fonts and accessibility scaling remain configurable.
+New installations default to Studio's graphite surfaces, ember accent, thin
+headers, compact icon menus and actionable Models/Agents/Style cards. Existing
+saved themes are preserved. Dynamic colors, light/dark/scheduled modes, saved
+fonts, language and accessibility scaling remain configurable. These earlier
+Android screenshots show the previous palette; current device validation is
+tracked in the evidence ledger.
 
 <table><tr>
 <td><img src="docs/assets/screenshots/chat.png" width="250" alt="Real Meshlit Android emulator chat screen with centered welcome and rounded composer"></td>
@@ -71,10 +93,10 @@ modes, saved fonts and accessibility scaling remain configurable.
 <td><img src="docs/assets/screenshots/settings.png" width="250" alt="Real Meshlit Android searchable settings screen"></td>
 </tr></table>
 
-Screenshots are real API 35 x86_64 emulator captures. Chat and Models show the
-final beta UI; Settings comes from the earlier reference UI checkpoint. They
-demonstrate layout, not phone performance or distributed
-inference. Retained legacy tools still need individual UX work. Third-party brands,
+Screenshots are historical real API 35 x86_64 emulator captures from before the
+latest sidebar and reply-reader changes. Settings comes from an earlier reference
+checkpoint. They demonstrate those layouts, not current phone performance or
+distributed inference. Retained legacy tools still need individual UX work. Third-party brands,
 OS keyboards and pickers retain their own identities; Google assets are not copied.
 
 ## How the pieces connect
@@ -238,7 +260,10 @@ managed IaC, full compiler/debugger support and other OS apps remain future work
 
 ## License and upstream credit
 
-Meshlit's source retains its existing [Apache-2.0 license](LICENSE). Third-party
+Meshlit's application source retains its existing [Apache-2.0 license](LICENSE).
+The separate [core-hyperl](core-hyperl/LICENSE) alpha.6 module contains newly covered
+HyperL Community and Enterprise licensed code, with earlier Apache grants preserved.
+See [its scope and modifications](core-hyperl/MODIFICATIONS.md). Third-party
 components keep their own licenses and notices. RunAnywhere, llama.cpp, Compose,
 OpenTelemetry, JSch, CodeMirror and the optional Crawl4AI/Soup/OpenClaw integrations
 are credited in their module/source documentation. Optional source revisions and
@@ -282,11 +307,21 @@ paths from deferred hardware, cloud and production acceptance.
 
 [HyperL](HYPERL.md) is original portable AI-language/reference/compiler research.
 The owner merged its experimental source into `main` through [PR #1](https://github.com/sabbirimon/meshlit-v2/pull/1)
-on 2026-10-08. It remains a bounded CPU library and source emitter, without an app
-workflow, native accelerator loader, privileged execution or universal performance proof.
+on 2026-10-08. The alpha.6 app workbench now includes a separately licensed native CPU module,
+precise sums and bounded encrypted datasets; it remains separate from LLM inference,
+native accelerator loading and distributed-model proof.
 See the [Odysseus workspace review](docs/ODYSSEUS_REVIEW_2026_10_08.md) for optional
 self-hosted workspace integration research.
 
 The owner's [standalone HyperL repository](https://github.com/sabbirimon/HyperL)
 holds independent CLI/GUI, native SDK foundation and platform research work;
 new standalone changes are not automatically integrated into Meshlit's application.
+
+Global/current-chat search, opt-in web articles, approved remote settings reads
+and Manual/Automatic cluster output controls are documented in the
+[search and cluster output guide](docs/SEARCH_AND_CLUSTER_OUTPUT.md). Actual
+provider and multi-phone evidence remains separate from UI/policy validation.
+
+## Core candidate and experimental node tools
+
+The owner-requested [Core candidate](docs/architecture/PRODUCTION_CHANNELS.md) is a separate package/data channel for local chat, model transfers and files, with immutable runtime restrictions. It is not yet production-qualified. The Experimental build retains HyperL, research layer execution and optional [bidirectional SSH node commands](docs/SSH_NODE.md), VM/sandbox tools and scoped agents. Inbound SSH is API 26+ and public-key-only; real installed VM artifacts remain required. Build/test evidence and physical qualification are recorded separately.

@@ -18,6 +18,7 @@ import java.util.UUID
     var editing by remember{mutableStateOf<SshConnection?>(null)};var password by remember{mutableStateOf("")};var key by remember{mutableStateOf("")}
     var selected by remember{mutableStateOf<String?>(null)};var command by remember{mutableStateOf("")};var output by remember{mutableStateOf("")};var job by remember{mutableStateOf<Job?>(null)};var error by remember{mutableStateOf<String?>(null)}
     LazyColumn(Modifier.fillMaxSize(),contentPadding=PaddingValues(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
+        item{NodeSshCard()}
         item{TextButton(onClick=onBack){Text("Back to settings")};Text("SSH connections",style=MaterialTheme.typography.headlineSmall);Text("Connect to hosts where you have permission. Verify the server fingerprint through an independent channel before saving. The remote device must already run an SSH server; this screen does not enroll a layer worker or install software.")}
         items(connections,key={it.id}){connection->Card{Column(Modifier.padding(16.dp)){Text("${connection.name} · ${connection.username}@${connection.host}:${connection.port}")
             Row{TextButton(onClick={selected=connection.id}){Text(if(selected==connection.id) "Selected" else "Select")};TextButton(onClick={editing=connection;password="";key=""}){Text("Edit")};TextButton(onClick={repository.remove(connection.id)}){Text("Remove")}}}}}
@@ -30,6 +31,13 @@ import java.util.UUID
             OutlinedTextField(password,{password=it},label={Text("Password (blank keeps saved credential)")},visualTransformation=PasswordVisualTransformation())
             OutlinedTextField(key,{key=it},label={Text("Or unencrypted private key PEM/OpenSSH")},visualTransformation=PasswordVisualTransformation(),maxLines=3)
             Row{Text("Allow agent commands to this host",Modifier.weight(1f));Switch(profile.agentAllowed,{editing=profile.copy(agentAllowed=it)})}
+            if(profile.agentAllowed) {
+                Text("Agent access is limited to the selected Meshlit JSON node actions. Generic SSH shell commands remain human-only. The remote node must enroll this client's key with matching agent scopes.")
+                com.meshlit.core.ssh.NodeSshAction.entries.filter{it!=com.meshlit.core.ssh.NodeSshAction.APP_EXEC}.forEach{action -> Row {
+                    Checkbox(action in profile.agentNodeActions,{yes -> editing=profile.copy(agentNodeActions=if(yes) profile.agentNodeActions+action else profile.agentNodeActions-action)})
+                    Text(action.name)
+                }}
+            }
             Button(onClick={try{require(password.isBlank() || key.isBlank()){ "Choose password or private key" };repository.save(profile,password.takeIf{it.isNotBlank()},key.takeIf{it.isNotBlank()});editing=null;password="";key=""}catch(e:Exception){error=e.message}}){Text("Save encrypted profile")}
         }}}
         item{OutlinedTextField(command,{command=it},label={Text("Remote command")},maxLines=4)

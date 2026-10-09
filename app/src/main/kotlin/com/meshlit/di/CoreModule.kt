@@ -555,23 +555,34 @@ val coreModule = module {
     single { com.meshlit.openclaw.OpenClawHost(androidContext(),get()) }
     single { com.meshlit.openclaw.OpenClawNode(androidContext(),get(),get(),get()) }
     single { com.meshlit.openclaw.AndroidControl(androidContext(),get()) }
+    single { com.meshlit.openclaw.PhoneAdministration(androidContext(),get(),get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate) }
     single { com.meshlit.pipeline.PipelineHost(androidContext(), get(), get()) }
     single { com.meshlit.ssh.SshConnections(androidContext(),get()) }
+    if(android.os.Build.VERSION.SDK_INT>=26) single { com.meshlit.ssh.NodeSshHost(androidContext(),get(),get()) }
     single { com.meshlit.training.TrainingHost(androidContext(),get()) }
     single { com.meshlit.security.LabPackages(androidContext(),get()) }
     single { com.meshlit.security.SecurityLab(androidContext(),get()) }
-    single { com.meshlit.gateway.GatewayHost(androidContext(),get(),get(),get()) }
+    single { com.meshlit.gateway.GatewayHost(androidContext(),get(),get(),get(),{get()}) }
     single { com.meshlit.recovery.ReplicaHost(androidContext()) }
     single { com.meshlit.operations.OperationsControl.get(androidContext()) }
     single { com.meshlit.operations.ClusterControls.get(androidContext()) }
     single { com.meshlit.operations.StopCoordinator(androidContext()) }
     single { com.meshlit.operations.OperationTools(get(),get(),get(),get()) }
+    single { com.meshlit.colibri.ColibriBackend(androidContext()) }
+    single { com.meshlit.crypto.CryptoHost(androidContext()) }
+    single { com.meshlit.gibberlink.GibberLinkHost(androidContext()) }
+    single { com.meshlit.remote.RemoteCommandHost(androidContext(),get(),get()) }
+    single { com.meshlit.p2p.PeerChatHost(androidContext(),get(),get(),get(),get()) }
     single { com.meshlit.providers.OnlineProviders(androidContext(),get()) }
     single { com.meshlit.cloud.CloudManagement(androidContext(),get()) }
     single { com.meshlit.configuration.ConfigurationTransfer(androidContext(),get(),get(),get()) }
     single { com.meshlit.media.MediaGeneration(androidContext(),get()) }
     single { com.meshlit.routing.ModelRoutes(androidContext(),get(),get(),get()) }
-    single { com.meshlit.chat.ChatController(androidContext(), get(), get(),get(),get()) }
+    single { com.meshlit.chat.VoiceModels(androidContext()) }
+    single { com.meshlit.chat.PersonalMemory(androidContext()) }
+    single { com.meshlit.chat.LocalChatTools(get(),com.meshlit.operations.OperationsControl.get(androidContext()).gate,{get()},{get()}) }
+    single { com.meshlit.search.AppSearchService(androidContext(),get(),{get<com.meshlit.chat.ChatController>().state.value},{get<com.meshlit.models.ModelLibrary>().models.value},{get<com.meshlit.control.WebBridgeHost>().directory.read()},get<com.meshlit.operations.OperationsControl>().gate,{get<com.meshlit.settings.SettingsRepository>()},{get<com.meshlit.control.AgentBackend>().delegated(com.meshlit.control.AgentBackend.Scope.SETTINGS)},{get<com.meshlit.gateway.GatewayHost>().remoteRoutes}) }
+    single { com.meshlit.chat.ChatController(androidContext(), get(), get(),get(),get(),get(),get(),get(),get()) }
     single { com.meshlit.models.ModelLibrary(androidContext(), get(), get(), get()) }
     single { com.meshlit.sandbox.RuntimeHost(androidContext()) }
     single { com.meshlit.sandbox.RuntimeTerminal(androidContext(), get()) }
@@ -579,14 +590,23 @@ val coreModule = module {
     single {
         val crawler: com.meshlit.core.mcp.builtin.CrawlSettingsStore = get()
         McpToolRegistry(com.meshlit.operations.OperationsControl.get(androidContext()).gate).apply {
+            registerAll(get<com.meshlit.crypto.CryptoHost>().specs())
+            registerAll(get<com.meshlit.gibberlink.GibberLinkHost>().specs())
+            registerAll(get<com.meshlit.remote.RemoteCommandHost>().specs())
+            registerAll(get<com.meshlit.p2p.PeerChatHost>().specs())
+            registerAll(get<com.meshlit.chat.PersonalMemory>().specs())
+            registerAll(get<com.meshlit.search.AppSearchService>().specs())
             registerAll(get<com.meshlit.operations.OperationTools>().specs())
             registerAll(com.meshlit.gateway.GatewayRoutingTools { get<com.meshlit.gateway.GatewayHost>() }.specs())
             registerAll(get<com.meshlit.control.AgentBackend>().specs())
             registerAll(com.meshlit.control.EnvironmentTools(androidContext(),get(),get(),get()).specs())
             registerAll(com.meshlit.routing.RouterTools(get(),get()).specs())
+            registerAll(com.meshlit.colibri.ColibriTools({ get<com.meshlit.chat.ChatController>() },get()).specs())
             registerAll(get<com.meshlit.openclaw.AndroidControl>().specs())
+            registerAll(get<com.meshlit.openclaw.PhoneAdministration>().specs())
             registerAll(com.meshlit.pipeline.PipelineMcpTools(get(),get()).specs())
             registerAll(com.meshlit.sandbox.RuntimeMcpTools(get()).specs())
+            registerAll(com.meshlit.ssh.SshMcpTools(get()).specs())
             registerAll(com.meshlit.core.mcp.builtin.CrawlMcpTools(
                 settings = crawler::load,
             ).specs())

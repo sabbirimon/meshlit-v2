@@ -1,16 +1,184 @@
 # Meshlit progress and evidence
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-08. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
+Updated 2026-10-10. Historical 2026-10-07 validation ran 2026-10-06 UTC. Historical baseline `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`.
 Checkout: `/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
-Branch: `codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
+Current review branch: `codex/hyperl-production-library`; previous publication branch
+`codex/meshlit-ui-pipeline-openclaw`. Owner IMON authorized source publication
 to `sabbirimon/meshlit-v2` on 2026-10-07, followed by GitHub beta APK release assets
 and a separate Play review build. No force push or Play submission is authorized.
 Historical upstream records in `docs/history/` are not current test evidence.
 
-`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **74 feature areas,
-38 durable command operations and 33 modules**. Feature counts do not establish
+`FEATURE_MAP.md` and `docs/feature-map.json` current inventory **88 feature areas,
+38 durable command operations and 39 registered Gradle modules**. Feature counts do not establish
 an overall completion percentage. Source implementation, automated contracts,
 emulator observations, host runtime proof and physical-phone proof are separate.
+
+## Stabilization planning refinement — 2026-10-10
+
+The owner requested a detailed plan and build guide before implementation. [S0–S6](docs/desktop/STABILIZATION_PLAN.md) now defines durable chat/lifecycle, model transfers, accurate monitoring, shared action authority/audit and physical two-device acceptance. [The build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md) documents current source commands, input verification, Intel packaging, Android checks, evidence and environment blockers. Initial worker-loss recovery means visible failure and explicit retry; transparent distributed failover remains a separate gate. Local desktop and cluster preview release decisions are independent.
+
+This is documentation refinement only. No new runtime, installer, device qualification or production promotion is claimed. Milestone implementation awaits the next implementation decision. Current documentation coverage is generated in docs/DOCUMENTATION_STATUS.md.
+
+## Desktop/server continuation — 2026-10-10
+
+The owner requests desktop/server management dashboards, Android feature parity,
+containers/Kubernetes, security/firewall tools, recovery, permitted full-auto
+agents/hooks/MCP, terminal, Ghostty and both Dolphin speech/chat families.
+[Full requested scope](docs/DESKTOP_FEATURE_TRACKER.md),
+[43-old/49-current Android menu comparison](docs/ANDROID_DESKTOP_PARITY.md) and
+[build update ledger](docs/DESKTOP_BUILD_LOG.md) now distinguish real code,
+contract checks, package/runtime qualification and missing backends.
+
+Working desktop sources add grouped Basic/Advanced menus, model references/HF,
+saved nodes, live local OSHI monitor/process controls, crypto, scoped bidirectional
+SSH, native CPU HyperL adapter, human shell and optional external Ghostty.
+The system-role serialization bug was corrected and passed both serializer
+contracts and actual offline generation. Global scoped search and the compact
+seven-category management overview are implemented and rendered. The shared
+sharding planner admits integer whole-layer counts against per-worker memory,
+with bounded manual placement and weak optional worker exclusion. Desktop local
+context/CPU/batching/KV/idle options, memory admission and native context identity
+are implemented. Native f16/q8_0/q4_0 controls produce text and verify context;
+q4_0 produced a poor arithmetic reply, so it is excluded from normal settings.
+Auto AVX2 generates a real 82-token reply at 16.047 end-to-end tokens/sec during
+background lint; this is not a matched speed comparison. Authentication rejection
+and owned-process Unload pass. Targeted current
+JVM executions total 324 (30 desktop, 12 desktop shared engine, 4 SSH, 4 workspace,
+274 Android inference), without failures/errors/skips on this Intel Mac; duplicate
+shared-source executions are not independent device proof. Actual OSHI local
+sampling, HF metadata and all 12 HyperL JNI CPU recipes pass. Broader agent automation,
+OS firewall, container/Kubernetes, VM, cloud vault/billing and full repair remain
+pending. Intel Studio 40.1 DMG/PKG now pass recovered-payload checks with their own Java runtime, real local generation/authentication/unload, matching signed app/native/model hashes and all HyperL CPU recipes. The PKG additionally passes actual monitor sampling and inspected management rendering. The first trimmed-runtime failure and correction are recorded in the build ledger. These remain experimental, ad-hoc/unsigned and not notarized; clean-machine installation is unqualified. Intel Studio release is public with all eight remote asset digests matched: https://github.com/sabbirimon/meshlit-v2/releases/tag/v2.0.0-macos-intel-build40.1. Source target c1f2d60 includes documentation reconciliation and the portable CI fixture; application/native/model packaging source remains 12bd20a. Documentation tracks 153 Markdown files with 118 active guides and separate named workstream gates. About 5 GiB duplicate generated scratch was reclaimed. Current CI is observed separately from the 521 local JVM results.
+Android starter/local defaults are retained. Shared planner and inference module
+API-24 desugaring/voice permission-error handling changed; Both Android Full V1/V2 debug assemblies and lints pass in the serial regression
+run (13m34s): zero errors, 374 warnings each; core inference lint zero errors,
+7 warnings. The combined desktop/shared/MCP/network/sandbox valid JVM result
+files contain 521 executions without failures/errors/skips; cached unchanged
+suites and shared re-executions are not separate hardware proof. Desktop RPC worker execution, independent-device speed,
+production acceptance and other platform hardware remain unqualified.
+
+## Build 40: Studio, host clients and scoped connected tools — 2026-10-09
+
+The current change adds shared Kotlin workspace contracts and a Compose desktop
+host client, native HarmonyOS NEXT project source, compact Studio styling, optional
+Colibri hosting, actual ggwave JNI with English transcripts, offline cryptography
+and scoped peer/node tools. New connected routes remain Experimental and off by
+default. Core Candidate remains separately installed and does not admit those
+routes. Android's normal local model/prompt/history defaults are retained.
+
+All **805 affected JVM cases** pass, as do three APK assemblies and Android lints
+with zero errors/fatal. Actual host JNI PCM round trips, native desktop rendering,
+bundled-runtime trusted/untrusted HTTPS checks and a same-Mac WebRTC browser
+fixture pass within their limited scopes. Corrected APKs verify signatures,
+versionCode 40, full pinned starter, four-ABI native alignment, Core boundaries
+and current help/notices. A discovered stale policy-asset mismatch is corrected;
+the new pre-build guard checks byte identity and version 2026-10-09.2 agreement.
+
+Samsung remains absent from ADB, so build 40 has not been installed or phone tested.
+DevEco/NEXT compilation and hardware, Colibri model generation, physical acoustic
+communication, Internet NAT/relay and independent-device execution remain gates.
+See [build-40 evidence and exact hashes](docs/VALIDATION_BUILD_40.md). Earlier
+ledger entries below preserve their own versions and qualification scopes.
+
+## Samsung, local tools and permission controls — 2026-10-08
+
+The owner resumed single-phone tests on Galaxy A20s SM-A207F, Android 11/API 30,
+ARM64, Adreno 506. Both USB and owner-paired TLS wireless ADB reach this device.
+Full V2 installed over USB and Full V1 over TLS wireless, preserving the existing
+signing identity and app data. Five scoped host-to-shell requests per transport
+passed after a warmup; median wall times were 89.748 ms and 172.200 ms, including
+Mac process/ADB overhead during builds. They are not network-only latency.
+
+The standalone HyperL Vulkan runner passed all thirteen listed cases separately
+over both transports: eleven exact CPU-verified finite outputs and two expected
+overflow rejections, followed by temporary-file cleanup. Meshlit's earlier V2
+app-UID CPU suite passed all twelve recipes and bounded benchmarks; its partial
+UI run and failed model-admission harness are retained in the
+[device record](docs/DEVICE_TESTING_2026-10-08.md). These are different backends;
+the app's HyperL screen does not dispatch mobile GPU inference.
+
+Current source adds always-visible permission Manage controls, explicit Android
+11 notification status, bounded human-confirmed package administration, and
+default-off local chat web/phone tool loops. Local inference and internet access
+are separate. Saved delegation, target scope, OS grants and emergency controls
+remain independent; in-app ADB, silent installation and root adapters remain
+unimplemented. [Local tool setup and boundaries](docs/LOCAL_MODEL_TOOLS.md).
+
+A fresh model UI test passed over both USB and TLS wireless on build 13: full
+105,454,432-byte pinned hash verification, actual SDK Load, non-empty Chat Send
+and Unload. Native CPU/TLS/checkpoint smoke passed on both transports. The short
+reply regression was traced to the test leaving its 16-token chat selected; new
+source persists/restores owner selection and retains normal 1,024-token defaults.
+The owner confirmed the reinstalled recent build works. Model answer quality
+remains model-dependent; longer output alone is not quality proof.
+
+Targeted local evidence now totals **832 JVM cases**, zero failures/errors/skips:
+common 27, GPU 36, MCP 133, sandbox 14, network 46, inference 266 and app 155 per
+Full flavor. Common/GPU suites retain their unchanged prior evidence; required
+changed module/flavor checks reran. New contracts cover scoped client keys, chat
+restoration, optional memory, speech pack integrity, WAV bounds and transcription
+requests and native float PCM normalization. Twelve benchmark-wire and nine
+crawler checks pass. APKs contain the exact real starter and synchronized help
+assets. Final required unit/APK/lint checks passed in **18m11s**. Full lint has
+zero fatal/errors, 364 warnings and 18 hints per flavor; Play Review lint has
+zero fatal/errors, 367 warnings and 18 hints. Review static permission/policy and
+all 23 ARM64 ELF alignment checks pass; runtime 16 KiB testing, signing and Play
+submission remain unqualified. Final Full APK hashes match device-tested build 28.
+
+The workspace exposes Monitor/Networking/SSH/Labs, cards/rows and adaptive/focus
+layouts. Model details separate declared tags from unknown quality and modality
+adapter requirements. Client keys are scoped/expiring and loopback/screen-bound;
+[remote deployment limits](docs/CLIENT_HUB.md) remain. Optional encrypted
+[memory/personality/recovery and offline/online voice](docs/MEMORY_AND_VOICE.md)
+are separate from the current LLM. Offline speech uses imported checked ONNX
+weights; hosted audio is explicit. A build-28 prerecorded USB speech test passes
+actual recognition/synthesis plus local LLM generation with both speech models
+loaded and separate successful cleanup. Live microphone/provider sessions, unlocked
+UI/engine acceptance, sustained thermal tests, two-phone sharding, configured
+crawler/cloud/SSH and signed production distribution remain separate gates.
+
+## Earlier HyperL app port validation — 2026-10-08
+
+Subsequent owner-authorized **single-phone GPU experiment** passes on Samsung
+Galaxy A20s SM-A207F, Android 11/API 30, Adreno 506 / Vulkan 1.1.128. HyperL's
+separate native ADB-shell runner executes eleven finite-output cases matching
+its CPU reference and two expected overflow rejections; temporary device files
+are removed. [Hardware/build record](https://github.com/sabbirimon/HyperL/blob/codex/production-library/docs/ANDROID_VULKAN.md).
+At that earlier checkpoint no Meshlit APK had been installed/run and no app
+JNI/GPU backend was wired. The subsequent app installations and tests are recorded
+above. Portable source hashes remain unchanged. Sustained lifecycle/thermal and
+two-phone cluster tests remain pending. The build evidence below predates these
+subsequent device tests.
+
+The review branch adds Settings → HyperL libraries to both flavors: twelve actual
+CPU recipes, strict JSON, complete-graph memory admission, editable examples,
+Stop, Metal/Vulkan source generation and explicit clipboard copying. Source
+port provenance pins six Apache-2.0 files to standalone HyperL tag source d330d2b;
+namespace-normalized hashes match. Runtime/ABI remain version 1. The human-only
+controller is bounded and shares HYPERL per-function/global emergency controls.
+
+Local validation passes: 36 core-gpu, 27 core-common, 120 core-mcp, 14 sandbox,
+46 network, 260 inference and 133 app tests per flavor: **769 cases, zero
+failures/errors/skips**. The first app/core/build/lint run passes in 24m40s;
+the required regression and final help/APK/lint run passes in 13m35s. Both Full
+flavors build ARM64, x86_64 and universal debug APKs. ARM64 payload inspection
+finds the real 105,454,432-byte starter model and HyperL controller classes.
+Fatal lint remains enabled: **zero errors/fatals, 350 warnings and 17 hints per
+flavor**. Nine crawler unit checks pass using the existing crawler virtualenv;
+system/bundled Python initially lacked FastAPI. No live crawler/device proof is
+inferred. Offline HTML help and its APK asset are byte-identical; the feature
+map validates 75 areas, 38 durable operations and 33 modules.
+
+At that checkpoint no APK had been installed on a physical phone; single-phone
+tests have since resumed as recorded above. App GPU/NPU execution, distributed
+HyperL jobs, SDK publishing, signing,
+installation/lifecycle/thermal acceptance and independent security review remain
+gates. Standalone desktop installers and Radeon evidence are separate from this
+app port. [Use cases and boundaries](docs/hyperl/APP_AND_LIBRARY.md) explain it.
 
 ## Current publication validation (2026-10-07)
 
@@ -483,3 +651,86 @@ jobs. The owner requested a more polished UI and built-in developer tools; those
 workbench/editor changes and detailed IDE plan evolve in the standalone repo.
 Full SDK, real native mobile/accelerator, profiler/debugger, tensor/model and
 distributed/telecom execution remain later gates. Physical-device tests stay paused.
+
+## Reply presentation, token controls and search continuation — 2026-10-08
+
+The owner resumed physical Samsung testing. The shared modern interface removes
+the four app bottom tabs while retaining the searchable sidebar destinations.
+Native bounded Markdown blocks, full reply reader, themed emphasis, preserved
+emoji, selectable/wrappable code, tables and explicit-data charts replace the
+single large reply card. The existing default local model, prompt/history and
+streaming engine remain in place. Token settings persist per conversation; rates
+use authoritative runtime counts and unknown SDK usage stays unknown.
+
+Build 35 passes both Full app suites/APKs/lint and Play Review APK/lint. The
+retained targeted JVM set has 856 cases with no failures/errors/skips. Two actual
+USB UI tests pass in 27.701 seconds, covering reader/rendering controls plus
+Cancel, Save, persistence, reopen and restoration. A separate fresh real model
+UI test on build 34 passes in 92.336 seconds, including full pinned 105,454,432-byte
+download/checksum, Load, Send and Unload. Details, hashes, individual wall times
+and remaining gates are in `docs/DEVICE_TESTING_2026-10-08.md`.
+
+Global/local chat search, imported article indexing, separate human/agent web
+grants, fixed Brave API search and read-only approved device settings are added
+in source. Manual remains the output default; Automatic cluster budgeting uses
+only a recent authoritative native whole-cluster rate, the human ceiling and a
+bounded context allocation. No rate is inferred from characters, memory, GPU
+inventory or added device counts. Search and cluster contracts are passing in
+build 36; final affected-source/UI validation is still recorded separately.
+
+Standalone HyperL `dev` points to `67b30e0`. The owner's open PR #2 into `main`
+has 28 successful checks, three skipped publication checks and none pending or
+failed as observed at 15:29 UTC. It is unmerged; installer build success is
+distinct from signing, notarization and actual platform installation.
+
+Final build 37 passes the affected-source JVM/APK/lint set in 27m25s. The retained
+targeted set totals 887 cases without failures/errors/skips, with unchanged
+common/GPU evidence explicitly retained. Three actual Samsung USB UI tests pass
+in 41.072s, including eleven local search checks; the clipped Web category from
+the failed build-36 attempt is corrected with wrapping chips. A fresh real model
+UI test on the same V2 build passes in 87.193s, verifying all pinned model bytes,
+Load, non-empty local generation and Unload. Review static checks pass; live web,
+remote settings, physical cluster, microphone and new wireless tests remain
+separate gates. Exact artifacts, timings and limitations are recorded in the
+device ledger. Human grants and the owner's selected chat/options are preserved.
+
+## HyperL alpha.6, Core Candidate and bidirectional SSH — 2026-10-09
+
+Build 38 integrates the separately licensed `core-hyperl` alpha.6 module with four-ABI
+native C99 preprocessing, precise sum, twelve recipes and bounded encrypted
+dataset import/verification/rekey/export. The human-only workbench is optional;
+ordinary local model, prompt/history, streaming and modern reply UI remain in place.
+
+Core Candidate installs independently from Experimental and blocks advanced
+operations, hosted routes and model-directed tools. Shared inactive dependencies
+remain, and development SDK network behavior is still a production privacy gate.
+The owner's ordered three-stage/device-category qualification plan and supplied
+architectural evaluation review distinguish implemented behavior from proposals.
+
+Experimental supports both SSH directions: encrypted persistent host identity,
+public-key scopes, private/loopback human-started lease and bounded JSON commands;
+outbound profiles retain mandatory pins and explicit agent action allowlists.
+Committed default-off VM agent permission, immediate revocation, registered work
+cancellation, global/profile/remote checks and bounded local tool plans are wired.
+Agents cannot configure keys/permissions or use human root/app-diagnostic paths.
+A compatible installed runtime, trusted bootable guest and verified guest identity
+remain necessary; no VM is bundled or automatically installed.
+
+Final affected-app validation passes in 16m18s; final doc/notice packaging in 2m04s.
+Retained targeted JVM evidence totals 894 cases: 893 pass, one older optional
+external SSH fixture skip, zero failures/errors. Real TCP SSH denial/revocation/Stop
+tests pass, as do host JNI, sanitized C contracts/4,096 seeded cases, nine crawler
+cases and provenance/feature checks. All three APKs/lints pass with zero errors;
+warning/hint counts and exact hashes are in docs/VALIDATION_BUILD_38.md. Core is
+non-debuggable, with separate package/consent/keys and the expected three services.
+Developer signatures, full pinned model/notices/policy/guide equality and four-ABI/
+24 ARM64 ELF plus ZIP 16 KiB packaging pass. Production signing and device runtime
+acceptance are not asserted. Notices version 2026-10-09.1 require fresh human
+acceptance without changing optional grants.
+
+ADB has no connected device: build-38 instrumentation compiled but was not run.
+Samsung build-37 proof remains historical. Windows/Xiaomi configuration, physical
+SSH/VM/lifecycle/thermal/privacy, multi-phone recovery and Internet client tests
+remain gates. Final universal installers/test APK are kept outside the checkout;
+0.963 GiB of duplicate generated ABI installers was reclaimed. No source, owner
+keys, model assets or earlier retained fallback installers were deleted.

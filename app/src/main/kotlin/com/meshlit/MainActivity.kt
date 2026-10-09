@@ -15,6 +15,9 @@ import com.meshlit.ui.theme.MeshlitTheme
 import com.meshlit.ui.v2.V2Root
 
 class MainActivity:ComponentActivity() {
+    companion object { @Volatile var foregroundActive:Boolean=false; private set }
+    override fun onResume(){super.onResume();foregroundActive=true}
+    override fun onPause(){foregroundActive=false;super.onPause()}
     private val log=logger("MainActivity")
     override fun onCreate(savedInstanceState:Bundle?) {
         super.onCreate(savedInstanceState);enableEdgeToEdge()

@@ -1,20 +1,26 @@
 # Google Play distribution preparation
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Maintainer: **IMON**. Reviewed 2026-10-07. This is an engineering review candidate,
+Maintainer: **IMON**. Reviewed 2026-10-08. This is an engineering review candidate,
 **not a Google Play approval or a claim of full policy compliance**.
 
 ## Two distribution paths
 
 | Build | Purpose | Signing and package | Capabilities |
 |---|---|---|---|
-| `meshlitV2Debug` | GitHub experimental beta | Debug certificate; `com.meshlit.v2.debug` | Optional Android autonomy, SMS and external shell integrations retain independent grants. Legacy built-in VPN is disabled; external PCAPdroid capture requires its own consent |
-| `meshlitV2PlayReview` | Installable store preparation candidate and AAB inspection | Debug certificate, non-debuggable; `com.meshlit.v2.playreview` | Manifest removes Accessibility service, VPN capture service, SMS, all-files/broad-media storage, battery-exemption request and Termux command permission |
+| `meshlitV2Debug` | GitHub experimental beta | Debug certificate; `com.meshlit.v2.debug` | Optional Android autonomy, SMS and external shell integrations retain independent grants. Human-confirmed APK installation/removal requests use Android UI. Legacy built-in VPN is disabled; external PCAPdroid capture requires its own consent |
+| `meshlitV2PlayReview` | Installable store preparation candidate and AAB inspection | Debug certificate, non-debuggable; `com.meshlit.v2.playreview` | Manifest removes Accessibility service, VPN capture service, SMS, all-files/broad-media storage, battery-exemption request, APK install/removal request and Termux command permissions |
 | Future production distribution | Play submission | Operator upload key, fixed production package, Play App Signing | Requires the blockers below to be closed and actual Play Console review |
 
 Local models, user-granted file import/export, chat, model management, credential
 vaults and opt-in audit metadata remain available in the review candidate. Runtime
 settings cannot re-enable the removed Accessibility service; its automation flags
-are forced off, the autonomy controls are omitted, and live packet capture is unavailable.
+are forced off, the autonomy controls are omitted, package administration is
+disabled, and live packet capture is unavailable. Local phone-tool selection is
+disabled; web-page tools retain their separate configured companion and grants.
 Bounded classic-PCAP import remains available for offline inspection.
 Battery settings use app settings instead of requesting an exemption. The separate
 application ID prevents review testing from replacing the GitHub beta's data.

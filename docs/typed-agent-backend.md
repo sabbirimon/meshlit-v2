@@ -1,4 +1,8 @@
 # Typed agent backend, version 1
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Human and agent operations share SettingsRepository, ModelLibrary, InferenceCoordinator
 and PipelineHost. AgentCommand is a serializable DTO, not a UI action. Its controller

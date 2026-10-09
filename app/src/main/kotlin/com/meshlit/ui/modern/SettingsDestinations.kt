@@ -5,10 +5,17 @@ data class SettingsDestination(val id:String,val title:String,val description:St
     val keywords:String="")
 object SettingsDestinations {
     val all=listOf(
+        SettingsDestination("search","Search access and articles","Offline content search, Internet permission and agent search grants",keywords="global chat articles Brave API key web internet search"),
         SettingsDestination("appearance","Appearance","Dynamic colors, accents, light and dark mode",keywords="theme display wallpaper font motion palette glass typography readability contrast"),
+        SettingsDestination("crypto","Local cryptography","Offline hashes, random keys, HMAC and authenticated encryption",keywords="AES GCM SHA256 SHA512 encrypt decrypt cryptography agent hash keys HMAC"),
+        SettingsDestination("gibberlink","GibberLink and English transcript","Optional foreground agent audio packets with readable text",keywords="ggwave sound modem audio transcript English agent"),
+        SettingsDestination("remotecommands","Device and cluster commands","Scoped multi-node chat commands with human and agent switches",keywords="internet LAN remote SSH cluster multi device commands"),
+        SettingsDestination("p2p","P2P chat and commands","Direct phone-to-phone WebRTC with signed pairing and optional TURN",keywords="peer Internet no VPN STUN TURN WebRTC ICE phone long distance chat"),
+        SettingsDestination("colibri","Colibri host","Optional disk-streaming engine host: Off, On or Auto",keywords="MoE NVMe tokens inference external host disk streaming Colibri"),
         SettingsDestination("models","Models and downloads","Import files, manage downloads and load local models",keywords="hugging face token storage GGUF RAM"),
         SettingsDestination("media","Camera, vision and audio","Real image input, microphone and existing SDK media paths",keywords="CCTV webcam phone camera microphone WAV speech VLM STT TTS"),
         SettingsDestination("configuration","Configuration profiles","Export, review and apply portable device settings",keywords="import backup default custom declarative ansible terraform pulumi IaC"),
+        SettingsDestination("personalization","Memory and personality","Local recall, profile and bounded self recovery",keywords="learning memories repair adaptation"),
         SettingsDestination("behavior","Custom local model behavior","Custom weights and your own local instructions",keywords="uncensored jailbreak system prompt offline"),
         SettingsDestination("recovery","Checkpoints and recovery","Encrypted native CPU KV snapshots and honest cluster recovery status",keywords="cache restart restore memory bank failover session tasks"),
         SettingsDestination("training","Fine-tuning","Real Soup LoRA/QLoRA jobs on a paired training host",keywords="train adapter dataset quantization stream layers compact GPU"),
@@ -24,11 +31,12 @@ object SettingsDestinations {
         SettingsDestination("external","External devices and OTG","USB discovery, permissions and removable storage",keywords="gpu USB hardware peripherals drives NAS keyboard camera"),
         SettingsDestination("acceleration","Acceleration","Actual backend availability, CPU limits and platform roadmap",keywords="CUDA Vulkan OpenCL OpenGL Metal ROCm QNN CANN Intel NVIDIA AMD Huawei"),
         SettingsDestination("agents","Agent management","Delegated permissions, real jobs and registered tools",keywords="autonomous scopes tasks MCP"),
-        SettingsDestination("ssh","SSH connections","Pinned host-key remote commands to owner-approved devices",keywords="server NAS terminal external inter device"),
+        SettingsDestination("ssh","SSH nodes and connections","Key-authenticated inbound node commands and pinned outbound connections",keywords="server LAN internet VM sandbox agent SSH NAS terminal external inter device"),
         SettingsDestination("firewall","Network rules","Persisted Meshlit listener firewall and network status",keywords="ports security IP allow deny"),
         SettingsDestination("device","Device","Device profile, name and hardware capabilities",keywords="role chipset gpu peripherals"),
         SettingsDestination("tasks","Task manager","Plan tasks, track real jobs, bulk finish and stop operations",keywords="todo priorities tags due subtasks queue retry cancel agent"),
         SettingsDestination("ide","Code workspace","Offline source editor, files, syntax highlighting and search",keywords="IDE VS Code programming Kotlin Python JavaScript JSON develop"),
+        SettingsDestination("hyperl","HyperL libraries","Native CPU recipes, precise sums, encrypted datasets and kernel source",keywords="hyperl compute library vector affine dot relu CPU native precision encrypted dataset key rotation Metal Vulkan programming"),
         SettingsDestination("permissions","App permissions","Optional setup, runtime grants and Android accessibility",keywords="first launch camera microphone location nearby Bluetooth security"),
         SettingsDestination("files","Files and storage","Browse, preview AI assets and stream ZIP creation/extraction",keywords="SAF copy move share export folders zip unzip archive GGUF safetensors ONNX JSONL datasets tokenizer"),
         SettingsDestination("termux","Termux integration","Probe an installed shell, manage delegation and view its audit",true,"terminal commands Linux tools networking"),
@@ -46,7 +54,7 @@ object SettingsDestinations {
         SettingsDestination("help","Guide and tutorial","Offline walkthrough, configuration recipes and illustrated feature guide",keywords="help setup learn tutorial docs manual guide troubleshooting"),
         SettingsDestination("legal","Terms and privacy","Offline policies, accepted version and data controls",keywords="agreement consent privacy terms data delete IMON"),
         SettingsDestination("about","About and availability","Build information and feature implementation status",keywords="licenses version help")
-    ).filterNot { com.meshlit.BuildConfig.PLAY_REVIEW && it.id in setOf("automation", "termux") }
+    ).filter { com.meshlit.BuildProfile.routeAllowed(it.id) }.filterNot { com.meshlit.BuildConfig.PLAY_REVIEW && it.id in setOf("automation", "termux") }
     fun search(query:String,advanced:Boolean)=all.filter{ (advanced || !it.advanced) &&
         query.trim().split(Regex("\\s+")).filter{it.isNotBlank()}.all { word ->
             "${it.title} ${it.description} ${it.keywords}".contains(word,true)

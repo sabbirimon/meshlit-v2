@@ -16,7 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import com.meshlit.ui.modern.workspaceStringResource as stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meshlit.R
@@ -30,6 +31,8 @@ import kotlinx.coroutines.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernModelsScreen(onBack:(()->Unit)?=null) {
+    var details by remember{mutableStateOf<LibraryModel?>(null)}
+    details?.let{ModelCapabilitiesDialog(it,it.name){details=null}}
     val context=LocalContext.current
     val library=koinInject<ModelLibrary>()
     val coordinator=koinInject<InferenceCoordinator>()
@@ -63,7 +66,7 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
     val loadedPath=when(val s=runtime) { is CoordinatorState.Ready -> s.model.modelPath;else -> null }
     Scaffold(topBar={ if(onBack!=null) TopAppBar(title={ Text(stringResource(R.string.modern_models)) },navigationIcon={
         IconButton(onClick=onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack,stringResource(R.string.modern_back)) } }) }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax),
+        LazyColumn(Modifier.fillMaxSize().padding(padding).widthIn(max=T.contentMax).testTag("models-list"),
             contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.medium)) {
             item {
                 StatusHeroCard("Your model library", "${entries.count { it.installed }} installed · ${entries.count { it.active }} active transfers") {
@@ -118,7 +121,7 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
             if(displayed.isEmpty()) item { Text(stringResource(R.string.modern_models_empty),Modifier.padding(vertical=T.section)) }
             items(displayed,key={it.id}) { entry ->
                 val loaded=loadedPath==entry.path && entry.path.isNotBlank()
-                Card(Modifier.fillMaxWidth(),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainerLow)) {
+                Card(Modifier.fillMaxWidth().testTag("model-row-${entry.id}"),colors=CardDefaults.cardColors(containerColor=MaterialTheme.colorScheme.surfaceContainerLow)) {
                     Column(Modifier.padding(T.large),verticalArrangement=Arrangement.spacedBy(T.small)) {
                         Row(verticalAlignment=Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
@@ -128,6 +131,7 @@ fun ModernModelsScreen(onBack:(()->Unit)?=null) {
                             }
                             if(loaded) AssistChip({},label={Text(stringResource(R.string.modern_loaded))})
                         }
+                        TextButton(onClick={details=entry}){Text("Model details and capabilities")}
                         entry.metadata?.let { metadata ->
                             Text("Weights: ${metadata.quantization ?: "Unknown"} · Training context: ${metadata.maxContext?.toString() ?: "Unknown"} tokens",style=MaterialTheme.typography.bodySmall)
                         }

@@ -1,14 +1,41 @@
 # Meshlit full app guide and configuration tutorial
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../PLAN.md) · [Progress](../PROGRESS.md) · [Document status](DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Updated 2026-10-07. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
+Updated 2026-10-10. This guide is also packaged offline in Settings → Guide and tutorial. Reading progress is not execution evidence.
 
 ## Start here: what Meshlit does
 
-Meshlit is a phone-first private AI workspace. Run a supported local model on one device; manage files, chats and tasks; explicitly connect providers and owner-approved devices when needed. Android is the current application target. A model catalog, device role claim or installed library does not establish usable inference or training.
+Meshlit is a phone-first private AI workspace. Run a supported local model on one device; manage files, chats and tasks; explicitly connect providers and owner-approved devices when needed. Android is the working on-device target. Experimental desktop and native HarmonyOS NEXT clients are described in docs/MULTIPLATFORM_NEXT.md; NEXT local inference and HAP/device acceptance remain unavailable/unverified. A model catalog, device role claim or installed library does not establish usable inference or training.
 
 Use the drawer to reach Models, Monitoring, Devices and clusters, Task manager, Code workspace, Cloud and credentials, Guide and tutorial, Settings and retained Tools. Settings has Basic/Advanced filters and a search field. Search matches every entered word across names, descriptions and keywords. Advanced exposes optional runtime, forwarding and automation controls.
 
 Implementation status matters. Desktop layer workers have real execution evidence. Oversized-model execution across physical phones, replicated task/session failover and portable distributed KV recovery remain acceptance/implementation gates. This guide explains actual controls and labels future work explicitly. It contains no simulated devices, costs or performance charts.
+
+## Language, appearance and platform previews
+
+Android Settings → Appearance now offers English (default) and 简体中文. Chinese
+covers the modern chat and model-library resource strings; advanced tools retain
+English. Model answers, prompts, memory, inference settings and operation grants
+are unchanged. Monochrome adds a quiet graphite/pearl palette while retaining font
+size and accessibility. Existing custom appearance is never silently reset.
+
+Intel Studio 40.1 bundles Qwen2.5 1.5B Q4_K_M, a private Java runtime and an owned CPU engine. Use either the DMG or PKG; both contain the same application. No extra JDK or Ollama installation is needed for its starter. In Chat choose local mode, Load or Send, then Stop/Unload when needed. Settings → Inference engine controls context, generation/prompt threads, batching, f16/q8_0 key cache, CPU selection and idle unloading. Auto selects AVX2 only after verified CPU and OS support; SSE4.2 remains available. q4_0 key cache is held out after a poor arithmetic test; it is different from Q4_K_M model weights.
+
+Settings opens seven management categories. Basic and Advanced menus differ; typed search also finds advanced/pending destinations. Global search includes settings/features, current chat and saved model/node references, with separate settings/chat scopes. Web search is an explicit browser handoff, not automatic article retrieval. Models and downloads records validated GGUF imports; Discover models uses optional Hugging Face metadata and a bounded revision/hash-pinned single-file download. Desktop download resume and paid/gated entitlement verification remain pending.
+
+The local monitor samples actual CPU/RAM/processes with charts/history. The human terminal is a bounded batch shell, not an embedded interactive PTY. SSH includes pinned outbound exec, a public-key status-only inbound node and optional external Ghostty handoff. HyperL CPU execution needs its separate terms. Saved node/API addresses are not enrolled layer workers; no desktop RPC controller or full automatic recovery is delivered by these menus. Android agent/MCP/A2A, voice/memory, cloud vault, firewall, VM/container and recovery screens are separate ports, labelled pending.
+
+Compatible remote hosts require explicit access and their exact endpoint/token. Prompts go to that selected host; only literal loopback may use HTTP. Desktop chats/provider credentials are session-only; appearance, engine options, imported model references and saved node labels/addresses persist. Reported token usage stays unknown when unavailable. Both Intel installer launchers pass recovered-payload checks, but clean-machine installation, signing/notarization and other platforms remain separate gates. See [desktop install guide](MACOS_OFFLINE.md) and [feature tracker](DESKTOP_FEATURE_TRACKER.md).
+
+HarmonyOS NEXT has a separate native ArkTS/ArkUI 26.0.0 source target, with English
+as default, 简体中文, persisted appearance, bounded complete-response HTTPS chat and
+a native capability adapter reporting local LLM inference unavailable. This is
+not an Android APK. No DevEco/NDK/HAP/device test has passed here. Advanced Android
+services, agents, SSH/VM and federation are not automatically available in the new
+clients. See docs/MULTIPLATFORM_NEXT.md for setup and qualification gates.
 
 ## First-run walkthrough
 
@@ -46,7 +73,9 @@ Acceleration settings report installed backend capability. A vendor name, GPU de
 
 ## Chat, routing and online models
 
-Chats retain conversation history and selected options. Use local/offline models, a deliberately selected online profile or a configured scenario route. A local failure does not silently trigger a paid cloud request. Consumer chat subscriptions are different from provider API accounts.
+Chats retain conversation history and selected options. “On-device model” describes where inference executes; it does not turn off internet access. Use a local model, a deliberately selected online profile or a configured scenario route. A local failure does not silently trigger a paid cloud request. Consumer chat subscriptions are different from provider API accounts.
+
+For experimental local tools, open **+ → Chat options and model routing** and separately enable **Allow web page tools** or **Allow phone tools**. Both default off. Web-page retrieval needs your configured HTTPS Crawl4AI companion and domain approval; no crawler or search account is created automatically. Phone tools need saved autonomy, app scope and Android Accessibility. The loop allows three calls within 180 seconds and rejects invalid model plans. The starter is not qualified for reliable tool use. See [local tool setup and limits](LOCAL_MODEL_TOOLS.md).
 
 Online providers support existing protocol adapters such as OpenAI/compatible, Anthropic and Gemini. Save API credentials encrypted, configure the actual endpoint/model and discover supported models when the provider offers discovery. Select whether the profile allows agents; do not assume every model accepts temperature or all modalities.
 
@@ -188,7 +217,9 @@ If a model does not load: verify a complete artifact and hash, supported format/
 
 If pairing fails: verify reachability, explicit firewall allowance, identity revision/pin/token and independent approvals. If cloud fails: check token expiry, IAM/RBAC/quota/region and service origin. If an archive fails: inspect byte/count/path/CRC/provider limits and partial-output cleanup. If recovery fails: verify exact model/runtime/context/cache identity and installation key.
 
-Current physical-phone ADB testing is blocked while Samsung is absent from adb devices even though USB inventory sees it. Use normal Android Studio/Mac ADB authorization or an approved wireless endpoint; never silently authorize, wipe or elevate. Local OpenSSH preauthentication is also blocked by this enclosing environment. These are unresolved acceptance gates, not successful tests.
+Samsung USB authorization was restored on 2026-10-08 and single-phone testing resumed. See [dated device evidence](DEVICE_TESTING_2026-10-08.md) for individual outcomes; this does not establish two-phone cluster acceptance. Wireless debugging requires owner pairing on supported devices; it is distinct from an in-app ADB adapter. No live SSH host or cloud account is configured for these checks.
+
+In **Settings → App permissions**, use Request for an ungranted optional feature or Manage to open Android settings, including for already granted permissions. Android 11 notifications have no runtime permission prompt. The Full build can open Android's installer for a human-selected APK, request exact-package removal, or open another app's permissions screen. These are human confirmation workflows; submitting a request does not verify completion. Silent/root/device-owner and in-app wireless ADB administration remain unimplemented.
 
 ## Settings directory and safe recipes
 
@@ -215,3 +246,183 @@ Open Settings → Audit and telemetry. Local collection defaults off. Enable it 
 Optional OpenTelemetry uses your HTTPS OTLP base URL and encrypted, endpoint-bound headers. The app adds /v1/traces and /v1/metrics; select OTLP collector mode to send metadata traces, counters, duration histograms and device gauges. Use Grafana Cloud, an owner-controlled Collector/Alloy, Tempo plus a metrics backend or another compatible destination. A successful flush does not prove a dashboard stored the data. Local audit collection and tracing mode have separate switches.
 
 Prompts, replies, credentials, URLs, paths and command arguments are excluded. Unknown sensor/token values remain absent. History is bounded and asynchronous; crashes can lose pending batches. This is not a tamper-proof compliance ledger. Meshlit switches do not establish vendor SDK telemetry opt-out. Detailed coverage, dashboard template and collector recipe: docs/AUDIT_TELEMETRY.md.
+
+## HyperL local libraries
+
+Open Settings → HyperL libraries in either app flavor. Choose one of twelve recipes,
+review/edit the program and inputs, select an array budget and Validate before Run CPU.
+Weighted ReLU uses x=[-1,2,3], w=[2,3,4] and returns [0,6,12]. Stop cancels local work.
+HyperL per-function controls and emergency stop apply to execution/source generation;
+resumption remains human-controlled. Metal/Vulkan exports are source only, reductions
+are CPU-only, and Copy output explicitly uses the OS clipboard. No root, VM, cloud
+account, network or agent invocation is required. Editors are transient and bounded
+to 65,536 characters; results preview 256 values. Full models, GPU/NPU dispatch and
+distributed jobs remain later. Details: docs/hyperl/APP_AND_LIBRARY.md.
+
+
+## Workspace navigation, client access and model details
+
+Open the menu to search all current workspaces. Monitor, Networking, SSH and
+Security Lab have direct shortcuts. Appearance selects Graphite/Aurora/Ocean/Paper/
+Coffee, Cards/Rows and Adaptive/Focus. The four phone bottom tabs are removed;
+use the sidebar to keep the reply area taller. Wide Android windows can show a
+persistent sidebar. These changes do
+not restore the old Android Studio UI or response mechanism.
+
+Use Model details and capabilities in Models or Chat menu → Model details for the
+selected artifact's architecture, quantization, context, backend and catalog tags
+when known. Text generation does not establish coding/reasoning accuracy, tools,
+vision or image/audio/video synthesis. Separate models/adapters and tests are needed.
+
+Agent Gateway issues scoped expiring keys to trusted clients. Restrict model IDs,
+MCP tool names, output tokens and request rate. Copy a new key once; client verifiers
+are stored encrypted. Revocation/policy changes stop active work; restart explicitly.
+The gateway is loopback and screen-bound. Remote LAN/off-grid/internet clients
+require a verified private transport or host HTTPS proxy; browser keys must stay on
+a reviewed backend. No always-on public web companion is supplied. See
+docs/CLIENT_HUB.md for limits and client examples.
+
+## Optional memory and live speech
+
+Settings → Memory and personality provides independent off-by-default recall,
+explicit Remember that capture, response style, one same-model native retry and
+human delegation for bounded agent memory management. Forget/Clear delete facts;
+Off suppresses recall but keeps facts. This is preference recall, not weight training,
+automatic fact validation or source-code self repair. Cloud/routed chats do not
+receive local memory.
+
+Voice conversation uses separate recognition, chat LLM and synthesis adapters.
+Import verified Whisper English/Piper voice ZIPs for app-local speech, choose
+installed offline Android voices, or explicitly permit an enabled HTTPS speech
+provider. The recognition and output model IDs are independent of the chat model.
+Network audio defaults off; Android 11's system recognizer cannot guarantee offline
+input, so use an offline speech pack. Preview uses real synthesis. Android voice
+styles are pitch/rate presets, not person/age/gender cloning. Piper packs and
+provider voice IDs determine other speakers; their pitch presets are unavailable.
+
+Start requires microphone permission. Stop/background/close ends capture and
+playback; sessions cap at ten turns/five minutes, with bounded recording/audio.
+Native cleanup can finish after Stop and keeps controls locked. This is turn-taking;
+Gemini Live/OpenAI Realtime full-duplex adapters remain later. No microphone audio
+file is retained by Meshlit; recognized text remains in chat and selected online
+providers receive their explicit audio/text inputs. Existing SDK telemetry limits
+still apply. See docs/MEMORY_AND_VOICE.md for installation, licensing, privacy and
+actual qualification limits.
+
+## Reading replies and managing tokens
+
+Replies render headings, emphasis, lists, quotes, tables and fenced code as native
+text. Headings and bold emphasis use the theme accent; inline code has a contrasting
+background, and model-provided emojis remain intact. Tables/code can scroll
+horizontally; code can also wrap. Remote images appear
+as links and never load automatically. Copy/Share preserve the original response.
+Read full response opens a composer-free reader with search, an outline and original
+Markdown view. Response actions can save a Markdown file or open token details.
+
+Chat menu → Conversation and token settings opens the expanded settings sheet.
+Set the exact maximum output (1–2,048; routed runs up to 1,024), history messages,
+instructions, sampling and separate tool permissions. The requested limit is a
+ceiling, not an actual token count or a guarantee of long replies. Runtime context
+capacity appears only when known; this is not a tokenizer-based remaining budget.
+
+Show token speed indicator controls the compact per-chat indicator. During a run
+it shows elapsed application time and the requested output ceiling. On completion,
+a trustworthy runtime rate is preferred; if counts alone are available, the average
+is explicitly labelled as end-to-end, including input/network overhead. Missing
+counts/rates stay unavailable. The pinned SDK's unqualified counters are not used.
+Text callbacks and characters are never counted as tokens. Details belong to the
+individual response and survive restart; older responses have no added metadata.
+
+Native bar charts require an explicit validated `meshlit-chart` block. Meshlit does
+not invent data from prose. Format, limits and validation: docs/CHAT_PRESENTATION.md.
+
+
+## Global search, chat search and Automatic cluster output
+
+Tap Chat’s Search icon or Menu → Search all of Meshlit for offline results across
+connected app pages/options, saved model names, chats, imported articles and
+approved device access records. Chat menu → Search this chat provides Previous /
+Next in the current timeline; Read full response has its own single-reply search.
+Settings → Search access and articles imports UTF-8 text/Markdown and separately
+controls Internet and agent search grants. No background web request is made
+while typing. Brave searches need your own encrypted API key; source URLs and
+snippets remain visible. Read approved device settings uses an authenticated,
+explicitly allowlisted MCP read, with independent remote Settings delegation;
+LAN access does not require Brave or Internet search. Credentials and arbitrary
+remote/Android settings are excluded.
+
+Token management now saves Manual or Automatic cluster mode and target duration.
+Automatic uses a recent successful native cluster’s actual whole-cluster rate,
+your output ceiling and one quarter of verified context. It never adds device
+rates or infers tokens from text. Missing/stale evidence uses Manual visibly;
+local/provider/router/tool-loop usage does not qualify as cluster power.
+Detailed limits, setup, permission matrix and examples:
+[Search and cluster output guide](SEARCH_AND_CLUSTER_OUTPUT.md).
+
+
+## Core Candidate, HyperL and SSH/VM nodes
+
+Core Candidate installs separately from Experimental, with independent chats, settings, models, keys and agreement records. It permits local chat, model transfers and files, and blocks experimental managed operations and model-directed tools. It remains a qualification candidate: shared inactive code, the SDK telemetry limitation, physical-device acceptance and production signing are still documented gates.
+
+Settings → HyperL libraries uses the separately licensed alpha.6 module. Read its offline notices and explicitly enable it before selecting Kotlin reference or Native C99 CPU. Twelve recipes and precise sum are bounded preprocessing, not the chat engine or a GPU/full-model runtime. API 26+ dataset import/rekey streams encrypted chunks; private no-backup raw key files are not hardware Keystore protection. Plaintext export and deletion need explicit human actions. Clearing data loses these datasets and keys.
+
+Settings → SSH nodes and connections supports both directions. Outbound hosts require independent fingerprint verification and encrypted credentials. On API 26+, enrol a client public key and explicit scopes, choose an assigned private IPv4/loopback address, then Start SSH into this app node. No password login, interactive shell, SFTP or forwarding is exposed. Use status or documented JSON node commands. Stop ends the listener; completed remote effects are not undone. Internet access needs a compatible owner-configured private network/VPN.
+
+Conversation and token settings → VM and SSH node tools is default off. Per-chat selection does not create permissions: saved/global SSH and VM grants, outbound action allowlists and remote key scopes remain separate. Agents cannot edit grants, enrol keys or use human app diagnostics/root paths. The tiny starter model is not qualified for reliable tool planning; invalid plans fail before dispatch.
+
+VM tools require a compatible installed QEMU executable, trusted bootable guest and verified guest SSH configuration. Path/configuration acceptance is not a successful guest boot. Agent activation remains off by default, with committed human opt-in and revocation. APP/PRoot/chroot modes are not strong arbitrary-code isolation. Check the displayed artifact/state errors; no VM runtime or guest is automatically downloaded or installed.
+
+Details: docs/architecture/PRODUCTION_CHANNELS.md, docs/hyperl/ANDROID_ALPHA6.md and docs/SSH_NODE.md.
+
+
+## Studio, Colibri and connected agent tools — build40
+
+Studio provides graphite surfaces, Ember accents, thin headers, compact spacing,
+settings icons and Models/Agents/Style hero cards. New installs use those defaults;
+saved custom colors/fonts remain. Desktop and NEXT source also offer Studio.
+Changing appearance does not rewrite the local model, prompt or conversation.
+
+Settings → Colibri configures an optional separately operated host. Its key is
+stored encrypted on Android. Save a reviewed exact /v1 endpoint, separately enable
+human host access, and refresh its real model list. Chat can select Off, On or Auto;
+Auto retains a usable local model unless a preferred verified host is requested.
+Agent mode switching needs a separate saved grant and selected local node tools.
+It cannot edit credentials, enable saved host access or download models. Local tool
+conversations retain the on-device route. Host mode sends context to that host;
+Colibri is not bundled as a qualified Android LLM backend. See docs/COLIBRI.md.
+
+Settings → GibberLink audio offers real offline ggwave encoding/decoding with an
+English transcript. Human and agent switches default off. Listen requires Android
+microphone permission and the screen must remain foreground; Stop, revocation or
+backgrounding releases audio. Audible messages are unencrypted and unauthenticated;
+received text is untrusted and never executes as a command. Send confirms local
+playback only, not delivery. See docs/GIBBERLINK.md for limits and qualification.
+
+Settings → Cryptography offers SHA-256/512, random keys, HMAC-SHA256 and AES-256-GCM
+with optional associated data. Clear fields after use. Human offline work does not
+grant agent access. Agent tools require a separate saved opt-in and per-chat
+selection; keys supplied as model tool arguments can enter model context/history.
+Tools cannot read the private credential store. This is separate from stored-secret
+vault operations; Java strings do not provide secure memory erasure.
+
+Settings → Remote commands can address up to eight saved, independently pinned
+SSH nodes sequentially, with at most two active requests. Human enablement,
+separate agent/SSH grants and per-host action allowlists are required. No arbitrary
+shell/root or permission edits are introduced. Transport errors leave outcome
+uncertain; there is no automatic command replay.
+
+Settings → P2P device chat uses a foreground WebRTC data channel. Both owners must
+enable it, exchange a fresh shared pairing key independently, then manually exchange
+signed offer/answer text. Key/transcript state stays in this session. No Internet
+ICE service is enabled by default; add a reviewed STUN server explicitly, or opt
+into an owner-operated TURN fallback. A verified direct or encrypted relay route
+is required before traffic. Carrier NAT can prevent direct connectivity.
+
+Agents can read/send session text only with separate human grants and selected chat
+tools. Peer text is untrusted evidence, not permission. Commands need distinct
+receiver agent/command grants; VM and cluster changes need additional receiver
+scopes. STATUS, VM and existing cluster controls return actual receiver responses;
+P2P does not transport model layers or automatically join an Internet model cluster.
+Disconnect, backgrounding, Stop and revocation end the local channel. A timeout
+cannot prove a remote effect stopped. Core Candidate excludes these experimental
+services; its human offline crypto tools remain separate. See docs/P2P_AND_CRYPTO.md.

@@ -26,11 +26,11 @@ import com.meshlit.core.inference.models.OnlineProtocol
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class,ExperimentalLayoutApi::class)
-@Composable fun MediaGenerationScreen(onBack:()->Unit) {
+@Composable fun MediaGenerationScreen(initialKind:String="vision",onBack:()->Unit) {
     val media=koinInject<MediaGeneration>();val videos by media.videos.collectAsStateWithLifecycle()
     val providers=koinInject<OnlineProviders>();val profiles by providers.profiles.collectAsStateWithLifecycle()
     val scope=rememberCoroutineScope();val context=LocalContext.current
-    var kind by remember{mutableStateOf("vision")};var profile by remember{mutableStateOf<String?>(null)}
+    var kind by remember{mutableStateOf(initialKind)};var profile by remember{mutableStateOf<String?>(null)}
     var model by remember{mutableStateOf("")};var prompt by remember{mutableStateOf("")};var voice by remember{mutableStateOf("coral")}
     var image by remember{mutableStateOf<Uri?>(null)};var result by remember{mutableStateOf<MediaResult?>(null)}
     var error by remember{mutableStateOf<String?>(null)};var job by remember{mutableStateOf<Job?>(null)}
@@ -48,7 +48,7 @@ import kotlinx.coroutines.*
         Text("Selected online providers receive the prompt and any chosen image. Generation may incur charges. No automatic retry. Stop cancels this app's request; a provider may already be processing or charging it.")
         FlowRow(horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("vision","image","speech","video").forEach{k->FilterChip(kind==k,{kind=k;result=null},label={Text(k)})}}
         profiles.filter{it.enabled && it.protocol in setOf(OnlineProtocol.OPENAI,OnlineProtocol.OPENAI_COMPATIBLE)}.forEach{p->FilterChip(profile==p.id,{profile=p.id},label={Text(p.name)})}
-        if(profiles.none{it.enabled && it.protocol in setOf(OnlineProtocol.OPENAI,OnlineProtocol.OPENAI_COMPATIBLE)}) Text("Enable an OpenAI-format provider in Settings → Online providers. Local voice/vision controls remain in the media menu.")
+        if(profiles.none{it.enabled && it.protocol in setOf(OnlineProtocol.OPENAI,OnlineProtocol.OPENAI_COMPATIBLE)}) Text("Enable an OpenAI-format provider in Settings → Online providers. Provider speech and vision require an enrolled profile. On-device speech/vision need separately qualified adapters; the starter text model does not provide them.")
         Text("Vision uses the profile's model. Generation needs a separate supported media model ID; a text model does not imply image/video/audio support.")
         if(kind!="vision") OutlinedTextField(model,{model=it},label={Text("Media model ID")},singleLine=true)
         if(kind=="speech") OutlinedTextField(voice,{voice=it},label={Text("Voice ID")},singleLine=true)

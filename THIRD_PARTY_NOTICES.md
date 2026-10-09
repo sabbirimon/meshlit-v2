@@ -21,3 +21,23 @@ Soup training code or weights are bundled in this APK. The SSH supervisor is
 original Meshlit source. Uncensored-AI/Heretic (AGPL-3.0), the referenced Flutter
 app and USB launcher are research references only; none of their code is copied.
 See `docs/local-model-behavior-and-training.md`.
+
+## CommonMark reply parsing
+
+`org.commonmark:commonmark` and `commonmark-ext-gfm-tables` are pinned to 0.30.0.
+Upstream: https://github.com/commonmark/commonmark-java, BSD-2-Clause,
+Copyright (c) 2015, Robin Stocker. The unmodified license is distributed in
+`app/src/main/assets/licenses/commonmark-java-BSD-2-Clause.txt`.
+Meshlit renders parsed nodes as native Compose text/blocks; HTML, scripts and
+remote images are not executed or automatically fetched.
+
+- HyperL development alpha.6, pinned commit
+  c03a8590d959f5480c54efb4e3c3f87af6532e39: newly covered rights in `core-hyperl`
+  are HyperL Community and Enterprise License 1.0 (source-available), with earlier
+  Apache-2.0 grants preserved. Complete licence, NOTICE, prior Apache text and
+  scope history ship offline in APK assets. See core-hyperl/MODIFICATIONS.md and
+  docs/hyperl/ALPHA6_PROVENANCE.json. No desktop runtime or vendor SDK is bundled.
+
+### Apache MINA SSHD 2.20.0
+
+`core-ssh` uses sshd-core and sshd-common for the optional API 26+ embedded SSH node transport. Copyright The Apache Software Foundation; Apache License 2.0. Upstream: https://github.com/apache/mina-sshd. Licence and NOTICE copies are retained in app assets under `node-ssh`. This dependency does not certify Android or guest-runtime support.

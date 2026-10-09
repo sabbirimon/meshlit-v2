@@ -1,5 +1,7 @@
 package com.meshlit.ui.modern
 
+import com.meshlit.workspace.richtext.ReplyBlock
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
@@ -22,7 +24,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import com.meshlit.ui.modern.workspaceStringResource as stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
@@ -37,141 +40,151 @@ import com.meshlit.core.inference.*
 import com.meshlit.di.koinInject
 import com.meshlit.ui.theme.ChatTokens as T
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
-/** Shared clean navigation for both APK flavors. Advanced legacy tools remain
- * accessible without taking over the main conversation surface. */
+/** Shared modern navigation for both APK flavors; earlier sources are inventory references only. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernMeshlitApp() {
     val chats=koinInject<ChatController>()
     val state by chats.state.collectAsStateWithLifecycle()
-    val providers=koinInject<com.meshlit.providers.OnlineProviders>()
+    val library=koinInject<com.meshlit.models.ModelLibrary>()
+    val entries by library.models.collectAsStateWithLifecycle()
+    var showCapabilities by remember{mutableStateOf(false)}
+    var showChatOptions by remember{mutableStateOf(false)}
+    var chatMenu by remember{mutableStateOf(false)}
+    var showGlobalSearch by remember{mutableStateOf(false)}
+    var showChatSearch by rememberSaveable{mutableStateOf(false)}
+    var chatSearchQuery by rememberSaveable{mutableStateOf("")}
+    var chatSearchMessage by remember{mutableStateOf<String?>(null)}
+        val providers=koinInject<com.meshlit.providers.OnlineProviders>()
     val profiles by providers.profiles.collectAsStateWithLifecycle()
     val selectedProfile=profiles.firstOrNull{it.id==state.current?.options?.onlineProfileId}
     val coordinator=koinInject<InferenceCoordinator>()
     val runtime by coordinator.state.collectAsStateWithLifecycle()
+    if(showCapabilities) ModelCapabilitiesDialog(if(state.current?.options?.onlineProfileId==null && state.current?.options?.routeId==null) entries.firstOrNull{it.path==coordinator.loadedModel()?.modelPath} else null,"Selected provider or route"){showCapabilities=false}
     val drawer=rememberDrawerState(DrawerValue.Closed)
     val scope=rememberCoroutineScope()
     var tab by rememberSaveable { mutableStateOf("chat") }
     var settingsDestination by remember { mutableStateOf<String?>(null) }
-    var legacy by rememberSaveable { mutableStateOf(false) }
-    var permissionSetup by rememberSaveable{mutableStateOf(false)}
-    com.meshlit.permissions.FirstLaunchPermissionSetup{permissionSetup=true}
-    if(permissionSetup){com.meshlit.permissions.PermissionSetupScreen{permissionSetup=false};return}
+    if(!com.meshlit.BuildProfile.coreCandidate) com.meshlit.permissions.FirstLaunchPermissionSetup{tab="permissions"}
     LaunchedEffect(chats) { chats.ready.await() }
     BackHandler(tab!="chat"){tab="chat"}
-    if(tab=="media"){MediaGenerationScreen{tab="chat"};return}
-    if(tab=="vision"){
-        Scaffold(topBar={TopAppBar(title={Text("Photo and camera")},navigationIcon={IconButton(onClick={tab="chat"}){
-            Icon(Icons.AutoMirrored.Filled.ArrowBack,"Back to chat")}})}){padding->
-            Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)){
-                com.meshlit.ui.screens.VisionScreen({tab="chat"},omitHeader=true)
-            }
-        };return
-    }
-    if(tab=="tasks"){TaskManagerScreen{tab="chat"};return}
-    if(tab=="ide"){com.meshlit.ide.CodeWorkspaceScreen{tab="chat"};return}
-    if(tab=="help"){HelpTutorialScreen{tab="chat"};return}
-    if(tab=="cloud"){CloudManagementScreen{tab="chat"};return}
-    if(tab=="devices"){ModernNetworkScreen{tab="chat"};return}
-    if(legacy) {
-        BackHandler { legacy=false }
-        Column(Modifier.fillMaxSize()) {
-            TextButton(onClick={legacy=false}) { Text(stringResource(R.string.modern_back_chat)) }
-            Box(Modifier.weight(1f)) { com.meshlit.ui.LegacyMeshlitApp() }
-        }
-        return
-    }
-    val glass=com.meshlit.ui.theme.LocalMeshlitThemeConfig.current.surfaceStyle==com.meshlit.ui.theme.SurfaceStyle.GLASS
+    val config=com.meshlit.ui.theme.LocalMeshlitThemeConfig.current
+    val glass=config.surfaceStyle==com.meshlit.ui.theme.SurfaceStyle.GLASS
     val colors=MaterialTheme.colorScheme
-    ModalNavigationDrawer(modifier=Modifier.background(Brush.linearGradient(if(glass) listOf(colors.primaryContainer,colors.background,colors.secondaryContainer) else listOf(colors.background,colors.background))),drawerState=drawer,drawerContent={
-        ModalDrawerSheet(Modifier.width(T.sidebar)) {
-          LazyColumn(Modifier.fillMaxSize(),contentPadding=PaddingValues(bottom=T.large)) {
-            item {Column(Modifier.padding(T.large)) {
-                Text("Meshlit",style=MaterialTheme.typography.headlineSmall)
-                Text(stringResource(R.string.modern_private_ai),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(T.section))
-                FilledTonalButton(enabled=!state.running,onClick={chats.newChat();tab="chat";scope.launch{drawer.close()}},modifier=Modifier.fillMaxWidth()) {
-                    Icon(Icons.Default.Add,null);Spacer(Modifier.width(T.small));Text(stringResource(R.string.modern_new_chat)) }
-            }
-            }
-            item {Text(stringResource(R.string.modern_recent),Modifier.padding(horizontal=T.large,vertical=T.small),style=MaterialTheme.typography.labelMedium)}
-                items(state.conversations,key={"chat:${it.id}"}) { conversation ->
-                    NavigationDrawerItem(label={Text(conversation.title,maxLines=2)},selected=state.selectedId==conversation.id,
-                        onClick={chats.select(conversation.id);tab="chat";scope.launch{drawer.close()}},
-                        badge={IconButton(enabled=!state.running,onClick={chats.delete(conversation.id)}) {
-                            Icon(Icons.Default.Delete,stringResource(R.string.modern_delete_chat)) }})
-                }
-            item {NavigationDrawerItem(label={Text(stringResource(R.string.modern_models))},selected=tab=="models",onClick={tab="models";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Storage,null)})}
-            item {NavigationDrawerItem(label={Text(stringResource(R.string.modern_monitor))},selected=tab=="monitor",onClick={tab="monitor";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Insights,null)})}
-            item {NavigationDrawerItem(label={Text("Devices and clusters")},selected=tab=="devices",onClick={tab="devices";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Devices,null)})}
-            item {NavigationDrawerItem(label={Text("Task manager")},selected=tab=="tasks",onClick={tab="tasks";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Checklist,null)})}
-            item {NavigationDrawerItem(label={Text("Code workspace")},selected=tab=="ide",onClick={tab="ide";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Code,null)})}
-            item {NavigationDrawerItem(label={Text("Cloud and credentials")},selected=tab=="cloud",onClick={tab="cloud";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Cloud,null)})}
-            item {NavigationDrawerItem(label={Text("Guide and tutorial")},selected=tab=="help",onClick={tab="help";scope.launch{drawer.close()}},icon={Icon(Icons.Default.HelpOutline,null)})}
-            item {NavigationDrawerItem(label={Text("Settings")},selected=tab=="settings",onClick={tab="settings";scope.launch{drawer.close()}},icon={Icon(Icons.Default.Settings,null)})}
-            item {NavigationDrawerItem(label={Text(stringResource(R.string.modern_tools))},selected=false,onClick={legacy=true;scope.launch{drawer.close()}},icon={Icon(Icons.Default.Build,null)})}
-          }
+    val openMenu:()->Unit={scope.launch{drawer.open()}}
+    fun select(id:String) {tab=if(com.meshlit.BuildProfile.routeAllowed(id)) id else "about";scope.launch{drawer.close()}}
+    if(showChatOptions) ChatOptionsDialog(state,chats,onSearchSettings={showChatOptions=false;select("search")}){showChatOptions=false}
+    if(showGlobalSearch) GlobalSearchDialog(state,onResult={result,query->
+        if(result.conversationId!=null) {
+            if(!state.running){chats.select(result.conversationId);select("chat");showChatSearch=true;chatSearchQuery=query;chatSearchMessage=result.messageId;showGlobalSearch=false}
+            else chats.attachmentError("Stop generation before opening a different conversation")
+        } else {showGlobalSearch=false;if(result.destination=="chat-options") showChatOptions=true else result.destination?.let{select(it)}}
+    },onSettings={showGlobalSearch=false;select("search")},onClose={showGlobalSearch=false})
+    BoxWithConstraints(Modifier.fillMaxSize().background(if(glass) Brush.linearGradient(listOf(colors.primaryContainer.copy(alpha=0.25f),colors.background,colors.background)) else Brush.linearGradient(listOf(colors.background,colors.background)))) {
+        val wide=WorkspaceDestinations.wideSidebar(maxWidth.value,config.workspaceLayout)
+        val sidebar:@Composable ()->Unit={
+            WorkspaceSidebar(state,if(tab=="settings") settingsDestination ?: tab else tab,config.sidebarStyle,
+                onSelect={select(it)},onNew={chats.newChat();select("chat")},
+                onChat={chats.select(it);select("chat")},onDelete={chats.delete(it)},onGlobalSearch={showGlobalSearch=true})
         }
-    }) {
-        Scaffold(
-            containerColor=if(glass) Color.Transparent else colors.background,
-            // Settings owns its toolbar; never stack an app toolbar above it.
-            contentWindowInsets=if(tab=="settings") WindowInsets(0,0,0,0) else ScaffoldDefaults.contentWindowInsets,
-            topBar={if(tab!="settings") TopAppBar(
-                title={if(tab=="chat") Column(Modifier.heightIn(min=T.touch).clickable(onClickLabel="Choose model",onClick={tab="models"}),verticalArrangement=Arrangement.Center) {
-                    Text("Meshlit",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)
-                    Row(verticalAlignment=Alignment.CenterVertically) {
-                        Text(if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null)
-                            selectedProfile?.let{"${it.name} · ${it.model}"} ?: "Online model" else when(val current=runtime) {
-                            is CoordinatorState.Ready -> current.model.modelName
-                            is CoordinatorState.Loading -> stringResource(R.string.modern_loading)
-                            is CoordinatorState.Generating -> stringResource(R.string.modern_generating)
-                            CoordinatorState.Starting -> stringResource(R.string.modern_starting)
-                            else -> stringResource(R.string.modern_choose_model)
-                        },maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.labelSmall,
-                            color=colors.onSurfaceVariant,modifier=Modifier.weight(1f,fill=false))
-                        Icon(Icons.Default.ExpandMore,null,Modifier.size(16.dp),tint=colors.onSurfaceVariant)
-                    }
-                } else Text(stringResource(if(tab=="models") R.string.modern_models else R.string.modern_monitor),
-                    maxLines=1,style=MaterialTheme.typography.titleLarge)},
-                navigationIcon={IconButton(onClick={scope.launch{drawer.open()}}) {Icon(Icons.Default.Menu,stringResource(R.string.modern_menu))}},
-                actions={if(tab=="chat") IconButton(enabled=!state.running,onClick={chats.newChat()}) {
-                    Icon(Icons.Default.EditNote,stringResource(R.string.modern_new_chat))}},
-                colors=TopAppBarDefaults.topAppBarColors(containerColor=Color.Transparent))},
-            bottomBar={ if(tab!="chat" && (tab!="settings" || settingsDestination==null)) NavigationBar(containerColor=colors.surfaceContainerLow,tonalElevation=0.dp) {
-                NavigationBarItem(tab=="chat",{tab="chat"},icon={Icon(Icons.Default.ChatBubbleOutline,null)},label={Text(stringResource(R.string.modern_chat))})
-                NavigationBarItem(tab=="models",{tab="models"},icon={Icon(Icons.Default.Storage,null)},label={Text(stringResource(R.string.modern_models))})
-                NavigationBarItem(tab=="monitor",{tab="monitor"},icon={Icon(Icons.Default.Insights,null)},label={Text(stringResource(R.string.modern_monitor))})
-                NavigationBarItem(tab=="settings",{tab="settings"},icon={Icon(Icons.Default.Settings,null)},label={Text("Settings")})
-            } }) { padding ->
-            Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding),contentAlignment=Alignment.TopCenter) {
-                when(tab) {
-                    "models" -> ModernModelsScreen()
-                    "monitor" -> ModernMonitorScreen()
-                    "settings" -> ModernSettingsScreen(onMenu={scope.launch{drawer.open()}},onDestinationChanged={settingsDestination=it})
-                    else -> ModernChatScreen(state,runtime,chats,onModels={tab="models"},onMedia={tab="media"},onVision={tab="vision"})
+        val body:@Composable ()->Unit={
+            val settingsPage=tab=="settings" || tab in WorkspaceDestinations.settingsIds
+            val ownHeader=settingsPage || tab in setOf("media","vision","voice")
+            Scaffold(containerColor=if(glass) Color.Transparent else colors.background,
+                contentWindowInsets=if(ownHeader) WindowInsets(0,0,0,0) else ScaffoldDefaults.contentWindowInsets,
+                topBar={if(!ownHeader) TopAppBar(expandedHeight=48.dp,
+                    title={if(tab=="chat") Column(Modifier.heightIn(min=T.touch).clickable(onClickLabel="Choose model",onClick={select("models")}),verticalArrangement=Arrangement.Center) {
+                        Text("Meshlit",maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)
+                        Row(verticalAlignment=Alignment.CenterVertically) {
+                            Text(if(state.current?.options?.colibriMode!="OFF" && state.current?.options?.colibriMode!=null) "Colibri policy · ${state.current?.options?.colibriMode}" else if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null)
+                                selectedProfile?.let{"${it.name} · ${it.model}"} ?: "Online model" else when(val current=runtime) {
+                                    is CoordinatorState.Ready -> current.model.modelName
+                                    is CoordinatorState.Loading -> stringResource(R.string.modern_loading)
+                                    is CoordinatorState.Generating -> stringResource(R.string.modern_generating)
+                                    CoordinatorState.Starting -> stringResource(R.string.modern_starting)
+                                    else -> stringResource(R.string.modern_choose_model)
+                                },maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.labelSmall,
+                                color=colors.onSurfaceVariant,modifier=Modifier.weight(1f,fill=false))
+                            Icon(Icons.Default.ExpandMore,null,Modifier.size(16.dp),tint=colors.onSurfaceVariant)
+                        }
+                    } else Text(WorkspaceDestinations.all.firstOrNull{it.id==tab}?.title ?: "Meshlit",maxLines=1,
+                        overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.titleMedium)},
+                    navigationIcon={if(!wide) IconButton(onClick=openMenu){Icon(Icons.Default.Menu,stringResource(R.string.modern_menu))}},
+                    actions={IconButton(onClick={showGlobalSearch=true}){Icon(Icons.Default.Search,"Search all of Meshlit")}
+                    if(tab=="chat") {
+                        IconButton(enabled=!state.running,onClick={chats.newChat()}){Icon(Icons.Default.EditNote,stringResource(R.string.modern_new_chat))}
+                        IconButton(onClick={chatMenu=true}){Icon(Icons.Default.MoreVert,"Chat menu")}
+                        DropdownMenu(chatMenu,{chatMenu=false}) {
+                            DropdownMenuItem(text={Text("Search this chat")},onClick={chatMenu=false;showChatSearch=true;chatSearchMessage=null})
+                            DropdownMenuItem(text={Text("Conversation and token settings")},onClick={chatMenu=false;showChatOptions=true})
+                            DropdownMenuItem(text={Text("Model details")},onClick={chatMenu=false;showCapabilities=true})
+                        }
+                    }},
+                    colors=TopAppBarDefaults.topAppBarColors(containerColor=colors.background))})
+                 { padding ->
+                Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding),contentAlignment=Alignment.TopCenter) {
+                    key(tab) {when(tab) {
+                        "models" -> ModernModelsScreen()
+                        "monitor" -> ModernMonitorScreen()
+                        "media" -> MediaGenerationScreen(onBack={select("chat")})
+                        "vision" -> MediaGenerationScreen(onBack={select("chat")},initialKind="vision")
+                        "voice" -> HandsFreeVoiceDialog(chats){select("chat")}
+                        "structured" -> ModernStructuredScreen()
+                        else -> if(settingsPage) ModernSettingsScreen(initialDestination=tab.takeUnless{it=="settings"},onMenu=openMenu,onDestinationChanged={destination->
+                            settingsDestination=destination
+                            if(destination==null && tab!="settings") tab="settings"
+                        }) else ModernChatScreen(state,runtime,chats,coordinator.engineTag,showChatSearch,chatSearchQuery,chatSearchMessage,onSearchQuery={chatSearchQuery=it;chatSearchMessage=null},onCloseSearch={showChatSearch=false;chatSearchMessage=null},onModels={select("models")},onMedia={select("media")},onVision={select("vision")},onOptions={showChatOptions=true})
+                    }}
                 }
             }
         }
+        if(wide) Row(Modifier.fillMaxSize().testTag("workspace-wide-shell")) {
+            Surface(Modifier.width(T.wideSidebar).fillMaxHeight().windowInsetsPadding(WindowInsets.safeDrawing),color=colors.surface,
+                border=androidx.compose.foundation.BorderStroke(1.dp,colors.outlineVariant.copy(alpha=0.4f))) {sidebar()}
+            Box(Modifier.weight(1f).fillMaxHeight()){body()}
+        } else ModalNavigationDrawer(drawerState=drawer,drawerContent={
+            ModalDrawerSheet(Modifier.width(minOf(T.sidebar,maxWidth-T.touch)),drawerContainerColor=colors.surface) {sidebar()}
+        }){body()}
     }
 }
 
 @Composable
-private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller:ChatController,onModels:()->Unit,onMedia:()->Unit,onVision:()->Unit) {
+private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller:ChatController,engineTag:String,searchOpen:Boolean,searchQuery:String,searchMessageId:String?,onSearchQuery:(String)->Unit,onCloseSearch:()->Unit,onModels:()->Unit,onMedia:()->Unit,onVision:()->Unit,onOptions:()->Unit) {
     var draft by rememberSaveable(state.selectedId) { mutableStateOf("") }
-    var showOptions by remember{mutableStateOf(false)}
-    if(showOptions) ChatOptionsDialog(state,controller){showOptions=false}
+    var showVoice by remember{mutableStateOf(false)}
+    if(showVoice && !com.meshlit.BuildProfile.coreCandidate) HandsFreeVoiceDialog(controller){showVoice=false}
     val list=rememberLazyListState()
     val scope=rememberCoroutineScope()
     val messages=state.current?.messages.orEmpty()
-    val nearBottom by remember { derivedStateOf { list.layoutInfo.visibleItemsInfo.lastOrNull()?.index?.let {
-        it>=list.layoutInfo.totalItemsCount-2 } ?: true } }
-    LaunchedEffect(messages.lastOrNull()?.text?.length,messages.size) {
-        if(messages.isNotEmpty() && nearBottom) list.scrollToItem(messages.lastIndex)
+    val rows=mutableListOf<ReplyTimelineRow>()
+    messages.forEach {message->
+        if(message.role=="user") rows+=ReplyTimelineRow("${message.id}:user",message,kind="user")
+        else {
+            val document=key(message.id){rememberReply(message.text)}
+            rows+=ReplyTimelineRow("${message.id}:header",message,kind="header")
+            document.blocks.forEachIndexed{index,block->rows+=ReplyTimelineRow("${message.id}:$index",message,block,"block")}
+            if(message.text.isNotEmpty()) rows+=ReplyTimelineRow("${message.id}:actions",message,kind="actions")
+        }
+    }
+    val matches=rows.indices.filter{index->val row=rows[index];searchQuery.isNotBlank() && row.kind in setOf("user","block") && (if(row.block!=null) replyBlockText(row.block) else row.message.text).contains(searchQuery,true)}
+    var matchPosition by remember(state.selectedId,searchQuery){mutableIntStateOf(0)}
+    LaunchedEffect(searchOpen,searchQuery,searchMessageId,rows.size,state.selectedId) {
+        if(searchOpen) {
+            val anchor=searchMessageId?.let{id->rows.indexOfFirst{it.message.id==id}.takeIf{it>=0}}
+            val target=anchor ?: matches.getOrNull(0)
+            if(target!=null) list.scrollToItem(target)
+        }
+    }
+    var followLatest by remember(state.selectedId){mutableStateOf(true)}
+    val nearBottom by remember { derivedStateOf { !list.canScrollForward } }
+    LaunchedEffect(list) {snapshotFlow{list.isScrollInProgress to list.canScrollForward}.collectLatest{(scrolling,forward)->if(scrolling) followLatest=!forward}}
+    LaunchedEffect(messages.lastOrNull()?.text?.length,rows.size,state.selectedId) {
+        if(rows.isNotEmpty() && followLatest && !searchOpen) list.scrollToItem(rows.lastIndex)
     }
     val canSend=(runtime is CoordinatorState.Ready || state.current?.options?.onlineProfileId!=null || state.current?.options?.routeId!=null) && !state.running && draft.isNotBlank() && draft.length<=12000
-    val send={ if(canSend) {controller.send(draft);draft=""} }
+    val send={ if(canSend) {followLatest=true;controller.send(draft);draft=""} }
     val colors=MaterialTheme.colorScheme
     val theme=com.meshlit.ui.theme.LocalMeshlitThemeConfig.current
     val light=colors.background.red+colors.background.green+colors.background.blue>1.5f
@@ -185,7 +198,17 @@ private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller
         else->androidx.compose.ui.graphics.lerp(colors.background,colors.primary,0.2f)
     }
     Box(Modifier.fillMaxSize().imePadding().background(Brush.verticalGradient(0f to colors.background,0.62f to colors.background,1f to glow))) {
-    Column(Modifier.fillMaxSize().widthIn(max=T.contentMax).align(Alignment.TopCenter)) {
+    Column(Modifier.fillMaxHeight().widthIn(max=T.contentMax).fillMaxWidth().align(Alignment.TopCenter)) {
+        if(searchOpen) Column(Modifier.fillMaxWidth().padding(horizontal=T.large).testTag("chat-search-bar")) {
+            OutlinedTextField(searchQuery,{onSearchQuery(it.take(200))},Modifier.fillMaxWidth().testTag("chat-search-query"),singleLine=true,label={Text("Search this conversation")},
+                leadingIcon={Icon(Icons.Default.Search,null)},trailingIcon={IconButton(onClick=onCloseSearch){Icon(Icons.Default.Close,"Close chat search")}})
+            Row(verticalAlignment=Alignment.CenterVertically) {
+                Text(if(matches.isEmpty()) "No matching message blocks" else "${matchPosition.coerceAtMost(matches.lastIndex)+1} / ${matches.size} matching blocks",Modifier.weight(1f),style=MaterialTheme.typography.labelSmall)
+                fun move(direction:Int){matchPosition=Math.floorMod(matchPosition+direction,matches.size);followLatest=false;scope.launch{list.animateScrollToItem(matches[matchPosition])}}
+                IconButton(enabled=matches.isNotEmpty(),onClick={move(-1)},modifier=Modifier.testTag("chat-search-previous")){Icon(Icons.Default.KeyboardArrowUp,"Previous chat match")}
+                IconButton(enabled=matches.isNotEmpty(),onClick={move(1)},modifier=Modifier.testTag("chat-search-next")){Icon(Icons.Default.KeyboardArrowDown,"Next chat match")}
+            }
+        }
         if(messages.isEmpty()) Box(Modifier.weight(1f).fillMaxWidth()) {
             if(!keyboardVisible) Column(Modifier.align(Alignment.Center).padding(horizontal=T.section),
                 horizontalAlignment=Alignment.CenterHorizontally) {
@@ -195,44 +218,40 @@ private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller
                     textAlign=TextAlign.Center,modifier=Modifier.widthIn(max=280.dp))
             }
         } else Box(Modifier.weight(1f)) {
-            LazyColumn(state=list,modifier=Modifier.fillMaxSize(),contentPadding=PaddingValues(T.large),verticalArrangement=Arrangement.spacedBy(T.section)) {
-                items(messages,key={it.id}) { message ->
-                    val user=message.role=="user"
-                    Row(Modifier.fillMaxWidth(),horizontalArrangement=if(user) Arrangement.End else Arrangement.Start) {
-                        if(user) Surface(shape=MaterialTheme.shapes.extraLarge,color=MaterialTheme.colorScheme.surfaceContainerHigh,
-                            modifier=Modifier.widthIn(max=T.bubbleMax)) {
-                            SelectionContainer { Text(message.text,Modifier.padding(T.large),style=MaterialTheme.typography.bodyLarge) }
-                        } else Column(Modifier.widthIn(max=T.bubbleMax)) {
-                            Text("Meshlit",style=MaterialTheme.typography.labelMedium,color=MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.height(T.small))
-                            if(message.text.isEmpty() && state.running) LinearProgressIndicator(Modifier.fillMaxWidth())
-                            else MessageBody(message.text)
-                            if(message.text.isNotEmpty()) {
-                                MessageActions(message.text)
+            LazyColumn(state=list,modifier=Modifier.fillMaxSize().testTag("chat-timeline"),contentPadding=PaddingValues(horizontal=T.large,vertical=T.medium),verticalArrangement=Arrangement.spacedBy(14.dp)) {
+                items(rows,key={it.key}) { row -> val message=row.message
+                    when(row.kind) {
+                        "user" -> Row(Modifier.fillMaxWidth().padding(top=T.medium),horizontalArrangement=Arrangement.End) {
+                            val currentMatch=searchOpen && row.key==rows.getOrNull(matches.getOrNull(matchPosition) ?: -1)?.key
+                            Surface(shape=MaterialTheme.shapes.extraLarge,color=if(currentMatch) colors.secondaryContainer else colors.surfaceContainerHigh,modifier=Modifier.widthIn(max=T.bubbleMax).then(if(currentMatch) Modifier.testTag("chat-search-current-match") else Modifier)) {
+                                SelectionContainer {Text(message.text,Modifier.padding(T.large),style=MaterialTheme.typography.bodyLarge)}
                             }
                         }
+                        "header" -> Row(Modifier.fillMaxWidth().padding(top=T.small),verticalAlignment=Alignment.CenterVertically) {
+                            Text("Meshlit",style=MaterialTheme.typography.labelMedium,color=colors.onSurfaceVariant)
+                            if(message.text.isEmpty() && state.running) {Spacer(Modifier.width(T.medium));LinearProgressIndicator(Modifier.width(80.dp))}
+                        }
+                        "block" -> ReplyContent(checkNotNull(row.block),if(searchOpen && row.key==rows.getOrNull(matches.getOrNull(matchPosition) ?: -1)?.key) Modifier.background(colors.secondaryContainer.copy(alpha=0.45f)).testTag("chat-search-current-match") else Modifier)
+                        "actions" -> MessageActions(message.text,message.usage)
                     }
                 }
             }
-            if(!nearBottom && messages.isNotEmpty()) SmallFloatingActionButton(onClick={scope.launch{list.animateScrollToItem(messages.lastIndex)}},
+            if(!nearBottom && rows.isNotEmpty()) SmallFloatingActionButton(onClick={followLatest=true;scope.launch{list.animateScrollToItem(rows.lastIndex)}},
                 modifier=Modifier.align(Alignment.BottomCenter).padding(T.small)) {Icon(Icons.Default.ArrowDownward,stringResource(R.string.modern_latest))}
         }
-        state.current?.usageNote?.let{Text(it,Modifier.padding(horizontal=T.large),style=MaterialTheme.typography.labelSmall)}
+        if(state.current?.options?.showTokenStats!=false) TokenSpeedIndicator(state,onOptions)
         state.error?.let { Box(Modifier.padding(horizontal=T.large)) {ErrorCard(it){controller.clearError()}} }
         if(runtime is CoordinatorState.Error) Box(Modifier.padding(horizontal=T.large)) {ErrorCard(runtime.message,onModels)}
         Column(Modifier.fillMaxWidth().padding(horizontal=T.large,vertical=if(keyboardVisible) T.small else T.medium)) {
-            Surface(shape=RoundedCornerShape(32.dp),color=MaterialTheme.colorScheme.surface.copy(alpha=0.97f),
-                shadowElevation=2.dp) {
+            Surface(shape=RoundedCornerShape(32.dp),color=MaterialTheme.colorScheme.surface.copy(alpha=0.97f),shadowElevation=2.dp) {
                 Row(Modifier.fillMaxWidth().padding(horizontal=T.tiny,vertical=T.tiny),verticalAlignment=Alignment.CenterVertically) {
-                    ChatAttachmentActions(!state.running,onText={text->if(draft.length+text.length+2<=12000) draft=if(draft.isBlank()) text else "$draft\n\n$text" else controller.attachmentError("Attachment plus draft exceeds 12000 characters")},onMedia=onMedia,onVision=onVision,onOptions={showOptions=true})
-                    TextField(value=draft,onValueChange={draft=it},modifier=Modifier.weight(1f),
+                    ChatAttachmentActions(!state.running,onText={text->if(draft.length+text.length+2<=12000) draft=if(draft.isBlank()) text else "$draft\n\n$text" else controller.attachmentError("Attachment plus draft exceeds 12000 characters")},onMedia=onMedia,onVision=onVision,onOptions=onOptions)
+                    TextField(value=draft,onValueChange={draft=it},modifier=Modifier.weight(1f).testTag("chat-composer"),
                         placeholder={Text(stringResource(R.string.modern_message),style=MaterialTheme.typography.bodyLarge)},maxLines=6,
                         keyboardOptions=KeyboardOptions(imeAction=ImeAction.Send),keyboardActions=KeyboardActions(onSend={send()}),
                         colors=TextFieldDefaults.colors(focusedContainerColor=Color.Transparent,unfocusedContainerColor=Color.Transparent,
                             focusedIndicatorColor=Color.Transparent,unfocusedIndicatorColor=Color.Transparent))
-                    IconButton(onClick=onVision,enabled=!state.running) {
-                        Icon(Icons.Default.Image,"Photo and camera input",tint=MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    if(!com.meshlit.BuildProfile.coreCandidate) IconButton(onClick={showVoice=true},enabled=!state.running){Icon(Icons.Default.Mic,"Hands-free voice conversation")}
                     FilledIconButton(enabled=state.running || canSend,onClick={if(state.running) controller.stop() else send()},modifier=Modifier.size(T.touch),
                         colors=IconButtonDefaults.filledIconButtonColors(containerColor=colors.primary,contentColor=colors.onPrimary)) {
                         Icon(if(state.running) Icons.Default.Stop else Icons.Default.ArrowUpward,
@@ -240,7 +259,11 @@ private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller
                     }
                 }
             }
-            val mode=if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null) "Online provider" else "Offline model"
+            val mode=if(state.current?.options?.colibriMode!="OFF" && state.current?.options?.colibriMode!=null) "Colibri policy · ${state.current?.options?.colibriMode}" else if(state.current?.options?.routeId!=null) "Model router" else if(state.current?.options?.onlineProfileId!=null) "Online provider" else when(engineTag){
+                "runanywhere","onnx-ort","llama-native-local" -> "On-device model"
+                "llama-rpc-layer" -> "Cluster model"
+                else -> "Selected model"
+            }
             if(!keyboardVisible) Text(mode,Modifier.fillMaxWidth().padding(top=T.small),textAlign=TextAlign.Center,
                 style=MaterialTheme.typography.labelSmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -248,23 +271,5 @@ private fun ModernChatScreen(state:ChatState,runtime:CoordinatorState,controller
     }
 }
 
-/** Fenced code stays selectable, monospaced and copyable. Plain response text
- * stays selectable; no HTML/WebView rendering of untrusted model output. */
-@Composable private fun MessageBody(text:String) {
-    val chunks=remember(text) { text.split("```") }
-    chunks.forEachIndexed { index,chunk ->
-        if(index%2==1) {
-            val code=chunk.substringAfter('\n',chunk)
-            val clipboard=LocalClipboardManager.current
-            Surface(shape=MaterialTheme.shapes.medium,color=MaterialTheme.colorScheme.surfaceContainerHigh) {
-                Column(Modifier.fillMaxWidth().padding(T.medium)) {
-                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween) {
-                        Text(chunk.substringBefore('\n').take(30),style=MaterialTheme.typography.labelSmall)
-                        IconButton(onClick={clipboard.setText(AnnotatedString(code))}) {Icon(Icons.Default.ContentCopy,stringResource(R.string.modern_copy))}
-                    }
-                    SelectionContainer {Text(code,fontFamily=FontFamily.Monospace,style=MaterialTheme.typography.bodyMedium)}
-                }
-            }
-        } else SelectionContainer {Text(chunk,style=MaterialTheme.typography.bodyLarge)}
-    }
-}
+
+private data class ReplyTimelineRow(val key:String,val message:ChatMessage,val block:ReplyBlock?=null,val kind:String)

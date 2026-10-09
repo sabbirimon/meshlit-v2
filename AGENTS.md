@@ -1,4 +1,8 @@
 # Meshlit agent instructions
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: workflow guidance; current owner instructions and scoped evidence govern. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 ## Start here
 Read `README.md`, `settings.gradle.kts`, `docs/architecture/current-state.md`,
@@ -176,3 +180,25 @@ to sabbirimon/meshlit-v2 with Apache-2.0 root LICENSE and repository metadata; p
 history and third-party notices. The owner subsequently authorized GitHub beta release assets and a separate Play
 review build. No force push, Play Store submission or external promotion posts
 are authorized. Read docs/PLAY_DISTRIBUTION.md and docs/PRIVACY_POLICY.md.
+
+## HyperL alpha.6 integration (2026-10-09)
+
+The user authorized integration of newly covered HyperL alpha.6 features.
+`core-hyperl` retains its separate Community and Enterprise licence plus earlier
+Apache grants; do not relabel it Apache or copy its additions into an Apache-only
+module. Application wrappers remain independent Meshlit code. Keep optional terms
+explicit, keys in no-backup storage and datasets/CPU execution human-only. Run
+`scripts/check-hyperl-alpha6.py`, changed core/app tests and both builds/lints.
+Read docs/hyperl/ANDROID_ALPHA6.md and the supplied architectural evaluation review.
+Native JNI preprocessing is separate from the chat/LLM SDK and GPU qualification.
+
+## Documentation tracking continuation — 2026-10-10
+
+The owner asks for all Markdown plans/progress/phase tracking to stay current.
+Use PLAN.md, TODO.md, REQUESTS.md, BUGS.md, PROGRESS.md and
+docs/DOCUMENTATION_STATUS.md. Update workstream states and individual acceptance
+gates; do not invent a global phase or project completion percentage. Run
+`scripts/update-doc-tracking.py --write`, then `--check`, and
+`scripts/validate-feature-map.py`. Historical records, third-party/licence text
+and versioned agreements are indexed without changing their dated claims or
+terms. Keep offline guide content synchronized when changing user instructions.

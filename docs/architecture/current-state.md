@@ -1,4 +1,8 @@
 # Current architecture and evidence boundaries
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-10: [Plan](../../PLAN.md) · [Progress](../../PROGRESS.md) · [Document status](../DOCUMENTATION_STATUS.md).
+Scope: Android/shared reference; desktop ports have separate acceptance. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 Updated 2026-10-07. Working branch `codex/meshlit-ui-pipeline-openclaw`, baseline
 `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`. The upstream architecture text is
@@ -146,8 +150,12 @@ manifest/policy/23-library ELF alignment checks pass; Play approval and actual
 16 KiB runtime proof remain open. Final emulator Models shows the starter loaded;
 normal cold startup took 7.406s after Gradle stopped, with two ANRs during lint.
 The owner stopped for sleep, then requested progress saving/local release asset
-preparation. Resume builds or GitHub publication only after their next instruction.
-No beta assets have been uploaded. Keep physical phone sharding/recovery, hosted
+preparation. The owner has since authorized continued work and Intel publication; see the current handoff.
+Beta.1 publication is historical and verified; current Intel Studio distribution is tracked in ../RELEASE_EVIDENCE.md. Keep physical phone sharding/recovery, hosted
 Grafana, vendor SDK telemetry opt-out and optional integrations explicitly open.
 
 Gateway continuation: see ../AGENT_GATEWAY_AND_SECURITY_LAB.md. Protocol endpoint implementation is Meshlit Kotlin, distinct from the pinned upstream Rust companion.
+
+## Current desktop core boundary — 2026-10-10
+
+Desktop-engine reuses the portable GGUF/model/negotiation sources, desktop-ssh reuses scoped SSH sources, and desktop-hyperl keeps its separate licence. Intel local inference is an owned pinned CPU process with verified SSE4.2/AVX2 dispatch, memory/native-context admission, bounded streaming/options, human lazy load and idle unload. Recovered installers execute it with a private Java runtime. The seven-category management shell has real bounded local controllers and separately marked pending backends. A shared layer planner is not a desktop distributed executor. Production admission, independent device execution, agent authority/audit, OS firewall/VM/container/cloud and other platform backends remain tracked gates. See ../DOCUMENTATION_STATUS.md and ../DESKTOP_FEATURE_TRACKER.md; older numeric phase records are design/history, not global current status.

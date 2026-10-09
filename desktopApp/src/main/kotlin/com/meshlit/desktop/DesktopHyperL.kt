@@ -1,0 +1,82 @@
+package com.meshlit.desktop
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import com.meshlit.core.hyperl.*
+import kotlinx.coroutines.*
+import kotlinx.serialization.json.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.security.MessageDigest
+
+private fun verifyHyperLNative() {
+    val resources = Path.of(System.getProperty("compose.application.resources.dir", "desktopApp/build/local-resources"))
+    val library = resources.resolve("local/${System.mapLibraryName("meshlit_hyperl")}")
+    check(Files.isRegularFile(library)) { "Bundled HyperL library unavailable" }
+    val manifest = boundedJson(Files.readString(resources.resolve("local/hyperl-engine.json")))
+    val bytes = Files.readAllBytes(library).also { require(it.size <= 16 * 1024 * 1024) }
+    val actual = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+    check(actual == manifest["sha256"]!!.jsonPrimitive.content) { "HyperL native checksum mismatch" }
+}
+
+@Composable internal fun HyperLPanel() {
+    var accepted by remember { mutableStateOf(false) }
+    var recipeId by remember { mutableStateOf("affine_relu") }
+    var input by remember { mutableStateOf("{\"x\":[-1,2,3],\"w\":[2,3,4],\"bias\":[1,1,1]}") }
+    var result by remember { mutableStateOf("") }; var failure by remember { mutableStateOf(false) }
+    var running by remember { mutableStateOf(false) }; var job by remember { mutableStateOf<Job?>(null) }
+    var showTerms by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    Text("Built-in HyperL · native CPU", style = MaterialTheme.typography.h6)
+    Text("Twelve bounded f32 preprocessing recipes, native C execution and precise sums. This is separate from the LLM engine; it does not turn desktops into a pooled transformer or qualify GPU/NPU drivers.")
+    TextButton({ showTerms = !showTerms }) { Text("Read HyperL licence") }
+    if (showTerms) Text(HyperLLibrary::class.java.getResourceAsStream("/hyperl/LICENSE")?.bufferedReader()?.use { it.readText() } ?: "Licence resource unavailable")
+    Row { Checkbox(accepted, { accepted = it; if (!it) { job?.cancel(); running = false; result = "" } }); Text("Enable after reviewing HyperL's separate terms") }
+    HyperLLibrary.ids.chunked(3).forEach { group -> Row { group.forEach { id -> TextButton({
+        job?.cancel(); running = false; recipeId = id; result = ""
+        input = buildJsonObject { HyperLLibrary.recipe(id).example.forEach { (name, values) -> putJsonArray(name) { values.forEach { add(it) } } } }.toString()
+    }, enabled = !running) { Text((if (recipeId == id) "✓ " else "") + id) } } } }
+    Text(HyperLLibrary.recipe(recipeId).purpose)
+    Text("Recipe examples are editable numerical inputs; Run computes the real result.", style = MaterialTheme.typography.caption)
+    OutlinedTextField(input, { input = it.take(65536); result = "" }, label = { Text("Input vectors · JSON") }, modifier = Modifier.fillMaxWidth(), maxLines = 8, enabled = !running)
+    Row {
+        Button({
+            running = true; failure = false; result = ""
+            val selected = recipeId; val text = input
+            job = scope.launch {
+                try {
+                    val computed = withContext(Dispatchers.Default) {
+                        verifyHyperLNative()
+                        val values = HyperLCodec.inputs(text)
+                        NativeCpu.execute(HyperLLibrary.recipe(selected).program, values, 64L * 1024 * 1024)
+                    }
+                    result = computed.joinToString(prefix = "[", postfix = "]")
+                } catch (e: CancellationException) { throw e }
+                catch (e: Throwable) { failure = true }
+                finally { running = false }
+            }
+        }, enabled = accepted && !running) { Text("Run native CPU recipe") }
+        TextButton({ job?.cancel(); result = "" }, enabled = running) { Text("Stop") }
+    }
+    if (failure) Text("Execution failed. Check input names, vector lengths, finite values, memory budget and native integrity.", color = MaterialTheme.colors.error)
+    if (result.isNotEmpty()) Text("Native output: $result")
+}
+
+internal fun hyperLCheck(output: String) = runBlocking {
+    verifyHyperLNative()
+    var count = 0
+    for (id in HyperLLibrary.ids) {
+        val recipe = HyperLLibrary.recipe(id)
+        val native = NativeCpu.execute(recipe.program, recipe.example, 64L * 1024 * 1024)
+        val reference = HyperLCpuBackend(64L * 1024 * 1024).execute(recipe.program, recipe.example)
+        check(native.contentEquals(reference)) { "Native mismatch for $id" }; count++
+    }
+    check(NativeCpu.precise(floatArrayOf(100000000f, 1f, -100000000f), 64L * 1024 * 1024) == 1f)
+    Files.writeString(Path.of(output), buildJsonObject {
+        put("nativeCpuRecipesVerified", count); put("preciseReductionResult", 1)
+        put("runtime", HyperLContract.RUNTIME_REVISION); put("scope", "Actual Intel JNI; no distributed LLM or GPU claim")
+    }.toString())
+    println("Built-in HyperL native CPU recipes and precise reduction passed.")
+}
