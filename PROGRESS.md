@@ -44,8 +44,11 @@ sampling, HF metadata and all 12 HyperL JNI CPU recipes pass. Broader agent auto
 OS firewall, container/Kubernetes, VM, cloud vault/billing and full repair remain
 pending. No new desktop package or release publication is claimed in this entry.
 Android starter/local defaults are retained. Shared planner and inference module
-API-24 desugaring/voice permission-error handling changed; Android full builds and
-lints are being rerun. Desktop RPC worker execution, independent-device speed,
+API-24 desugaring/voice permission-error handling changed; Both Android Full V1/V2 debug assemblies and lints pass in the serial regression
+run (13m34s): zero errors, 374 warnings each; core inference lint zero errors,
+7 warnings. The combined desktop/shared/MCP/network/sandbox valid JVM result
+files contain 521 executions without failures/errors/skips; cached unchanged
+suites and shared re-executions are not separate hardware proof. Desktop RPC worker execution, independent-device speed,
 production acceptance and other platform hardware remain unqualified.
 
 ## Build 40: Studio, host clients and scoped connected tools — 2026-10-09

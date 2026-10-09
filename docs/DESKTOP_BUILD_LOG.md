@@ -107,3 +107,24 @@ A generated 3,321,165,255-byte heap dump and the known failed installer scratch
 (application input/image/runtime only, about 1.3 GiB) were removed. Primary
 models, source/JDK/native build inputs and actual evidence were retained. Heap
 dumps are now ignored and must never be committed or published.
+
+The first Studio package attempt was rejected by the native dependency gate:
+the supplied HyperL dylib's own install name was an absolute development path.
+The gate was preserved. A reproducible Intel/JNI builder now compiles the same
+unmodified CPU/JNI sources with an `@rpath` install name; the new library and
+installer payload still require their actual runtime checks.
+
+## Android/shared regression gate — current Studio source
+
+The serial validation completes successfully in **13m34s**: both Full V1/V2 debug
+APK assemblies and both flavor lints, core-inference lint, and MCP/sandbox/network/
+inference unit tasks. Both app flavors report **0 fatal/errors, 374 warnings**;
+core-inference reports **0 fatal/errors, 7 warnings**. Warnings are not erased.
+Together with desktop/workspace/engine/SSH suites, current valid JVM result files
+contain **521** executions, zero failures/errors/skips on this Mac; shared-source
+re-executions/cached unchanged suites are not distinct hardware evidence. Crawler
+API/policy checks separately pass 9. No new phone installation or APK release is
+claimed. Build daemons were stopped before the matched CPU timing trial.
+
+The relocatable unmodified HyperL library then passes all twelve real native CPU
+recipes and precise reduction. See `evidence/hyperl-relocatable-host-check.json`.

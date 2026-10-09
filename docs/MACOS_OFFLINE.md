@@ -59,7 +59,11 @@ Custom or model-native local response instructions do not change remote host pol
    Compile the original Meshlit `desktopApp/native/cpu_features.c` probe with
    `clang -O2 -std=c11 -Wall -Wextra -Werror -arch x86_64 -mmacosx-version-min=11.0
    desktopApp/native/cpu_features.c -o <scratch>/cpu-features`.
-4. Run `python3 scripts/package-macos-preview.py --app-image <MeshlitPreview.app>
+4. Build the separately licensed, unmodified HyperL CPU/JNI source with
+   `python3 scripts/build-desktop-hyperl.py --jdk-home <portable-jdk>/Contents/Home
+   --output <scratch>/hyperl-native/libmeshlit_hyperl.dylib`. This gives it a
+   relocatable `@rpath` install name; absolute development-path dependencies fail packaging.
+5. Run `python3 scripts/package-macos-preview.py --app-image <MeshlitPreview.app>
    --jdk-home <portable-jdk>/Contents/Home --output <new-delivery-dir>
    --scratch <new-scratch-dir> --runtime-provenance <runtime-provenance.json>
    --runtime-source <matching-source.tar.gz> --model <pinned-model.gguf>
