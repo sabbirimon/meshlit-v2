@@ -1,0 +1,49 @@
+Meshlit Intel Mac desktop preview - application version 2.0.40, build40 client
+
+Choose ONE installation method:
+DMG: open the disk image and drag MeshlitPreview.app onto Applications.
+PKG: open the installer; it installs the same app in /Applications.
+Quit an existing MeshlitPreview before replacing it. Do not install both methods.
+
+This is an experimental Intel x86_64 Mac client, not an iPhone or Apple Silicon
+native build. macOS 11 or later is the configured minimum; only the Intel
+development Mac on macOS 15.8.1 has been tested. A portable Eclipse Temurin 21
+runtime is bundled; Homebrew and a separately installed Java are not needed.
+
+The app has only an ad-hoc local integrity signature. It is NOT Developer ID
+signed or Apple-notarized; the PKG is unsigned. macOS may block an Internet
+download. Verify its SHA-256 against the GitHub release before considering
+macOS Privacy & Security's approval for this specific app. Do not disable
+Gatekeeper or other system security globally. A public production distribution
+still needs Developer ID signing, notarization and clean target-Mac validation.
+
+The desktop app bundles Qwen2.5 1.5B Instruct Q4_K_M (1,117,320,736 bytes) and a
+llama.cpp CPU engine. Choose Load in the header, then Send to chat offline.
+Load verifies the pinned full model hash before starting its private authenticated
+127.0.0.1 process. No Internet request or model download is required. Unload/quit
+stops that process. Stop during generation also unloads it; click Load to resume.
+Settings -> Local offline -> Select GGUF lets you use a compatible local file.
+Download trusted .gguf files in your browser; direct in-app downloads are planned.
+The selected file stays in place; it is not copied into a model cache.
+
+Remote host mode connects to a host you explicitly select with a separate network
+opt-in. HTTPS is required except numeric loopback. Prompts and the session bearer
+token are sent to that host. Tokens and chat history are kept in memory; closing
+the app clears them. Appearance persists. Switching between local and remote
+clears the chat to avoid sending local history to another host.
+This preview does not provide the Android app's complete node/agent/voice features.
+
+The PKG contains no installation scripts, background services, login items,
+drivers, shell commands or global Java installation. The starter model is included
+in the application payload; it is not downloaded by an installer script.
+Uninstall by quitting and removing /Applications/MeshlitPreview.app.
+
+Licenses and dependency notices are inside the app at Contents/Resources/licenses;
+the bundled Java runtime's complete legal notices are under Contents/runtime.
+RUNTIME_SOURCE.json identifies the matching Java source archive supplied beside
+the installers on the same GitHub release. The Java GPL/Classpath exception does
+not change Meshlit's own Apache-2.0 application licence. Other Android-only
+components listed by repository-wide notices are not bundled in this client.
+
+Source: https://github.com/sabbirimon/meshlit-v2
+Contact: sabbirimon@gmail.com

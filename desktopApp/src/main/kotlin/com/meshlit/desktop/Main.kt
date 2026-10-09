@@ -24,9 +24,10 @@ import kotlinx.coroutines.*
 private data class Message(val role: String, val text: String, val completed: Boolean = true)
 fun main(args: Array<String>) {
     if (args.size == 2 && args[0] == "--render-check") { renderCheck(args[1]); return }
+    if (args.size == 2 && args[0] == "--local-check") { localCheck(args[1]); return }
     if (args.firstOrNull() == "--cli") { runCli(args.drop(1).toTypedArray()); return }
     application {
-    Window(onCloseRequest = ::exitApplication, title = "Meshlit · Experimental desktop client",
+    Window(onCloseRequest = ::exitApplication, title = "Meshlit · Experimental desktop",
         state = rememberWindowState(width = 1120.dp, height = 800.dp)) { Workspace() }
     }
 }
@@ -47,6 +48,11 @@ fun main(args: Array<String>) {
     var colibriHost by remember { mutableStateOf(false) }
     var colibriMode by remember { mutableStateOf(ColibriMode.OFF) }
     var observedAt by remember { mutableStateOf<Long?>(null) }
+    val localEngine = remember { LocalEngine() }
+    var localMode by remember { mutableStateOf(true) }
+    var localSession by remember { mutableStateOf<LocalSession?>(null) }
+    var customModel by remember { mutableStateOf<java.nio.file.Path?>(null) }
+    var localLoading by remember { mutableStateOf(false) }
     var network by remember { mutableStateOf(false) }
     var models by remember { mutableStateOf(listOf<String>()) }
     var model by remember { mutableStateOf("") }
@@ -59,10 +65,39 @@ fun main(args: Array<String>) {
     var job by remember { mutableStateOf<Job?>(null) }
     var client by remember { mutableStateOf<HostClient?>(null) }
     var revision by remember { mutableStateOf(0) }
-    fun stop() { revision++; client?.close(); job?.cancel(); client = null; busy = false }
-    DisposableEffect(Unit) { onDispose { client?.close(); job?.cancel() } }
+    fun stop(unloadLocal: Boolean = false) {
+        revision++; client?.close(); job?.cancel(); client = null
+        if (unloadLocal || localMode && busy) { localEngine.stop(); localSession = null; connected = false; models = emptyList(); model = "" }
+        busy = false; localLoading = false
+    }
+    fun loadLocal() {
+        stop(true); failure = false; busy = true; localLoading = true
+        val currentRevision = revision
+        val selected = customModel
+        job = scope.launch {
+            try {
+                val loaded = withContext(Dispatchers.IO) { localEngine.start(selected) }
+                if (revision != currentRevision) throw CancellationException("Load superseded")
+                localSession = loaded; connected = true; models = listOf(DesktopStarter.alias); model = DesktopStarter.alias
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { if (revision == currentRevision) failure = true }
+            finally { if (revision == currentRevision) { busy = false; localLoading = false } }
+        }
+    }
+    fun selectGguf() {
+        val picker = javax.swing.JFileChooser().apply {
+            dialogTitle = t("Choose a trusted GGUF model", "选择可信的 GGUF 模型")
+            fileFilter = javax.swing.filechooser.FileNameExtensionFilter("GGUF model", "gguf")
+            isAcceptAllFileFilterUsed = false
+        }
+        if (picker.showOpenDialog(null) == javax.swing.JFileChooser.APPROVE_OPTION) {
+            stop(true); messages = emptyList(); usage = GenerationUsage(); customModel = picker.selectedFile.toPath()
+        }
+    }
+    fun requestsAllowed() = if (localMode) localSession != null && connected else network && connected
+    DisposableEffect(Unit) { onDispose { client?.close(); job?.cancel(); localEngine.close() } }
     fun colibriReady() = connected && observedAt?.let { System.nanoTime() - it in 0..300_000_000_000L } == true
-    fun hostAllowed() = !colibriHost || colibriDecision(colibriMode, network, colibriReady(), false).route == ColibriRoute.HOST
+    fun hostAllowed() = localMode || !colibriHost || colibriDecision(colibriMode, network, colibriReady(), false).route == ColibriRoute.HOST
     fun connect() {
         if (!network || colibriHost && colibriMode == ColibriMode.OFF) return
         stop(); failure = false; connected = false; models = emptyList(); model = ""; busy = true
@@ -80,8 +115,8 @@ fun main(args: Array<String>) {
         }
     }
     fun send() {
-        if (busy || !connected || !network || !hostAllowed() || prompt.isBlank()) return
-        val context = messages.filter { it.completed }.map { ChatTurn(it.role, it.text) } + ChatTurn("user", prompt.trim())
+        if (busy || !requestsAllowed() || !hostAllowed() || prompt.isBlank()) return
+        val context = (if (localMode) listOf(ChatTurn("system", DesktopStarter.prompt)) else emptyList()) + messages.filter { it.completed }.map { ChatTurn(it.role, it.text) } + ChatTurn("user", prompt.trim())
         if (context.size > 64 || context.sumOf { it.content.length.toLong() } > 131072) { failure = true; return }
         messages = messages + Message("user", prompt.trim()) + Message("assistant", "", false)
         prompt = ""; usage = GenerationUsage(); failure = false; busy = true
@@ -89,7 +124,8 @@ fun main(args: Array<String>) {
         job = scope.launch {
             var active: HostClient? = null
             try {
-                val generationClient = HostClient(HostEndpoint.parse(endpoint), token); active = generationClient; client = generationClient
+                val session = if (localMode) checkNotNull(localSession) else null
+                val generationClient = HostClient(session?.endpoint ?: HostEndpoint.parse(endpoint), session?.token ?: token); active = generationClient; client = generationClient
                 val result = withContext(Dispatchers.IO) {
                     generationClient.generate(model, context, GenerationBudget(budget.toInt())) { chunk ->
                         runBlocking { withContext(Dispatchers.Main) { if (revision == currentRevision) messages = messages.dropLast(1) + messages.last().copy(text = messages.last().text + chunk) } }
@@ -124,18 +160,19 @@ fun main(args: Array<String>) {
                     Column(Modifier.weight(1f).fillMaxHeight()) {
                         Row(Modifier.fillMaxWidth().height(52.dp).padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
-                                Text(model.ifBlank { "Meshlit" }, fontWeight = FontWeight.Medium)
-                                Text(if (colibriHost) "Colibri · ${colibriMode.name} · host client" else t("Host client · no bundled local engine", "主机客户端 · 未内置本地推理引擎"), style = MaterialTheme.typography.caption, color = colors.onSurface.copy(alpha = .65f))
+                                Text(if (localMode) customModel?.fileName?.toString() ?: DesktopStarter.label else model.ifBlank { "Meshlit" }, fontWeight = FontWeight.Medium)
+                                Text(if (localMode) t(if (localSession != null) "Offline · local CPU · ready" else if (localLoading) "Verifying and loading local model…" else "Bundled offline model · click Load", if (localSession != null) "离线 · 本机 CPU · 已就绪" else if (localLoading) "正在验证并加载模型…" else "内置离线模型 · 点击加载") else if (colibriHost) "Colibri · ${colibriMode.name} · host client" else t("Selected remote host", "所选远程主机"), style = MaterialTheme.typography.caption, color = colors.onSurface.copy(alpha = .65f))
                             }
                             TextButton({ stop(); messages = emptyList(); usage = GenerationUsage() }) { Text(t("New chat", "新对话")) }
+                            if (localMode) TextButton({ if (localSession == null) loadLocal() else stop(true) }, enabled = !busy) { Text(if (localSession == null) t("Load", "加载") else t("Unload", "卸载")) }
                             TextButton({ settings = true }) { Text(t("Settings", "设置")) }
                         }
                         if (messages.isNotEmpty()) OutlinedTextField(query, { query = it.take(256) }, label = { Text(t("Search this chat", "搜索当前对话")) }, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp), singleLine = true)
-                        if (failure) Text(t("Request failed. Check the host, trusted TLS, client token and context size. A partial reply is excluded from the next request.", "请求失败。请检查主机、可信 TLS、客户端令牌和上下文长度。未完成的回复不会发送至下一次请求。"), Modifier.padding(24.dp), color = colors.error)
+                        if (failure) Text(if (localMode) t("Local model failed. Check available memory, GGUF compatibility and packaged engine/model integrity. Try Unload and Load; partial replies are excluded from future requests.", "本地模型失败。请检查可用内存、GGUF 兼容性及引擎和模型完整性。尝试卸载再加载；未完成回复不会用于后续请求。") else t("Request failed. Check the host, trusted TLS, client token and context size. A partial reply is excluded from the next request.", "请求失败。请检查主机、可信 TLS、客户端令牌和上下文长度。未完成的回复不会发送至下一次请求。"), Modifier.padding(24.dp), color = colors.error)
                         if (messages.isEmpty()) Column(Modifier.weight(1f).fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("✦", fontSize = 48.sp, color = colors.primary)
                             Spacer(Modifier.height(20.dp)); Text(t("What should we work on?", "我们开始做什么？"), style = MaterialTheme.typography.h4)
-                            Spacer(Modifier.height(12.dp)); Text(t("Choose a trusted Meshlit or OpenAI-compatible host in Settings.", "请在设置中选择可信的 Meshlit 或 OpenAI 兼容主机。"), color = colors.onSurface.copy(alpha = .65f))
+                            Spacer(Modifier.height(12.dp)); Text(if (localMode) t("Load the bundled Qwen model to chat offline, or select a GGUF in Settings.", "加载内置 Qwen 模型离线聊天，或在设置中选择 GGUF。") else t("Choose a trusted Meshlit or OpenAI-compatible host in Settings.", "请在设置中选择可信的 Meshlit 或 OpenAI 兼容主机。"), color = colors.onSurface.copy(alpha = .65f))
                             Spacer(Modifier.height(20.dp))
                             HeroMenu(::t, onChat = { stop(); messages = emptyList(); usage = GenerationUsage() }, onModels = { settings = true }, onStyle = { settings = true })
                         } else LazyColumn(Modifier.weight(1f).fillMaxWidth(), contentPadding = PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -156,7 +193,7 @@ fun main(args: Array<String>) {
                                 Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     TextField(prompt, { prompt = it.take(131072) }, placeholder = { Text(t("Ask Meshlit", "向 Meshlit 提问")) }, modifier = Modifier.weight(1f), maxLines = 6,
                                         colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent))
-                                    Button(if (busy) ::stop else ::send, enabled = busy || (network && connected && hostAllowed() && model.isNotBlank() && prompt.isNotBlank()), shape = RoundedCornerShape(22.dp)) { Text(if (busy) t("Stop", "停止") else t("Send ↑", "发送 ↑")) }
+                                    Button(if (busy) { { stop() } } else ::send, enabled = busy || (requestsAllowed() && hostAllowed() && model.isNotBlank() && prompt.isNotBlank()), shape = RoundedCornerShape(22.dp)) { Text(if (busy) t("Stop", "停止") else t("Send ↑", "发送 ↑")) }
                                 }
                             }
                             Text(t("Reported output tokens", "报告的输出令牌") + ": ${usage.outputTokens ?: t("unknown", "未知")} · " + t("End-to-end tokens/s", "端到端令牌/秒") + ": ${usage.tokensPerSecond?.let { "%.2f".format(it) } ?: t("unknown", "未知")}", style = MaterialTheme.typography.caption, modifier = Modifier.padding(top = 8.dp))
@@ -172,11 +209,28 @@ fun main(args: Array<String>) {
                         Row { WorkspaceLook.entries.forEach { l -> TextButton({ look = l; save() }) { Text((if (look == l) "✓ " else "") + l.label) } } }
                         Text(t("Text size", "字体大小")); Slider(scale, { scale = it }, valueRange = .85f..1.5f, onValueChangeFinished = ::save)
                         if (preferencesError) Text(t("Appearance could not be saved.", "无法保存外观设置。"), color = colors.error)
-                        Divider(); MenuHeading("models", t("Explicit host access", "明确授权主机访问"))
+                        Divider(); MenuHeading("models", t("Model source", "模型来源"))
+                        Row {
+                            RadioButton(localMode, { stop(true); localMode = true; messages = emptyList() }); Text(t("Local offline", "本地离线"))
+                            RadioButton(!localMode, { stop(true); localMode = false; messages = emptyList() }); Text(t("Remote host", "远程主机"))
+                        }
+                        if (localMode) {
+                            Text(customModel?.fileName?.toString() ?: DesktopStarter.label, fontWeight = FontWeight.Bold)
+                            Text(t("Bundled Qwen: 1.12 GB · text/chat/code · 4,096-token context · CPU. A small model can make mistakes; it has no web or device tools. Imported GGUFs depend on engine support and available RAM.", "内置 Qwen：1.12 GB · 文本/聊天/代码 · 4,096 令牌上下文 · CPU。小模型可能出错；没有网络或设备工具。导入 GGUF 取决于引擎支持和可用内存。"), style = MaterialTheme.typography.caption)
+                            Row {
+                                Button(::loadLocal, enabled = !busy) { Text(t("Load", "加载")) }
+                                TextButton({ stop(true) }) { Text(t("Unload", "卸载")) }
+                                TextButton(::selectGguf, enabled = !busy) { Text(t("Select GGUF", "选择 GGUF")) }
+                                TextButton({ stop(true); customModel = null; messages = emptyList() }, enabled = !busy) { Text(t("Use bundled", "使用内置模型")) }
+                            }
+                            TextButton({ java.awt.Desktop.getDesktop().browse(java.net.URI("https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF")) }) { Text(t("Download GGUFs · open Hugging Face", "下载 GGUF · 打开 Hugging Face")) }
+                            Text(t("Download a trusted .gguf in your browser, choose it here, then Load. Files stay at your chosen location; no duplicate import or automatic download. .safetensors/.bin require conversion outside this app. Unload or closing the app stops its private local process. Stop during generation also unloads it.", "在浏览器中下载可信的 .gguf，在这里选择后加载。文件保留原位置，不复制、不自动下载。.safetensors/.bin 需要在应用外转换。卸载或关闭应用会停止私有本地进程；生成时停止也会卸载模型。"), style = MaterialTheme.typography.caption)
+                        } else {
+                        MenuHeading("models", t("Explicit host access", "明确授权主机访问"))
                         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(colibriHost, { stop(); colibriHost = it; connected = false; observedAt = null }); Text(t("Use Colibri host", "使用 Colibri 主机")) }
                         if (colibriHost) {
                             Row { ColibriMode.entries.forEach { mode -> TextButton({ stop(); colibriMode = mode; if (mode == ColibriMode.OFF) connected = false }) { Text((if (colibriMode == mode) "✓ " else "") + mode.name) } } }
-                            Text(t("Auto uses this authorized, recently observed host because this desktop preview has no local engine. Refresh expires after 5 minutes. No server or model is installed. Agent switching is supported in the Android Experimental node with separate user grants; this preview has no agent controller.", "桌面预览没有本地引擎，因此自动模式使用已授权且近期确认的主机。刷新记录在五分钟后失效，不会安装服务器或模型。代理切换需要 Android 实验性节点中的单独授权；本预览没有代理控制器。"), style = MaterialTheme.typography.caption)
+                            Text(t("Auto uses this explicitly authorized, recently observed Colibri host while remote mode is selected. Refresh expires after 5 minutes. No server or model is installed. Agent switching is supported in the Android Experimental node with separate user grants; this preview has no agent controller.", "选择远程模式时，自动模式使用已授权且近期确认的 Colibri 主机。刷新记录在五分钟后失效，不会安装服务器或模型。代理切换需要 Android 实验性节点中的单独授权；本预览没有代理控制器。"), style = MaterialTheme.typography.caption)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(network, { network = it; if (!it) { stop(); connected = false; models = emptyList(); model = "" } }); Text(t("Allow requests to the selected host", "允许向所选主机发送请求")) }
                         Text(t("Prompts and your token go to this host. TLS uses the system trust store; redirects are blocked. HTTP is limited to literal loopback. Host model operation is managed separately.", "提示词和令牌将发送至此主机。TLS 使用系统信任库，并禁止重定向。HTTP 仅限本机回环地址。主机模型需要单独管理。"), style = MaterialTheme.typography.caption)
@@ -185,6 +239,7 @@ fun main(args: Array<String>) {
                         Button(::connect, enabled = network && !busy && endpoint.isNotBlank() && (!colibriHost || colibriMode != ColibriMode.OFF)) { Text(t("Connect / refresh models", "连接 / 刷新模型")) }
                         models.forEach { id -> Row(verticalAlignment = Alignment.CenterVertically) { RadioButton(model == id, { model = id }); Text(id) } }
                         if (connected && models.isEmpty()) Text(t("The host reports no models.", "主机未报告可用模型。"))
+                        }
                         Text(t("Output limit", "输出上限") + ": ${budget.toInt()} tokens"); Slider(budget, { budget = it }, valueRange = 64f..4096f, steps = 62)
                         Text(t("Actual throughput appears only when the host reports token usage; it includes request latency. Language affects UI only.", "仅在主机报告令牌用量时显示吞吐量；此值包含请求延迟。语言设置仅影响界面。"), style = MaterialTheme.typography.caption)
                         TextButton({ settings = false }) { Text(t("Done", "完成")) }

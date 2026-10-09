@@ -5,7 +5,7 @@ fun main(args: Array<String>) = runCli(args)
 
 internal fun runCli(args: Array<String>) {
     if (args.isEmpty() || args[0] == "--help") {
-        println("Meshlit experimental host client\nUsage: cli <https://host/v1> models\n       cli <https://host/v1> chat <model-id> [max-output-tokens]\nToken: MESHLIT_CLIENT_TOKEN environment variable. Prompt: stdin (max 128 KiB).\nHTTP is allowed only on literal loopback. No native local runtime is bundled.")
+        println("Meshlit experimental host client\nUsage: cli <https://host/v1> models\n       cli <https://host/v1> chat <model-id> [max-output-tokens]\nToken: MESHLIT_CLIENT_TOKEN environment variable. Prompt: stdin (max 128 KiB).\nHTTP is allowed only on literal loopback. Packaged Intel Mac local model check: MeshlitPreview --local-check <output.json>.")
         return
     }
     try {

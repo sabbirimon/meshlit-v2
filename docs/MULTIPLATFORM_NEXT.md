@@ -4,6 +4,12 @@ Updated 2026-10-09. This is an incremental migration, not a replacement of the
 working Android engine. New clients are Experimental; the separately installed
 Android Core Candidate keeps its existing operation restrictions.
 
+Desktop update 2026-10-10: the Intel Mac installer now bundles a Qwen2.5 1.5B
+GGUF and private CPU engine; see [MACOS_OFFLINE.md](MACOS_OFFLINE.md). Host-only
+descriptions below document the first build40 client and remain applicable to
+other unqualified platform images. HarmonyOS NEXT is unchanged. The larger
+desktop-only expansion is tracked in [DESKTOP_STUDIO_PLAN.md](DESKTOP_STUDIO_PLAN.md).
+
 ## Implemented source
 
 - `shared-workspace` uses Kotlin Multiplatform 2.4.10. `commonMain` owns portable
