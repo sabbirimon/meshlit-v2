@@ -1,5 +1,7 @@
 # Meshlit v2
 
+> Historical repository. Current Meshlit source, releases, guides and contribution entry: https://github.com/sabbirimon/meshlit
+
 > Project owner: IMON (@sabbirimon).
 > Open-source Android-first local AI workspace and experimental phone LLM cluster.
 > Apache-2.0 source, Kotlin/Compose, RunAnywhere/llama.cpp, GGUF models and scoped agent tools.

@@ -142,7 +142,7 @@
       "class": "active",
       "scope": "cross-platform tracking; feature and device gates remain separate",
       "title": "Meshlit v2 \u2014 adaptive AI workspace and experimental distributed compute",
-      "contentSha256WithoutTrackingBlock": "202414a2a16c57e36946a571b155fcf99c2b0a065a26c6477404d971bcd86f5a"
+      "contentSha256WithoutTrackingBlock": "cd4fcc1e79d2eb375fb593a1f5326c18c0d76ac0a9a5a2e5654bf3cc8bcb1104"
     },
     {
       "path": "REQUESTS.md",
