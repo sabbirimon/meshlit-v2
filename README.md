@@ -1,3 +1,10 @@
+> [!IMPORTANT]
+> **Meshlit's current home is [sabbirimon/meshlit](https://github.com/sabbirimon/meshlit).**
+> Find the latest source, [beta downloads](https://github.com/sabbirimon/meshlit/releases),
+> [user guide](https://github.com/sabbirimon/meshlit/blob/main/docs/USER_GUIDE.md)
+> and [contribution guide](https://github.com/sabbirimon/meshlit/blob/main/CONTRIBUTING.md)
+> there. This repository preserves the original v2 history, PRs and release provenance.
+
 <p align="center"><picture>
 <source media="(prefers-color-scheme: light)" srcset="docs/assets/meshlit-v2-hero-light.svg">
 <source media="(prefers-color-scheme: dark)" srcset="docs/assets/meshlit-v2-hero.svg">
