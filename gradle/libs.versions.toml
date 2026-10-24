@@ -18,6 +18,7 @@ datastore = "1.1.1"
 okhttp = "5.3.2"
 nanohttpd = "2.3.1"
 zxing = "3.5.3"
+easyQrScan = "0.4.0"
 
 # Security — Android Keystore-backed EncryptedSharedPreferences
 # for cloud-provider tokens. Pulled in by core-trust +
@@ -37,6 +38,7 @@ desugar = "2.1.4"
 # Compose
 composeBom = "2025.05.00"
 navigationCompose = "2.9.0"
+commonmark = "0.30.0"
 
 # Serialization
 kotlinxSerialization = "1.8.0"
@@ -126,6 +128,8 @@ androidxAnnotation = "1.8.2"
 koin = "4.2.2"
 
 [libraries]
+commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
+commonmark-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 # Gradle plugin marker artifacts (used only by build-logic)
 android-gradle-plugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -152,6 +156,7 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 nanohttpd-core = { group = "org.nanohttpd", name = "nanohttpd", version.ref = "nanohttpd" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+easyqrscan-scanner = { group = "io.github.kalinjul.easyqrscan", name = "scanner", version.ref = "easyQrScan" }
 
 # Security — Android Keystore-backed EncryptedSharedPreferences
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }

@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 class OperationsControl private constructor(context: Context) {
     private val prefs = context.getSharedPreferences("operation-control", 0)
     val gate = OperationGate(runCatching { prefs.getString("policy", null)?.let { Json.decodeFromString<OperationPolicy>(it) } ?: OperationPolicy() }
-        .getOrElse { OperationPolicy(emergencyStopped = true) }) { value ->
+        .getOrElse { OperationPolicy(emergencyStopped = true) }, allowedFeatures = com.meshlit.BuildProfile.features) { value ->
         check(prefs.edit().putString("policy", Json.encodeToString(value)).commit()) { "Operation policy persistence failed" }
     }
     companion object {

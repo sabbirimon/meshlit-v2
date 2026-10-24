@@ -35,11 +35,12 @@ import kotlinx.coroutines.*
                 Button(onClick={try {save();error=null}catch(_:Exception){error="Invalid port, model or policy"}}){Text("Save and stop")}
                 Button(enabled=!com.meshlit.BuildConfig.PLAY_REVIEW,onClick={try {save();host.start();error=null}catch(_:Exception){error="Gateway could not start; check port and build restrictions"}}){Text("Start")}
                 OutlinedButton(onClick={host.stop()}){Text("Stop")}
-                OutlinedButton(onClick={clipboard.setText(androidx.compose.ui.text.AnnotatedString(host.token()))}){Text("Copy access token")}
-                OutlinedButton(onClick={host.rotate()}){Text("Revoke / rotate token")}
+                OutlinedButton(onClick={clipboard.setText(androidx.compose.ui.text.AnnotatedString(host.token()))}){Text("Copy owner token")}
+                OutlinedButton(onClick={host.rotate()}){Text("Rotate owner token and stop")}
             }}
-            item {Text("Endpoints: /mcp · /a2a · /.well-known/agent-card.json · /v1/models · /v1/chat/completions. All require Bearer authentication. Browser origins are rejected. Use a verified private tunnel and host TLS gateway for remote access. Copying the token places a secret on your clipboard.")}
+            item {Text("Endpoints: /mcp · /a2a · /.well-known/agent-card.json · /v1/models · /v1/chat/completions. All require Bearer authentication. Browser origins are rejected. LAN/off-grid and internet clients need a verified encrypted private tunnel or host HTTPS gateway. Web apps should keep the client key on their backend, not in browser scripts. Copying the token places a secret on your clipboard.")}
             item {Text("Connect an external agentgateway/LiteLLM endpoint through Online providers → Custom compatible. Use its exact HTTPS API base, gateway key and model alias. Provider keys can stay on the host.")}
+            item {GatewayClientsPanel(host)}
             item {Text("Remote MCP / A2A routes",style=MaterialTheme.typography.titleMedium)}
             item {Text("Human-enrolled JSON routes: exact HTTPS endpoint (or loopback tunnel), bearer token, protocol MCP/A2A, explicit agentEnabled and MCP allowedTools. Credentials remain encrypted. Discovered tools are untrusted data; remote actions may have effects. JSON-response transport only; OAuth and SSE remain separate adapters.")}
             item {OutlinedTextField(remote,{remote=it},label={Text("Remote routes JSON · contains secrets")},modifier=Modifier.fillMaxWidth(),minLines=3,maxLines=8)}

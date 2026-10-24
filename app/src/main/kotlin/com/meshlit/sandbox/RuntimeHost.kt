@@ -6,7 +6,7 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.meshlit.core.sandbox.*
 import com.meshlit.core.net.NetworkDiagnostics
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -40,8 +40,33 @@ class RuntimeHost(private val context: Context) {
             .putString("knownHosts", config.sshKnownHosts).apply()
     }
 
-    fun allowAgentVm(): Boolean = prefs.getBoolean("allowAgentVm", false)
-    fun setAllowAgentVm(allowed: Boolean) { prefs.edit().putBoolean("allowAgentVm", allowed).apply() }
+    private val agentJobs = mutableSetOf<Job>()
+    @Volatile private var agentEnabled = prefs.getBoolean("allowAgentVm", false)
+    @Volatile private var vmStartedByAgent = false
+    fun allowAgentVm(): Boolean = agentEnabled
+    @Synchronized fun setAllowAgentVm(allowed: Boolean) {
+        if(allowed) operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM)
+        // Revocation acts immediately even when disk persistence fails.
+        if(!allowed) {
+            agentEnabled = false
+            agentJobs.toList().forEach { it.cancel(CancellationException("Agent VM grant revoked")) }
+            if(vmStartedByAgent) vm.stop()
+        }
+        check(prefs.edit().putBoolean("allowAgentVm", allowed).commit()) { "Cannot save agent VM permission" }
+        agentEnabled = allowed
+    }
+    private suspend fun <T> agentOperation(work: suspend () -> T): T = coroutineScope {
+        val job = currentCoroutineContext().job
+        synchronized(this@RuntimeHost) {
+            check(agentEnabled) { "User has not enabled agent VM activation" }
+            agentJobs.add(job)
+        }
+        try {
+            operations.run(com.meshlit.core.common.control.ManagedFeature.VM, agent=true) {
+                work().also { currentCoroutineContext().ensureActive();check(agentEnabled) { "Agent VM grant revoked" } }
+            }
+        } finally { synchronized(this@RuntimeHost) { agentJobs.remove(job) } }
+    }
 
     fun vmConfig(): VmConfig = VmConfig(
         executable = prefs.getString("vmBinary", "").orEmpty(), disk = prefs.getString("vmDisk", "").orEmpty(),
@@ -67,14 +92,17 @@ class RuntimeHost(private val context: Context) {
             .putBoolean("vmPersistDisk",config.persistDisk).apply()
     }
 
-    suspend fun execute(argv: List<String>, rootConsent: Boolean): CommandResult {
-        operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM)
+    suspend fun execute(argv: List<String>, rootConsent: Boolean): CommandResult = operations.run(com.meshlit.core.common.control.ManagedFeature.VM) {
         val config = config()
         if (config.mode == RuntimeMode.VM_SSH) require(vm.state == VmState.SSH_READY) { "Start the VM and wait for SSH first" }
         val plan = RuntimePlanner(workspace).plan(config, argv, rootConsent)
-        return ProcessRunner().execute(plan)
+        ProcessRunner().execute(plan)
     }
 
+    /** Remote human grant is fixed to APP, independent of the selected human root backend. */
+    suspend fun executeApp(argv:List<String>):CommandResult = operations.run(com.meshlit.core.common.control.ManagedFeature.VM) {
+        ProcessRunner().execute(RuntimePlanner(workspace).plan(RuntimeConfig(RuntimeMode.APP),argv),maxBytes=16384)
+    }
     fun labIdentity():String {
         require(config().mode==RuntimeMode.VM_SSH && vm.state==VmState.SSH_READY) {"Start an SSH-ready VM first"}
         val selected=config()
@@ -87,17 +115,26 @@ class RuntimeHost(private val context: Context) {
         return java.security.MessageDigest.getInstance("SHA-256").digest(source.toByteArray()).joinToString(""){"%02x".format(it)}
     }
 
-    suspend fun executeGuest(argv: List<String>, timeoutMs:Long=60000): CommandResult = operations.run(com.meshlit.core.common.control.ManagedFeature.VM) { executeGuestManaged(argv,timeoutMs) }
+    suspend fun executeGuest(argv: List<String>, timeoutMs:Long=60000, agentRequested:Boolean=false): CommandResult =
+        if(agentRequested) agentOperation { executeGuestManaged(argv,timeoutMs) }
+        else operations.run(com.meshlit.core.common.control.ManagedFeature.VM) { executeGuestManaged(argv,timeoutMs) }
+
+    suspend fun waitForGuest(agentRequested:Boolean=false):Boolean =
+        if(agentRequested) agentOperation { vm.waitForSsh() }
+        else operations.run(com.meshlit.core.common.control.ManagedFeature.VM) { vm.waitForSsh() }
     private suspend fun executeGuestManaged(argv: List<String>, timeoutMs:Long=60000): CommandResult {
         val config = config()
         require(config.mode == RuntimeMode.VM_SSH && vm.state == VmState.SSH_READY) {
             "Guest SSH is not configured and ready"
         }
         config.requireGuestBinding(vmConfig().sshPort)
-        return ProcessRunner().execute(RuntimePlanner(workspace).plan(config, argv),timeoutMs=timeoutMs)
+        return ProcessRunner().execute(RuntimePlanner(workspace).plan(config, argv),timeoutMs=timeoutMs,maxBytes=16384)
     }
 
-    suspend fun startVm(agentRequested: Boolean = false): VmState = lock.withLock {
+    suspend fun startVm(agentRequested: Boolean = false): VmState =
+        if(agentRequested) agentOperation { startVmManaged(true) }
+        else operations.run(com.meshlit.core.common.control.ManagedFeature.VM) { startVmManaged(false) }
+    private suspend fun startVmManaged(agentRequested:Boolean):VmState = lock.withLock {
         operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM,agentRequested)
         require(!agentRequested || allowAgentVm()) { "User has not enabled agent VM activation" }
         if (vm.state == VmState.RUNNING || vm.state == VmState.SSH_READY) return@withLock vm.state
@@ -112,6 +149,10 @@ class RuntimeHost(private val context: Context) {
             // Android may reject a background FGS start; propagate that failure.
             ContextCompat.startForegroundService(context, Intent(context, RuntimeForegroundService::class.java))
             withContext(Dispatchers.IO) { vm.stop(); vm.start(config) }
+            currentCoroutineContext().ensureActive()
+            operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM,agentRequested)
+            check(!agentRequested || allowAgentVm()) { "Agent VM grant revoked" }
+            vmStartedByAgent = agentRequested
             sessionStartedAt = System.currentTimeMillis()
             lastError = null
             vm.state
@@ -123,7 +164,10 @@ class RuntimeHost(private val context: Context) {
         }
     }
 
-    suspend fun stopVm() = lock.withLock {
+    suspend fun stopVm(agentRequested:Boolean=false) {
+        if(agentRequested) agentOperation { stopVmManaged() } else stopVmManaged()
+    }
+    private suspend fun stopVmManaged() = lock.withLock {
         withContext(Dispatchers.IO) { vm.stop() }
         context.stopService(Intent(context, RuntimeForegroundService::class.java))
     }
@@ -136,7 +180,11 @@ class RuntimeHost(private val context: Context) {
             (context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager).currentThermalStatus >=
                 android.os.PowerManager.THERMAL_STATUS_SEVERE
         } else false
-        if (vm.state == VmState.FAILED || memory.lowMemory || thermalCritical ||
+        val permissionRevoked = runCatching {
+            operations.requireAllowed(com.meshlit.core.common.control.ManagedFeature.VM,vmStartedByAgent)
+            check(!vmStartedByAgent || allowAgentVm())
+        }.isFailure
+        if (permissionRevoked || vm.state == VmState.FAILED || memory.lowMemory || thermalCritical ||
             System.currentTimeMillis() - sessionStartedAt > 30L * 60 * 1000) {
             lastError = "VM stopped: failure, resource pressure or 30-minute session limit"
             vm.stop()

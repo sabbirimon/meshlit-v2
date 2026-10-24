@@ -32,10 +32,13 @@ fun RuntimeDashboardCard() {
             Text("Inference uses RunAnywhere on-device. A Linux VM starts only when requested.")
             val config = host.vmConfig()
             Text("VM: $state • ${config.memoryMb} MiB • ${config.cpus} CPU • 30-minute session limit")
-            Text("Configure installed artifacts in Sessions: vm help. Desktop requires a guest desktop image and a VNC viewer.")
+            Text("Configure installed artifacts in Commands: vm help. Desktop requires a guest desktop image and a VNC viewer.")
+            Text("Artifact preflight: "+runCatching { config.argv();"paths and limits accepted; actual boot/authentication still required" }.getOrElse { it.message ?: "unavailable" })
+            Text("Disk: ${if(config.persistDisk) "persistent · Stop keeps writes" else "ephemeral · guest writes discarded"}. Outbound network: ${if(config.allowOutboundNetwork) "human enabled" else "restricted"}. Inbound ports stay loopback.")
+            Text("APP shares app permissions; PRoot/chroot provide no strong arbitrary-code isolation. Agent execution uses only the configured guest. Missing Android-compatible QEMU/guest artifacts remain unavailable.")
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Allow agents to start, stop and run guest commands", Modifier.weight(1f))
-                Switch(checked = allowed, onCheckedChange = { host.setAllowAgentVm(it); allowed = it })
+                Switch(checked = allowed, onCheckedChange = { try { host.setAllowAgentVm(it); allowed = host.allowAgentVm() } catch(e:Exception) { allowed=host.allowAgentVm();message=e.message ?: "Permission could not be saved" } })
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(enabled = !busy && state !in listOf(VmState.RUNNING, VmState.SSH_READY, VmState.STARTING), onClick = {

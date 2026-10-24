@@ -1,182 +1,89 @@
-# Meshlit implementation plan
+# Meshlit implementation and qualification plan
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-12: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: cross-platform tracking; feature and device gates remain separate. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
-Previous upstream records are preserved in `docs/history/PLAN-before-2026-10-06.md`; their old build/device claims are historical, not validation of this checkout.
-Updated: 2026-10-06. Follow `AGENTS.md` and `AGENT_BUILD.md` before implementation.
-`PROGRESS.md` is the evidence ledger; `BUILD.md` contains reproducible commands.
-User requirements outrank historical restrictions on layer/pipeline sharding.
+[Current paused checkpoint and ordered resumption gates](docs/PAUSED_CHECKPOINT_2026-10-24.md) · [Build/run](BUILD.md) · [Agent handoff](docs/SESSION_HANDOFF.md). Source publication does not resume application qualification.
 
-## Priority 1 — reliable Android foundation
-- Finish both-flavor compilation, unit tests, lint and emulator UI inspection.
-- Validate GGUF download/resume/import/hash, actual SDK load/unload and generation on physical phones.
-- Exercise Settings search/Basic/Advanced, persisted dynamic colors, log export and lifecycle cancellation.
-- Validate encrypted OpenClaw gateway profile and opt-in phone model endpoint.
-- Prove accessibility actions in an ordinary installed APK, not only instrumentation.
-- Expose clear model/runtime/permission/error state; no successful stub results.
 
-## Priority 2 — real phone layer execution
-- Enroll at least two physical Android workers with TLS pins and explicit grants.
-- Compare deterministic output to a single-device baseline with the same model SHA and runtime revision.
-- Record nonzero layer/tensor allocation on each worker and coordinator memory.
-- Demonstrate a model larger than the coordinator's feasible local RAM budget.
-- Measure throughput, first-token latency, network volume, thermal throttling and battery on heterogeneous phones.
-- Stop/kill worker, coordinator and service; verify bounded failure and cancellation.
-- Separate layer/pipeline placement from tensor parallelism and independent job distribution.
+## Execution record — 2026-10-24 continuation
 
-## Priority 3 — hive durability and autonomy
-- Replicate a bounded task/compact-memory journal on every enrolled phone; NAS optional.
-- Use selected holders for heavy model files/checkpoints with hashes, quotas and leases.
-- Add fencing epochs, authenticated heartbeats, quorum-aware election and idempotent task claims.
-- Recover by replay first. Portable KV recovery requires genuine native export/import and compatibility checks.
-- Integrate OpenClaw paired operator + node WebSocket sessions and persisted device identities.
-- Expose delegated Android controls through an authenticated gateway bridge with revocation and audit.
-- Add model-appropriate structured function calling; do not advertise it until actual model tests pass.
-- Validate emergency stop, target scope and protected/password surfaces. Accessibility grants do not confer root.
+**Paused by owner for HyperL-first delivery.** Preserve Meshlit source/docs; do not
+continue APK builds, installs or voice qualification until resumed. The interrupted
+final build is recorded in PROGRESS.md and is not a passed validation gate.
 
-## Priority 4 — devices, transports and platforms
-- Improve QR/manual/BLE enrollment UX, distinguish discovery from authorization and compute capability.
-- Validate implemented TLS web/API enrollment and local groups; implement verified SSH enrollment adapters; routers/switches/firewalls may contribute connectivity only.
-- Optional rootless/Linux VM/desktop and terminal remain off until requested or delegated.
-- Keep portable core DTOs and adapters for Linux, Windows, macOS and HarmonyOS.
-- Probe and benchmark optional CUDA, HIP, SYCL, Metal, Vulkan, OpenCL, MUSA and CANN backends.
-- Reserve adapters for Huawei/HarmonyOS, Hygon and other Chinese vendors without fabricated support badges.
+Carry out the ranked backlog without treating new menus as completed backends. The current implementation slice covers model reliability, origin-preserving navigation, shared persistent RAG, Studio model recommendations and HyperL admission/measurement. Each fix and failed device case is recorded in [PROGRESS.md](PROGRESS.md). Run changed contracts, then both APK/lint gates, then qualify on reserved Samsung. Keep physical multi-device, reverse relay, group delivery, operational cloud/training and monetary settlement acceptance separate.
 
-## Acceptance and changes
-Each milestone must name changed files, build/test commands, results and remaining device checks.
-Do not estimate a whole-project percentage from source presence. Track acceptance cases instead.
-Update this plan when the user changes scope; preserve previous evidence in `PROGRESS.md`.
+The slice now also includes live turn-taking voice, captions, mute/interruption,
+audio cleanup and eight shared defensive references. Stabilize the reviewed
+source, run both flavor build/lint gates, then test Samsung controls, real offline
+speech and knowledge ingestion. Keep online testing deferred and Xiaomi untouched.
+The isolated SmolVLM probe is evidence for a possible CPU adapter, not a delivered
+offline Chat feature. Full-duplex and cloud realtime voice remain future adapters.
 
-## Later — user guide and replayable tutorial
-Requested by the user after core/model/backend work. Add a first-run walkthrough and
-Help → Replay tutorial. Cover permissions and denial recovery, model download/import/
-startup load, chat/stop, QR pairing, layer workers versus discovery, phone groups,
-OpenClaw gateway/node/provider boundaries, code workspace and log export. Keep a skip
-option and resume points. Use simulated data only in a clearly marked demo mode; never
-fake model tokens, worker health, system permission grants or successful execution.
+## Priority order — 2026-10-24
 
-## Current task-manager acceptance
-- Validate manual task creation/edit/subtasks/search/filter/sort/bulk completion.
-- Verify real human/agent job start, queue, Stop, results and explicit retry.
-- Later: recurrence, dependencies, assignments, distributed claims and replicas.
+The owner requested major-impact or complex work first. Follow the [high-impact backlog](docs/HIGH_IMPACT_BACKLOG_2026-10-24.md): reliable model/media chat first, physical multi-device execution/recovery next, then Internet relay/group chat, Studio agent parity and separately qualified operational/reward backends.
 
-## Latest continuation priorities (2026-10-06)
+## Android and Studio workspace continuation — 2026-10-23
 
-Keep genuine phone layer sharding/model execution and committed recovery as the
-main product priority. Nodes also contribute storage, tools, capture, sensors,
-actuation, preprocessing, DSP, routing and monitoring according to real evidence.
-ESP32/Arduino/IoT membership does not imply transformer execution.
-Read `docs/online-power-peripherals-and-configuration.md`,
-`docs/declarative-federation-roadmap.md` and `docs/media-iot-and-radio-nodes.md`.
-These record offline/online selection, free/public/gated model distinctions,
-actual pricing provenance, power readings, hardware/vendor backend limits, open
-source SSH, configuration transfer, media sources and owner-paired radio carriers.
-Keep unsupported adapters visibly unavailable; never invent devices, samples,
-throughput, tokens, costs, account entitlements or recovery success.
+The [older Android Studio request audit](docs/OLD_ANDROID_STUDIO_REQUEST_AUDIT.md) now preserves untransferred requests as explicit gates. This iteration adds an embedded pairing radar, relay join-code countdown with automatic rotation, clearer direct/VPN/relay/web connection choices, narrower phone typography, responsive Settings shortcuts and direct Security Lab → VM/packages navigation. Rebuild, physical UI inspection, pairing and release checks still govern delivery.
 
-## Scenario routing and media continuation (2026-10-06)
+[Detailed redesign and acceptance plan](docs/REDESIGN_PLAN_2026-10-23.md). Android source now has discovery Auto/On/Off, reviewed pairing, radar, device dashboard, menu ordering, Resources, Security & privacy, Chat target controls and bounded parallel agent prompt jobs. Studio source adds a saved-device dashboard, session revoke control and headless capability status. Current single-peer chat, Studio layer sharding and container/server daemon remain separate implementation gates. Validate the new Samsung APK, Xiaomi install, hostile enrollment/revocation and multi-device compute before a public release.
 
-Read `docs/model-router-and-media.md`. Scenario recipes, sequential chains/comparisons,
-chat text attachments and explicit online vision/image/speech/video adapters are
-wired in source. Validate real execution; paid provider media outputs and generic
-music/sound/on-device diffusion/video remain separate gates. Do not substitute
-text event counts for native tokens. Keep phone layer execution/recovery primary.
+## Paused Android/desktop peering continuation — 2026-10-12
 
-## Custom models and training continuation (2026-10-06)
+[Future build plan](docs/PEERING_UI_BUILD_PLAN.md) · [Exact handoff and validation](docs/PEERING_UI_HANDOFF_2026-10-12.md). Implementation is partial and paused at the owner's request; resume from the saved working tree. Both platforms are in scope. Android Studio is the reference, not the target.
 
-Read [docs/local-model-behavior-and-training.md](docs/local-model-behavior-and-training.md). Custom local prompt behavior is default-off;
-compatible custom weights are imported through Models. No toggle changes learned
-refusals or hosted-provider rules. Settings → Fine-tuning drives the optional
-Soup 0.75.0 POSIX host companion via pinned SSH, with real job/status/log/cancel
-contracts. Android synthetic gradients are removed; phone autograd reports
-unavailable. Actual Soup training, adapter quality/evaluation and GGUF deployment
-remain acceptance gates. Keep phone inference layer sharding/recovery primary.
+## Rewards and responsiveness continuation — 2026-10-23
 
-## Guide, file archives and autonomous browser continuation
+The owner resumed Android and Studio review. Local signed receipts remain the only implemented reward path; historical idle/referral bonuses require trusted host evidence and abuse controls before implementation. The current source reduces repeated receipt verification and long-reply redraw work. Next gate: collect baseline and changed timings on a physical Android host and the installed Intel Studio build, then profile the remaining inference, startup and UI costs before claiming an end-to-end speedup. See [progress](PROGRESS.md).
 
-Implemented source: offline illustrated guide/eight reading lessons, persisted UI
-fonts/surfaces, bounded streaming ZIP/unzip and visible approved-origin local-model
-browser sessions. Execution walkthroughs, physical large-storage tests, browser
-real-site model evaluations and external Chrome/Samsung Internet automation remain
-acceptance work. Read PROGRESS and docs/runanywhere-browser-and-llama.md.
+## Pairing and compute continuation — 2026-10-23
 
-## Audit follow-up
+Android worker QR and manual approval now query a live worker through certificate-pinned TLS before storing it. Cluster groups may contain LAN and directly reachable Internet/VPN workers; automatic admission checks live offers, memory, thermal state and model fit at load. The new assessment score is an operational heuristic, not a measured speed or security grade. The existing HTTP membership relay still cannot carry native layer RPC; a bounded, authenticated reverse tunnel is required before built-in relay mode can serve workers behind NAT. Native ARM64 binaries are packaged in both debug APK flavors; two-phone execution remains a separate device gate. Studio adds bounded custom HyperL graph JSON on its verified native CPU backend; GPU/NPU and broader Android feature parity require individual backends and qualification.
 
-Local encrypted metadata/filter/export and optional OTLP/HTTP source are implemented;
-validation is tracked in PROGRESS.md. Next: full adapter coverage, durable exporter
-outbox, fleet query API, signed remote anchors, and operator-tested Grafana/Loki alert
-paths. Fix vendor SDK telemetry opt-out with supported API evidence. Keep physical
-phone sharding and replicated/fenced recovery the main product gates.
+## Reward metering and monetary boundary — 2026-10-23
 
-## Distribution and agreement continuation (2026-10-07)
+[Reward metering and settlement plan](docs/REWARD_METERING_AND_SETTLEMENT.md) defines native usage units for inference, layers, compute, storage, relay and availability, then reciprocal signed evidence, fraud checks, offline reconciliation and a balanced settlement journal. Existing self-signed local receipts remain nontransferable. Purchases, rental, payouts and exchange require independently verified service, jurisdiction-specific legal review and a qualified payment path; no conversion rate or spendable balance is implemented.
 
-The owner authorized GitHub beta assets, a separate Play review APK/AAB, and
-first-use Terms/Privacy acceptance. Read docs/PLAY_DISTRIBUTION.md (relative to
-repository root) and the public/offline policy copies. `playReview` is a restricted
-review candidate; no Play approval/submission is claimed. Policies are versioned,
-both checkboxes are mandatory, and app-owned SDK/bootstrap work waits for acceptance.
-Optional permissions/telemetry remain independent. Preserve the original open-source
-license rights and third-party notices. Production release signing must never fall
-back to a debug certificate; owner keys remain external to source.
 
-## Update and bounded repair roadmap
+Updated 2026-10-10. [Current progress](PROGRESS.md), [sequential gates](BUILD_MILESTONES.md), [requests](REQUESTS.md), [open work](TODO.md) and [documentation index](docs/DOCUMENTATION_STATUS.md) share the current tracking model. Older plans are retained under docs/history.
 
-No general app auto-updater or autonomous self-repair service is implemented.
-Existing resumable model downloads, durable local jobs, retry/cancel and encrypted
-native CPU checkpoints must not be described as fleet self-healing. Future work:
+## Goals and channels
 
-1. Separate GitHub beta and Play update channels; compare real signed release
-   versions, verify APK checksum and signing identity, and require Android install
-   consent. Production Play builds should use Play's supported update flow. Never
-   download and silently execute replacement code or weaken the signing boundary.
-2. Use typed health states for model artifacts, runtime, storage, tools, transport,
-   worker leases and checkpoints. Record actual errors and recovery outcomes.
-3. Bound retries/backoff, prevent crash loops, respect battery/thermal/network
-   policy, and expose Stop plus separate human/agent repair settings.
-4. Allow reversible repairs (restart an opted-in adapter, resume an owned download,
-   revalidate an artifact); request approval before deleting user data, rotating
-   credentials, changing firewall policy, enabling root or resetting configuration.
-5. Add fenced coordinator failover and compatible replicated task/checkpoint recovery
-   before claiming cluster healing. Never auto-replay irreversible tools from an old
-   journal. Validate update and repair failure cases on physical phones and the
-   intended signed distribution before enabling unattended policies.
+Build a capable private AI workspace for desktop/server and Android, with real local inference, permitted tools, owner-approved heterogeneous devices and genuine model-layer execution. Production candidates and Experimental features stay separate. The Android Core Candidate is a restricted candidate, not a production certification. Intel Studio is Experimental; a dashboard or library dependency never establishes a working backend.
 
-## Hardware access and Security Lab
+No single project-wide phase number or completion percentage is used. The workstreams below have separate implementation and qualification gates. Historical phase numbers identify their original design snapshots only.
 
-Read docs/SECURITY_LAB_AND_HARDWARE_ACCESS.md. Owner-requested Blue Team/Red Team
-profiles are planned around approved engagements, actual capability probes,
-separate human/agent permission, bounded work, evidence and emergency stop.
-Root/kernel access may enable additional diagnostics and isolation on compatible
-hardware; it does not create missing KVM, radio or vendor GPU/NPU support. Keep
-physical rooted-device/VM execution and broader security tooling as open gates.
+| Workstream | Current state | Next gate |
+| --- | --- | --- |
+| Local core engine | Intel bundled Qwen/CPU baseline and verified AVX2; lazy load, context/thread/batch/KV controls, memory admission and idle unload; both recovered installer launchers pass | Clean-machine installation, long-run lifecycle/leak/crash/quality cases; wider model and hardware qualification |
+| Shared sharding | Portable GGUF and CPU worker admission shared by Android/desktop; capacity-bounded integer/manual layer proportions and weak-worker exclusion pass contracts | Desktop live-worker RPC controller, paired independent devices, measured allocation/latency/memory, oversized-model and peer-loss tests |
+| Desktop management | Seven categories, distinct Basic/Advanced menus, bounded global/settings/chat/model/node search, real local monitoring, human shell, SSH/status listener and HyperL CPU | HF download/cancel/storage failures, actual process Stop, interactive SSH; finish pending category backends |
+| Android reliability | Build44 passed its scoped gates; build45 source is saved with final build/lint and physical voice/RAG checks incomplete | Resume only on owner instruction, then qualify final source on available Samsung; preserve app data and phone ownership |
+| Governed agents and fleet | Android typed controls/grants/audit and optional gateways are references; desktop shared agent dispatch remains pending | One common authority/controller layer, durable redacted audit, scopes/budgets/revocation/Stop, then MCP/A2A/hooks and controlled automation |
+| Platform and release | Intel DMG/PKG recovered-payload qualification; source/review pushed; all eight public asset digests verified | Experimental release published with matching digests; Developer ID/notarization and independent OS/device acceptance precede production |
 
-## Optional distro and security-tool provisioning
+## Proposed stabilization priority — awaiting implementation decision
 
-Read docs/LINUX_DISTRIBUTIONS_AND_LAB_TOOLS.md. The owner requested Alpine, Kali,
-Parrot, Ubuntu, licensed RHEL/custom environments and optional Metasploit/other
-lab tools. Implement verified artifact provisioning, architecture/resource probes,
-explicit disk persistence and approved networking before promising one-click
-installation. Current QEMU snapshots discard guest changes and restricted networking
-prevents general package downloads. Physical guest/tool execution remains unverified.
+The owner selected detailed plan refinement before implementation. The [stabilization plan](docs/desktop/STABILIZATION_PLAN.md) defines S0–S6 acceptance gates; the [build guide](docs/desktop/STABILIZATION_BUILD_GUIDE.md) maps existing commands to evidence and identifies missing future harnesses. This documentation does not promote any runtime capability.
 
-## Owner direction — 2026-10-08
+1. S0: freeze source, inputs, device inventory and repeatable baseline measurements.
+2. S1–S3: durable offline chat/engine lifecycle, reliable model import/download and accurate monitoring with real process-control acceptance.
+3. S4: shared action authority, protected credential references, durable audit and revocation; extend the session key-provider boundary introduced in S1.
+4. S5: pair two independent compatible physical devices, execute positive model-layer contributions on both, measure capacity/performance and qualify safe worker-loss failure/retry.
+5. S6: make separate local-desktop and cluster-Experimental release decisions, and admit bounded agent adapters only for already qualified actions. Local release assessment may proceed after S4; cluster acceptance requires S5.
 
-Meshlit targets dynamic AI software across different environments: servers,
-workstations, clusters, cloud, embedded and edge systems. Phones are one deployment
-and human control client. Security, vision, auth, networking and lab tooling serve
-AI-related workflows. Current APKs and lifecycle services remain Android-specific.
+Broader agent workflows, voice/personality, RAG, VM/container/Kubernetes, OS firewall/capture, cloud billing, new accelerators/platforms and transparent cluster failover remain in the existing backlog. The detailed plan defines stop conditions, device dependencies and evidence requirements without promising a calendar deadline or production certification.
 
-Follow `docs/CONTINUATION_2026_10_08.md` for local implementation and remaining areas
-2–8, and `docs/PLATFORM_ADAPTER_PLAN.md` for qualified platform/SDK/memory/native
-networking work. Direct hardware/driver/kernel/bare-metal execution requires a
-trusted installed backend, exact OS/ABI/artifact proof, owner privilege grants,
-isolation and cancellation. HFT-inspired latency is a measurement target for AI
-communication; no physical NIC, RDMA, hardware timestamp or HFT qualification is
-claimed from same-host HTTP RTT. Mixed devices prioritize stability; compatible
-islands need measured total benefit before turbo activation.
+## Core distributed acceptance
 
-HyperL began on `codex/hyperl-experimental`, based on `77ac214`. The owner merged
-its CPU/reference/source-emitter source through PR #1 at `851576b`; it remains
-experimental within `core-gpu`. Standalone packaging, app workflows, native runtime
-loaders and hardware/performance qualification remain future work. Open-source/free
-research components take priority; vendor/runtime licenses remain distinct.
-Physical-device tests are still paused. Live cloud/provider/SSH account tests
-remain pending; local contract/MockWebServer results do not satisfy those gates.
+Require at least two independent approved workers, positive model-layer contribution, exact model/revision agreement, actual native allocation and output, and a single-device comparison. Measure first-token latency, authoritative native tokens, transfer bytes, resident/KV memory, thermal and battery where supported. Internet/P2P controls are separate from native model transport. Do not sum nominal RAM or device counts into a throughput estimate.
+
+Replicated journal acknowledgements, fencing/quorum, idempotent claims and portable compatible KV recovery must precede automatic coordinator failover. Existing local encrypted checkpoints and retries do not establish fleet self-healing. Training needs a real licensed dataset, actual host job and evaluated adapter; a file import is not successful training.
+
+## Update rule
+
+For every change record request/feature IDs, source, commands and failures, model/device/backend, actual observations, remaining gates and artifacts/digests. Update the appropriate workstream, not every historical phase. Run scripts/update-doc-tracking.py --check and scripts/validate-feature-map.py before committing documentation. All 41 desktop/server requested areas remain individually tracked in docs/DESKTOP_FEATURE_TRACKER.md and docs/desktop-features.json.

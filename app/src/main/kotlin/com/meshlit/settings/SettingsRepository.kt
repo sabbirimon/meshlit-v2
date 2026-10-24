@@ -46,10 +46,10 @@ import kotlinx.serialization.json.Json
  * Settings panel. Other systems (theme, notifications, cluster
  * transports, etc.) read from this and write back through it.
  */
-open class SettingsRepository(private val context: Context) {
+open class SettingsRepository(private val context: Context?, private val storeOverride: DataStore<Preferences>? = null) {
 
-    private val tracingSecrets by lazy { com.meshlit.core.trust.EncryptedCredentialStore(context,"tracing-secrets") }
-    private val store: DataStore<Preferences> by lazy { context.settingsDataStore }
+    private val tracingSecrets by lazy { com.meshlit.core.trust.EncryptedCredentialStore(requireNotNull(context),"tracing-secrets") }
+    private val store: DataStore<Preferences> by lazy { storeOverride ?: requireNotNull(context).settingsDataStore }
 
     val flow: Flow<MeshlitThemeConfig> = store.data.map { prefs ->
         MeshlitThemeConfig(
@@ -60,8 +60,11 @@ open class SettingsRepository(private val context: Context) {
             themeMode = ThemeMode.entries.firstOrNull { it.name == prefs[Keys.themeMode] }
                 ?: MeshlitThemeConfig.Default.themeMode,
             dynamicColors = prefs[Keys.dynamicColors] ?: MeshlitThemeConfig.Default.dynamicColors,
+            uiLanguage = com.meshlit.workspace.WorkspaceLanguage.fromTag(prefs[Keys.uiLanguage]),
             uiFont = com.meshlit.ui.theme.UiFont.entries.firstOrNull{it.name==prefs[Keys.uiFont]} ?: com.meshlit.ui.theme.UiFont.FIGTREE,
             surfaceStyle = com.meshlit.ui.theme.SurfaceStyle.entries.firstOrNull{it.name==prefs[Keys.surfaceStyle]} ?: com.meshlit.ui.theme.SurfaceStyle.SOLID,
+            workspaceLayout = com.meshlit.ui.theme.WorkspaceLayout.entries.firstOrNull{it.name==prefs[Keys.workspaceLayout]} ?: com.meshlit.ui.theme.WorkspaceLayout.ADAPTIVE,
+            sidebarStyle = com.meshlit.ui.theme.SidebarStyle.entries.firstOrNull{it.name==prefs[Keys.sidebarStyle]} ?: com.meshlit.ui.theme.SidebarStyle.CARDS,
             fontScale = prefs[Keys.fontScale] ?: MeshlitThemeConfig.Default.fontScale,
             densityScale = prefs[Keys.densityScale] ?: MeshlitThemeConfig.Default.densityScale,
             animationsEnabled = prefs[Keys.animationsEnabled] ?: MeshlitThemeConfig.Default.animationsEnabled,
@@ -100,6 +103,15 @@ open class SettingsRepository(private val context: Context) {
             if (value.isBlank()) prefs.remove(Keys.displayName)
             else prefs[Keys.displayName] = value.trim().take(40)
         }
+    }
+
+    /** Hide the configured or hardware-derived name in peer-facing surfaces. Identity keys and IPs remain visible. */
+    open val privateContributorNameFlow: Flow<Boolean> = store.data.map { it[Keys.privateContributorName] ?: false }
+    open fun privateContributorNameNow(): Boolean = runCatching {
+        kotlinx.coroutines.runBlocking { privateContributorNameFlow.first() }
+    }.getOrDefault(false)
+    open suspend fun setPrivateContributorName(enabled: Boolean) {
+        store.edit { it[Keys.privateContributorName] = enabled }
     }
 
     /**
@@ -685,9 +697,9 @@ open class SettingsRepository(private val context: Context) {
      */
     val firewallFlow: Flow<PortLayerPolicy> = store.data.map { prefs ->
         val raw = prefs[Keys.firewallPolicy]
-        if (raw.isNullOrBlank()) return@map PortLayerPolicy()
+        if (raw.isNullOrBlank()) return@map MeshlitFirewall.Starter.portLayer
         runCatching { json.decodeFromString(PortLayerPolicy.serializer(), raw).also{it.validate()} }
-            .getOrDefault(PortLayerPolicy())
+            .getOrDefault(MeshlitFirewall.Starter.portLayer)
     }
 
     /**
@@ -722,7 +734,7 @@ open class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setActiveEndpoint(id: String) {
-        store.edit { it[Keys.activeEndpointId] = id }
+        store.edit { prefs -> require(id.isBlank() || decodeEndpoints(prefs[Keys.remoteEndpoints]).any { it.id == id }) { "Unknown device" }; prefs[Keys.activeEndpointId] = id }
     }
 
     /**
@@ -738,11 +750,14 @@ open class SettingsRepository(private val context: Context) {
             val merged = if (existingIdx >= 0) {
                 val prior = current[existingIdx]
                 current[existingIdx] = endpoint.copy(
-                    addedAtMs = if (prior.addedAtMs == 0L) now else prior.addedAtMs,
+                    trusted = prior.trusted && endpoint.trusted && prior.baseUrl == endpoint.baseUrl && prior.apiKey == endpoint.apiKey && prior.notes == endpoint.notes,
+                    // A legacy row without a timestamp has an unknown add date.
+                    // Reconnecting must not present today's date as its original add date.
+                    addedAtMs = prior.addedAtMs,
                     lastSeenMs = if (endpoint.lastSeenMs == 0L) prior.lastSeenMs else endpoint.lastSeenMs,
                 )
             } else {
-                endpoint.copy(addedAtMs = if (endpoint.addedAtMs == 0L) now else endpoint.addedAtMs)
+                current.add(endpoint.copy(trusted = false, addedAtMs = if (endpoint.addedAtMs == 0L) now else endpoint.addedAtMs))
             }
             prefs[Keys.remoteEndpoints] = encodeEndpoints(current)
         }
@@ -887,8 +902,22 @@ open class SettingsRepository(private val context: Context) {
         store.edit { it[Keys.themeMode] = mode.name }
     }
 
+    suspend fun setUiLanguage(language:com.meshlit.workspace.WorkspaceLanguage) { store.edit { it[Keys.uiLanguage]=language.tag } }
+
     suspend fun setUiFont(font:com.meshlit.ui.theme.UiFont){store.edit{it[Keys.uiFont]=font.name}}
     suspend fun setSurfaceStyle(style:com.meshlit.ui.theme.SurfaceStyle){store.edit{it[Keys.surfaceStyle]=style.name}}
+    suspend fun setWorkspaceLayout(layout:com.meshlit.ui.theme.WorkspaceLayout){store.edit{it[Keys.workspaceLayout]=layout.name}}
+    suspend fun setSidebarStyle(style:com.meshlit.ui.theme.SidebarStyle){store.edit{it[Keys.sidebarStyle]=style.name}}
+    suspend fun applyAppearance(preset:com.meshlit.ui.theme.AppearancePreset) {
+        store.edit { prefs ->
+            prefs[Keys.accentHue]=preset.accent.name
+            prefs[Keys.basePalette]=preset.base.name
+            prefs[Keys.themeMode]=preset.mode.name
+            prefs[Keys.dynamicColors]=false
+            prefs[Keys.surfaceStyle]=preset.surface.name
+            prefs.remove(Keys.customPaletteJson)
+        }
+    }
 
     suspend fun setFontScale(scale: Float) {
         store.edit { it[Keys.fontScale] = scale.coerceIn(0.85f, 1.5f) }
@@ -929,7 +958,7 @@ open class SettingsRepository(private val context: Context) {
     }
 
     suspend fun resetToDefaults() {
-        store.edit { it.clear() }
+        store.edit { prefs -> prefs.asMap().keys.filter { it.name.startsWith("theme.") }.forEach { prefs.remove(it) } }
     }
 
     private fun decodeEndpoints(raw: String?): List<RemoteEndpoint> {
@@ -978,8 +1007,11 @@ open class SettingsRepository(private val context: Context) {
         val basePalette = stringPreferencesKey("theme.base_palette")
         val themeMode = stringPreferencesKey("theme.theme_mode")
         val dynamicColors = booleanPreferencesKey("theme.dynamic_colors")
+        val uiLanguage=stringPreferencesKey("theme.ui_language")
         val uiFont=stringPreferencesKey("theme.ui_font")
         val surfaceStyle=stringPreferencesKey("theme.surface_style")
+        val workspaceLayout=stringPreferencesKey("theme.workspace_layout")
+        val sidebarStyle=stringPreferencesKey("theme.sidebar_style")
         val fontScale = floatPreferencesKey("theme.font_scale")
         val densityScale = floatPreferencesKey("theme.density_scale")
         val animationsEnabled = booleanPreferencesKey("theme.animations_enabled")
@@ -987,6 +1019,7 @@ open class SettingsRepository(private val context: Context) {
         val customPaletteJson = stringPreferencesKey("theme.custom_palette_json")
         val customModelPath = stringPreferencesKey("model.custom_path")
         val displayName = stringPreferencesKey("device.display_name")
+        val privateContributorName = booleanPreferencesKey("device.private_contributor_name")
         val networkScope = stringPreferencesKey("network.scope")
         val remoteEndpoints = stringPreferencesKey("network.remote_endpoints")
         val activeEndpointId = stringPreferencesKey("network.active_endpoint_id")

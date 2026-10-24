@@ -27,6 +27,7 @@ object DeviceRuntimePolicy {
             if(old) add("Older Android version uses conservative limits")
             if(blocked) add("Severe thermal state: new heavy loads are blocked until the device cools")
             if(device.thermal==null) add("Thermal API unavailable; temperature is not assumed normal")
+            if(budget<=256L*1024*1024) add("Available RAM leaves only $budget bytes of estimated load budget; close unused apps or unload the existing model before a new load")
             add("RAM budget is an estimate, not a reservation; rechecked before load")
             add("GPU/NPU support requires a working backend probe; chipset names alone do not enable it")
         }

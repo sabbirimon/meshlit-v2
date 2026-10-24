@@ -24,4 +24,20 @@ class OperationGateTest {
         val revocation = OperationGate(persist = { error("disk failure") }); runCatching { revocation.setFeature(ManagedFeature.CLOUD, false) }
         assertTrue(runCatching { revocation.requireAllowed(ManagedFeature.CLOUD) }.isFailure)
     }
+    @Test fun fixedBuildBoundaryCannotBeEnlargedByPolicyResumeOrMutableSets() = runBlocking {
+        val supplied=mutableSetOf(ManagedFeature.INFERENCE)
+        val gate=OperationGate(OperationPolicy(),allowedFeatures=supplied)
+        supplied.add(ManagedFeature.VM)
+        runCatching { (gate.supportedFeatures as? MutableSet<ManagedFeature>)?.add(ManagedFeature.SSH) }
+        gate.emergencyStop();gate.resumeHuman()
+        for(feature in ManagedFeature.entries.filter{it!=ManagedFeature.INFERENCE}) {
+            assertTrue(runCatching { gate.setFeature(feature,true) }.isFailure)
+            assertTrue(runCatching { gate.setFeature(feature,true,true) }.isFailure)
+            var invoked=false
+            assertTrue(runCatching { gate.run(feature) { invoked=true } }.isFailure)
+            assertTrue(runCatching { gate.run(feature,true) { invoked=true } }.isFailure)
+            assertFalse(invoked)
+        }
+        assertEquals("local",gate.run(ManagedFeature.INFERENCE) { "local" })
+    }
 }

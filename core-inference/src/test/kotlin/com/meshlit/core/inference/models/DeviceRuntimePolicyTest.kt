@@ -23,6 +23,7 @@ class DeviceRuntimePolicyTest {
     @Test fun unknownThermalIsReportedAndMemoryIsRechecked(){
         val unknown=DeviceRuntimePolicy.plan(resources().copy(api=28,thermal=null));assertTrue(unknown.reasons.any{it.contains("unavailable")})
         val tiny=DeviceRuntimePolicy.plan(resources().copy(availableRam=300L*1024*1024));assertFalse(tiny.allowHeavyWork)
+        assertTrue(tiny.reasons.any{it.contains("Available RAM leaves only")})
         assertFalse(DeviceRuntimePolicy.fits(tiny,100L*1024*1024,0))
     }
     @Test fun kvEstimateRequiresRealTransformerDimensions(){

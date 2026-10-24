@@ -24,17 +24,29 @@ class StopCoordinator(private val context:Context) {
         val koin=GlobalContext.get()
         val actions=linkedMapOf<String,suspend()->Unit>()
         if(feature==null || feature==ManagedFeature.INFERENCE || feature==ManagedFeature.CLUSTER) {
-            actions["native inference / worker"]={koin.get<com.meshlit.core.inference.InferenceCoordinator>().cancel();koin.get<com.meshlit.pipeline.PipelineHost>().stopAll()}
+            actions["native inference / worker"]={koin.get<com.meshlit.core.inference.InferenceCoordinator>().cancel();if(!com.meshlit.BuildProfile.coreCandidate) koin.get<com.meshlit.pipeline.PipelineHost>().stopAll()}
         }
         if(feature==null || feature==ManagedFeature.MODEL_TRANSFERS) actions["model transfers"]={koin.get<com.meshlit.models.ModelLibrary>().pauseAll()}
-        if(feature==null || feature==ManagedFeature.GATEWAY) actions["gateway"]={koin.get<com.meshlit.gateway.GatewayHost>().stop()}
+        if(!com.meshlit.BuildProfile.coreCandidate) {
+        if(feature==null || feature==ManagedFeature.GATEWAY) actions["gateway"]={
+            koin.get<com.meshlit.gateway.GatewayHost>().stop()
+            context.stopService(android.content.Intent(context,com.meshlit.core.cloudmcp.CloudMcpForegroundService::class.java))
+        }
         if(feature==null || feature==ManagedFeature.AUTOMATION) {
-            actions["remote control"]={koin.get<com.meshlit.control.WebBridgeHost>().stop();koin.get<com.meshlit.openclaw.OpenClawHost>().stopSharing()}
+            actions["remote control"]={
+                koin.get<com.meshlit.openclaw.AndroidControl>().setEnabled(false)
+                koin.get<com.meshlit.settings.SettingsRepository>().setAndroidAutomationEnabled(false)
+                koin.get<com.meshlit.openclaw.OpenClawNode>().disconnect()
+                koin.get<com.meshlit.control.WebBridgeHost>().stop()
+                koin.get<com.meshlit.openclaw.OpenClawHost>().stopSharing()
+            }
             actions["command jobs"]={val backend=koin.get<com.meshlit.control.AgentBackend>();for(controller in listOf(backend.controller,backend.humanController)){controller.ready.await();controller.jobs.value.filter{!it.terminal}.forEach{controller.cancel(it.command.requestId)}}}
         }
         if(feature==null || feature==ManagedFeature.BROWSER) actions["browser autonomy"]={koin.get<com.meshlit.browser.BrowserSessionBroker>().stop()}
         if(feature==null || feature in setOf(ManagedFeature.VM,ManagedFeature.CYBER)) actions["VM / lab"]={koin.get<com.meshlit.sandbox.RuntimeHost>().stopVm()}
+        if((feature==null || feature==ManagedFeature.SSH) && android.os.Build.VERSION.SDK_INT>=26) actions["SSH node"]={koin.get<com.meshlit.ssh.NodeSshHost>().stop()}
         if(feature==null || feature==ManagedFeature.RECOVERY) actions["replica listener"]={koin.get<com.meshlit.recovery.ReplicaHost>().stop()}
+        }
         mutable.value=actions.mapValues{"stop requested"}
         supervisorScope { actions.map{(name,action)->launch {val status=try{withTimeout(15000){action()};"local stop completed"}catch(_:TimeoutCancellationException){"timeout; inspect local state"}catch(e:CancellationException){throw e}catch(_:Exception){"stop failed; inspect local state"};mutable.update{it+(name to status)}}}.joinAll() }
     } finally {synchronized(this@StopCoordinator){if(pending.decrementAndGet()==0)busy.value=false}} }

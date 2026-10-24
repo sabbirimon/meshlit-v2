@@ -1,4 +1,8 @@
 # Meshlit build and continuation contract for the Claude Opus agent
+<!-- meshlit-document-tracking:start -->
+Tracking reconciled 2026-10-12: [Plan](PLAN.md) · [Progress](PROGRESS.md) · [Document status](docs/DOCUMENTATION_STATUS.md).
+Scope: workflow guidance; current owner instructions and scoped evidence govern. Phase labels in older sections retain their original scope.
+<!-- meshlit-document-tracking:end -->
 
 ## Read this before changing code
 
@@ -24,9 +28,9 @@ implementation and tests. `REQUESTS.md` R-23 describes mixed-device hive goals.
 The Opus working tree supplied by the user is:
 `/Users/code/AndroidStudioProjects/mllm`.
 
-The Codex implementation is in a separate checkout:
-`/Users/code/Documents/Codex/2026-10-06/re/outputs/meshlit`.
-Both began at `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`. Codex has not modified
+The Meshlit implementation is in a separate checkout:
+`/path/to/workspace/2026-10-06/re/outputs/meshlit`.
+Both began at `ff0cd771c12f3daa63cb8fe45e1476245ab7b01b`. This work has not modified
 the Opus tree. Inspect the latest branch, status and diffs before porting. Preserve
 unrelated work. Include untracked source files, resources, tests and docs; copying
 only `git diff` misses new files. Do not copy build directories, credentials,
@@ -234,14 +238,13 @@ availability and failures to agents instead of returning placeholder success.
 ## Core comparison with the Opus tree
 
 Read-only review on 2026-10-06 found both checkouts at the same base SHA; the Opus
-tree has additional untracked feature CLAUDE files and an older copied Codex tree.
+tree has additional untracked feature CLAUDE files and an older copied source tree.
 `core-orchestration` contains no executable orchestration implementation at this
 base; the newer app pipeline does not gain a production scheduler from its name.
 `core-agent-memory` includes an in-memory store, not phone-replicated durable
 memory. `TrainingResumeService` persists local training tokens; it is not inference
 KV-cache recovery. Federation handoff DTOs describe signatures/consent but require
-verified server wiring. `core-ssh` currently contains configuration types, not a
-functional host-enrollment client. BLE discovery and `PeerRepository` transport
+verified server wiring. `core-ssh` now includes a scoped JSch client and public-key bounded app-node listener; actual remote enrollment and physical host qualification remain separate. BLE discovery and `PeerRepository` transport
 controls already exist: reuse them and verify real discovery rather than building
 a duplicate scanner. Discovery does not establish compute trust. Reconcile the
 Opus core-orchestration CLAUDE ban with this user's explicit layer authorization
@@ -445,5 +448,9 @@ manifest/policy/23-library ELF alignment checks pass; Play approval and actual
 normal cold startup took 7.406s after Gradle stopped, with two ANRs during lint.
 The owner stopped for sleep, then requested progress saving/local release asset
 preparation. Resume builds or GitHub publication only after their next instruction.
-No beta assets have been uploaded. Keep physical phone sharding/recovery, hosted
+At that earlier stop, no beta assets had been uploaded; beta.1 was subsequently published with owner authorization. Keep physical phone sharding/recovery, hosted
 Grafana, vendor SDK telemetry opt-out and optional integrations explicitly open.
+
+## Desktop core and documentation handoff — 2026-10-10
+
+Read PLAN.md, docs/DOCUMENTATION_STATUS.md, docs/DESKTOP_FEATURE_TRACKER.md, docs/DESKTOP_BUILD_LOG.md and docs/desktop/ENGINE_AND_SHARDING.md before further work. Current Gradle includes desktop-engine, desktop-ssh and desktop-hyperl. Intel Studio 40.1 payload checks pass; private runtime modules come from full-classpath jdeps plus explicit TLS/management modules. Sharding planning does not deliver a desktop RPC controller. Native/token evidence is scoped per model/host, not a speed multiplier or production certificate. Preserve Android defaults, separate HyperL terms and human-only policy/credential/root boundaries. Update/check documentation tracking at each change; historical phase labels do not supersede current gates.
